@@ -162,7 +162,7 @@ async function logActivity(userName,action,entityType,entityId,entityName,detail
 async function sendDailyReachout(){
   if(!SLACK){console.log('No Slack webhook');return;}
   try{
-    const{rows}=await pool.query("SELECT name,coach,last_visit,needs,EXTRACT(DAY FROM NOW()-last_visit::timestamptz)::int AS days_since FROM members WHERE flagged=true AND coach IS NOT NULL AND coach!='' ORDER BY coach,days_since DESC NULLS LAST");
+    const{rows}=await pool.query("SELECT name,coach,last_visit,needs,EXTRACT(DAY FROM NOW()-last_visit::timestamptz)::int AS days_since FROM members WHERE coach IS NOT NULL AND coach!='' AND (last_visit IS NULL OR last_visit < NOW() - INTERVAL '14 days') AND LOWER(COALESCE(status,'')) NOT IN ('paused','frozen','pause','freeze') ORDER BY coach,days_since DESC NULLS LAST");
     if(!rows.length) return;
     const byCoach={};
     rows.forEach(m=>{if(!byCoach[m.coach])byCoach[m.coach]=[];byCoach[m.coach].push(m);});
@@ -170,7 +170,7 @@ async function sendDailyReachout(){
     let text='📋 *Andwell Daily Check-ins — '+today+'*\n\n';
     for(const[coach,members] of Object.entries(byCoach)){
       text+='*'+coach+'* ('+members.length+')\n';
-      members.slice(0,8).forEach(m=>{text+='  • '+m.name+' — '+(m.days_since?m.days_since+'d since last visit':'no visit on record')+'\n';});
+      members.forEach(m=>{text+='  • '+m.name+' — '+(m.days_since?m.days_since+'d since last visit':'no visit on record')+'\n';});
       text+='\n';
     }
     text+='_'+rows.length+' total members to contact today_';
