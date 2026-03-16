@@ -415,6 +415,14 @@
         <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
         Members
       </div>
+      <div style="padding:0 10px 4px">
+        <div style="font-size:10px;font-weight:700;letter-spacing:0.6px;text-transform:uppercase;color:rgba(255,255,255,0.2);padding:6px 0 4px">By Coach</div>
+        <div class="nav-item" style="padding:6px 10px" onclick="filterByCoach('Xuan')"><span style="width:8px;height:8px;border-radius:50%;background:#0962ff;display:inline-block;flex-shrink:0"></span><span style="flex:1;font-size:12.5px">Xuan</span><span id="sidebar-count-xuan" style="font-size:11px;color:rgba(255,255,255,0.25)">—</span></div>
+        <div class="nav-item" style="padding:6px 10px" onclick="filterByCoach('Linda')"><span style="width:8px;height:8px;border-radius:50%;background:#7c3aed;display:inline-block;flex-shrink:0"></span><span style="flex:1;font-size:12.5px">Linda</span><span id="sidebar-count-linda" style="font-size:11px;color:rgba(255,255,255,0.25)">—</span></div>
+        <div class="nav-item" style="padding:6px 10px" onclick="filterByCoach('Alvin')"><span style="width:8px;height:8px;border-radius:50%;background:#16a34a;display:inline-block;flex-shrink:0"></span><span style="flex:1;font-size:12.5px">Alvin</span><span id="sidebar-count-alvin" style="font-size:11px;color:rgba(255,255,255,0.25)">—</span></div>
+        <div class="nav-item" style="padding:6px 10px" onclick="filterByCoach('Andrew')"><span style="width:8px;height:8px;border-radius:50%;background:#d97706;display:inline-block;flex-shrink:0"></span><span style="flex:1;font-size:12.5px">Andrew</span><span id="sidebar-count-andrew" style="font-size:11px;color:rgba(255,255,255,0.25)">—</span></div>
+        <div class="nav-item" style="padding:6px 10px" onclick="filterByCoach('unassigned')"><span style="width:8px;height:8px;border-radius:50%;background:#6b7280;display:inline-block;flex-shrink:0"></span><span style="flex:1;font-size:12.5px">Unassigned</span><span id="sidebar-count-unassigned" style="font-size:11px;color:rgba(255,255,255,0.25)">—</span></div>
+      </div>
       <div class="nav-item" onclick="showView('leads')" data-view="leads">
         <svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
         Leads
@@ -626,6 +634,14 @@ function renderView(view) {
 }
 
 // ═══════════════════════════════════════════════════════════ SEARCH
+function filterByCoach(name) {
+  showView('members');
+  setTimeout(() => {
+    const cf = document.getElementById('coach-filter');
+    if (cf) { cf.value = name; renderMembers(document.getElementById('content')); }
+  }, 50);
+}
+
 function handleSearch(q) {
   searchQuery = q.toLowerCase();
   if (currentView === 'members') renderMembers(document.getElementById('content'));
@@ -676,7 +692,7 @@ function renderRecentMembers() {
   if (!recent.length) return `<div class="empty-state"><p>No members loaded yet</p></div>`;
   return recent.map(m => `
     <div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border);cursor:pointer" onclick="openMemberPanel(${m.id})">
-      <div style="width:32px;height:32px;border-radius:8px;background:${getCoachColor(m.coach_email)};display:flex;align-items:center;justify-content:center;color:#fff;font-size:12px;font-weight:700;flex-shrink:0">${(m.name||'?')[0].toUpperCase()}</div>
+      <div style="width:32px;height:32px;border-radius:8px;background:${getCoachColor(m.email)};display:flex;align-items:center;justify-content:center;color:#fff;font-size:12px;font-weight:700;flex-shrink:0">${(m.name||'?')[0].toUpperCase()}</div>
       <div style="flex:1">
         <div style="font-weight:600;font-size:13px">${m.name || 'Unknown'}</div>
         <div style="font-size:11px;color:var(--text-muted)">${m.email || ''}</div>
@@ -712,8 +728,29 @@ function renderCoachBreakdown() {
 async function loadMembers() {
   try {
     const data = await apiFetch('/api/members');
-    allMembers = data.members || data || [];
+    // API returns array-like object or array
+    allMembers = Array.isArray(data) ? data : Array.isArray(data.members) ? data.members : Object.values(data);
+    updateSidebarCounts();
   } catch(e) { console.warn('Members load failed:', e.message); }
+}
+
+function updateSidebarCounts() {
+  const coaches = ['Xuan','Linda','Alvin','Andrew'];
+  coaches.forEach(name => {
+    const el = document.getElementById(`sidebar-count-${name.toLowerCase()}`);
+    if (el) el.textContent = allMembers.filter(m => (m.coach||'').toLowerCase() === name.toLowerCase()).length;
+  });
+  const unassigned = document.getElementById('sidebar-count-unassigned');
+  if (unassigned) unassigned.textContent = allMembers.filter(m => !m.coach).length;
+}
+
+function needsBadge(needs) {
+  if (!needs) return '';
+  const n = (needs||'').toLowerCase();
+  if (n.includes('high')) return `<span class="badge" style="background:rgba(239,68,68,0.1);color:#ef4444">High</span>`;
+  if (n.includes('med')) return `<span class="badge" style="background:rgba(217,119,6,0.1);color:#d97706">Med</span>`;
+  if (n.includes('low')) return `<span class="badge" style="background:rgba(22,163,74,0.1);color:#16a34a">Low</span>`;
+  return `<span class="badge badge-paused">${needs}</span>`;
 }
 
 function renderMembers(c) {
@@ -724,21 +761,32 @@ function renderMembers(c) {
            (m.phone||'').toLowerCase().includes(searchQuery);
   });
 
+  const sf = document.getElementById('status-filter')?.value || '';
+  const cf = document.getElementById('coach-filter')?.value || '';
+  const nf = document.getElementById('needs-filter')?.value || '';
+
   c.innerHTML = `
     <div class="filter-bar">
       <select class="filter-select" id="status-filter" onchange="renderMembers(document.getElementById('content'))">
-        <option value="">All Statuses</option>
-        <option value="active">Active</option>
-        <option value="at_risk">At Risk</option>
-        <option value="new">New</option>
-        <option value="paused">Paused</option>
+        <option value="" ${sf===''?'selected':''}>All Statuses</option>
+        <option value="Active" ${sf==='Active'?'selected':''}>Active</option>
+        <option value="At-Risk" ${sf==='At-Risk'?'selected':''}>At Risk</option>
+        <option value="New" ${sf==='New'?'selected':''}>New</option>
+        <option value="Paused" ${sf==='Paused'?'selected':''}>Paused</option>
       </select>
       <select class="filter-select" id="coach-filter" onchange="renderMembers(document.getElementById('content'))">
-        <option value="">All Coaches</option>
-        <option value="xuan">Xuan</option>
-        <option value="linda">Linda</option>
-        <option value="alvin">Alvin</option>
-        <option value="andrew">Andrew</option>
+        <option value="" ${cf===''?'selected':''}>All Coaches</option>
+        <option value="Xuan" ${cf==='Xuan'?'selected':''}>Xuan</option>
+        <option value="Linda" ${cf==='Linda'?'selected':''}>Linda</option>
+        <option value="Alvin" ${cf==='Alvin'?'selected':''}>Alvin</option>
+        <option value="Andrew" ${cf==='Andrew'?'selected':''}>Andrew</option>
+        <option value="unassigned" ${cf==='unassigned'?'selected':''}>Unassigned</option>
+      </select>
+      <select class="filter-select" id="needs-filter" onchange="renderMembers(document.getElementById('content'))">
+        <option value="" ${nf===''?'selected':''}>All Needs</option>
+        <option value="High" ${nf==='High'?'selected':''}>High</option>
+        <option value="Med" ${nf==='Med'?'selected':''}>Med</option>
+        <option value="Low" ${nf==='Low'?'selected':''}>Low</option>
       </select>
       <div class="view-toggle">
         <button class="view-btn ${memberView==='list'?'active':''}" onclick="setMemberView('list')">
@@ -754,17 +802,17 @@ function renderMembers(c) {
     </div>
     <div class="stats-mini">
       <div class="stat-chip"><strong>${allMembers.length}</strong> total</div>
-      <div class="stat-chip"><strong>${allMembers.filter(m=>m.status==='active').length}</strong> active</div>
-      <div class="stat-chip"><strong>${allMembers.filter(m=>m.status==='at_risk').length}</strong> at risk</div>
-      <div class="stat-chip"><strong>${allMembers.filter(m=>m.status==='new').length}</strong> new</div>
+      <div class="stat-chip"><strong>${allMembers.filter(m=>(m.status||'').toLowerCase().includes('active')&&!(m.status||'').toLowerCase().includes('risk')).length}</strong> active</div>
+      <div class="stat-chip"><strong>${allMembers.filter(m=>(m.status||'').toLowerCase().includes('risk')).length}</strong> at risk</div>
+      <div class="stat-chip"><strong>${allMembers.filter(m=>!m.coach).length}</strong> unassigned</div>
     </div>
   `;
 
-  const sf = document.getElementById('status-filter').value;
-  const cf = document.getElementById('coach-filter').value;
   let display = filtered;
-  if (sf) display = display.filter(m => m.status === sf);
-  if (cf) display = display.filter(m => (m.coach||'').toLowerCase() === cf);
+  if (sf) display = display.filter(m => (m.status||'').toLowerCase().replace('-','').replace(' ','') === sf.toLowerCase().replace('-','').replace(' ',''));
+  if (cf === 'unassigned') display = display.filter(m => !m.coach);
+  else if (cf) display = display.filter(m => (m.coach||'').toLowerCase() === cf.toLowerCase());
+  if (nf) display = display.filter(m => (m.needs||'').toLowerCase().includes(nf.toLowerCase()));
 
   if (memberView === 'list') {
     const wrap = document.createElement('div');
@@ -785,21 +833,22 @@ function renderMemberTable(members) {
   if (!members.length) return `<div class="empty-state"><svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg><p>No members found</p></div>`;
   return `<table class="data-table">
     <thead><tr>
-      <th>Member</th><th>Status</th><th>Coach</th><th>Joined</th><th>Goals</th>
+      <th>Member</th><th>Status</th><th>Needs</th><th>Coach</th><th>Last Visit</th><th>Goals</th>
     </tr></thead>
     <tbody>${members.map(m => `
-      <tr onclick="openMemberPanel(${m.id})">
+      <tr onclick="openMemberPanel('${m.id}')">
         <td>
           <div class="member-name">${m.name || '—'}</div>
           <div class="member-email">${m.email || ''}</div>
         </td>
         <td>${statusBadge(m.status)}</td>
+        <td>${needsBadge(m.needs)}</td>
         <td>
           <span class="coach-dot" style="background:${getCoachColorByName(m.coach)}"></span>
           <span style="font-size:13px">${m.coach || 'Unassigned'}</span>
         </td>
-        <td style="color:var(--text-secondary);font-size:12px">${fmtDate(m.created_at)}</td>
-        <td style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--text-secondary);font-size:12px">${m.goals || '—'}</td>
+        <td style="color:var(--text-secondary);font-size:12px">${fmtDate(m.last_visit)}</td>
+        <td style="max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--text-secondary);font-size:12px">${m.goals || '—'}</td>
       </tr>`).join('')}
     </tbody>
   </table>`;
@@ -813,7 +862,7 @@ function renderMemberKanban(members) {
     { key: 'paused', label: 'Paused', color: '#9ba3b2' },
   ];
   return cols.map(col => {
-    const items = members.filter(m => m.status === col.key);
+    const items = members.filter(m => (m.status||'').toLowerCase().replace('-','').replace(' ','') === col.key.replace('_','').replace(' ',''));
     return `<div class="kanban-col">
       <div class="kanban-col-header">
         <div class="kanban-col-title" style="color:${col.color}">${col.label}</div>
@@ -821,15 +870,18 @@ function renderMemberKanban(members) {
       </div>
       <div class="kanban-cards">
         ${items.length ? items.map(m => `
-          <div class="kanban-card" onclick="openMemberPanel(${m.id})">
+          <div class="kanban-card" onclick="openMemberPanel('${m.id}')">
             <div class="kanban-card-name">${m.name || '—'}</div>
-            <div class="kanban-card-meta">${m.email || ''}</div>
+            <div class="kanban-card-meta" style="display:flex;align-items:center;gap:6px;margin-top:4px">
+              ${needsBadge(m.needs)}
+            </div>
+            <div class="kanban-card-meta" style="margin-top:4px;font-size:11px;color:var(--text-muted)">${m.goals ? m.goals.slice(0,50)+(m.goals.length>50?'…':'') : ''}</div>
             <div class="kanban-card-footer">
               <div style="display:flex;align-items:center">
                 <span class="coach-dot" style="background:${getCoachColorByName(m.coach)}"></span>
                 <span style="font-size:11px;color:var(--text-secondary)">${m.coach || 'None'}</span>
               </div>
-              <span style="font-size:10px;color:var(--text-muted)">${fmtDate(m.created_at)}</span>
+              <span style="font-size:10px;color:var(--text-muted)">↩ ${fmtDate(m.last_visit)}</span>
             </div>
           </div>`).join('') : `<div style="padding:10px;text-align:center;color:var(--text-muted);font-size:12px">Empty</div>`}
       </div>
@@ -839,7 +891,7 @@ function renderMemberKanban(members) {
 
 // ═══════════════════════════════════════════════════════════ MEMBER PANEL
 function openMemberPanel(id) {
-  const m = allMembers.find(x => x.id === id);
+  const m = allMembers.find(x => String(x.id) === String(id));
   if (!m) return;
   const panel = document.getElementById('side-panel');
   document.getElementById('panel-title').textContent = m.name || 'Edit Member';
