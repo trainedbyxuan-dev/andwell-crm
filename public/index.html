@@ -2,523 +2,390 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Andwell CRM</title>
 <style>
-  /* ─── RESET & BASE ───────────────────────────────────────── */
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-  :root {
-    --brand: #0962ff;
-    --brand-dim: #0952d4;
-    --brand-faint: rgba(9,98,255,0.08);
-    --sidebar-bg: #0f1117;
-    --sidebar-border: rgba(255,255,255,0.07);
-    --content-bg: #f5f6f8;
-    --card-bg: #ffffff;
-    --text-primary: #0f1117;
-    --text-secondary: #5a6172;
-    --text-muted: #9ba3b2;
-    --border: #e5e8ed;
-    --danger: #ef4444;
-    --success: #16a34a;
-    --warning: #d97706;
-    --info: #0891b2;
-    --alvin: #16a34a;
-    --linda: #7c3aed;
-    --xuan: #0962ff;
-    --andrew: #d97706;
-    --radius: 10px;
-    --shadow: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
-    --shadow-md: 0 4px 12px rgba(0,0,0,0.08);
-    --transition: 0.15s ease;
-  }
-  html, body { height: 100%; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; }
-  body { background: var(--content-bg); color: var(--text-primary); font-size: 14px; line-height: 1.5; }
-  button { cursor: pointer; border: none; background: none; font-family: inherit; font-size: 14px; }
-  input, select, textarea { font-family: inherit; font-size: 14px; }
-  a { text-decoration: none; color: inherit; }
+:root{
+  --brand:#0962ff;--brand-h:#0042cc;--brand-l:#e8f0ff;--brand-m:#c0d4ff;
+  --bg:#f4f5f7;--sur:#fff;--sur2:#f0f2f5;--sur3:#e8eaed;
+  --bdr:#e2e5ea;--bdr2:#c8ccd4;
+  --tx:#1a1c22;--tx2:#555870;--tx3:#8c8fa8;
+  --grn:#16a34a;--grn-b:#dcfce7;
+  --red:#dc2626;--red-b:#fee2e2;
+  --org:#d97706;--org-b:#fef3c7;
+  --pur:#7c3aed;--pur-b:#ede9fe;
+  --tel:#0891b2;--tel-b:#cffafe;
+  --alvin:#16a34a;--linda:#7c3aed;--xuan:#0962ff;--andrew:#d97706;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;background:var(--bg);color:var(--tx);height:100vh;overflow:hidden;font-size:13px}
+.app{display:flex;height:100vh}
 
-  /* ─── LAYOUT ───────────────────────────────────────────────── */
-  #app { display: flex; height: 100vh; overflow: hidden; }
-  #sidebar {
-    width: 220px; min-width: 220px; background: var(--sidebar-bg);
-    display: flex; flex-direction: column; border-right: 1px solid var(--sidebar-border);
-    position: relative; z-index: 10;
-  }
-  #main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
-  #topbar {
-    height: 56px; background: var(--card-bg); border-bottom: 1px solid var(--border);
-    display: flex; align-items: center; padding: 0 24px; gap: 12px; flex-shrink: 0;
-  }
-  #content { flex: 1; overflow-y: auto; padding: 28px 28px 40px; }
+/* SIDEBAR */
+.sidebar{width:224px;flex-shrink:0;background:var(--sur);border-right:1px solid var(--bdr);display:flex;flex-direction:column;overflow:hidden}
+.sb-logo{padding:14px 16px 12px;border-bottom:1px solid var(--bdr);display:flex;align-items:center;gap:8px}
+.sb-logo-mark{width:28px;height:28px;background:var(--brand);border-radius:6px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.sb-logo-mark svg{width:16px;height:16px;stroke:#fff;fill:none;stroke-width:2.5}
+.sb-logo-text{font-size:14px;font-weight:700;color:var(--tx);letter-spacing:-.3px}
+.sb-scroll{flex:1;overflow-y:auto;overflow-x:hidden;padding:8px}
+.sb-label{font-size:9.5px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--tx3);padding:8px 8px 3px}
+.nav{display:flex;align-items:center;gap:7px;padding:6px 9px;border-radius:6px;cursor:pointer;font-size:12.5px;color:var(--tx2);transition:all .1s;user-select:none;white-space:nowrap;overflow:hidden}
+.nav:hover{background:var(--sur2);color:var(--tx)}
+.nav.on{background:var(--brand-l);color:var(--brand);font-weight:600}
+.nav-ic{font-size:12px;width:15px;text-align:center;flex-shrink:0}
+.nav-ct{margin-left:auto;font-size:9.5px;font-weight:700;background:var(--sur3);color:var(--tx3);border-radius:8px;padding:1px 6px;flex-shrink:0}
+.nav.on .nav-ct{background:var(--brand-m);color:var(--brand-h)}
+.nav-ct.hot{background:var(--org-b);color:var(--org)}
+.sb-div{height:1px;background:var(--bdr);margin:5px 0}
+.sb-bottom{border-top:1px solid var(--bdr);padding:8px}
+.sb-user{display:flex;align-items:center;gap:8px;padding:7px 9px;border-radius:6px;cursor:pointer}
+.sb-user:hover{background:var(--sur2)}
+.sb-avatar{width:26px;height:26px;border-radius:6px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:11px;font-weight:700;flex-shrink:0}
+.sb-user-info{flex:1;min-width:0}
+.sb-user-name{font-size:12px;font-weight:600;color:var(--tx);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sb-user-role{font-size:10px;color:var(--tx3)}
+.logout-ic{color:var(--tx3);font-size:13px}
 
-  /* ─── LOGIN ───────────────────────────────────────────────── */
-  #login-screen {
-    display: none; position: fixed; inset: 0; background: var(--sidebar-bg);
-    align-items: center; justify-content: center; z-index: 100;
-  }
-  #login-screen.active { display: flex; }
-  .login-box {
-    width: 380px; background: #161b27; border: 1px solid var(--sidebar-border);
-    border-radius: 16px; padding: 40px 36px;
-  }
-  .login-logo { margin-bottom: 28px; display: flex; align-items: center; gap: 10px; }
-  .login-logo-mark {
-    width: 36px; height: 36px; background: var(--brand); border-radius: 8px;
-    display: flex; align-items: center; justify-content: center;
-  }
-  .login-logo-mark svg { width: 20px; height: 20px; }
-  .login-logo-text { color: #fff; font-size: 17px; font-weight: 700; letter-spacing: -0.3px; }
-  .login-title { color: #fff; font-size: 22px; font-weight: 700; margin-bottom: 6px; }
-  .login-sub { color: var(--text-muted); font-size: 13px; margin-bottom: 28px; }
-  .login-field { margin-bottom: 16px; }
-  .login-field label { display: block; color: rgba(255,255,255,0.5); font-size: 11px; font-weight: 600; letter-spacing: 0.6px; text-transform: uppercase; margin-bottom: 6px; }
-  .login-field input {
-    width: 100%; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1);
-    border-radius: 8px; color: #fff; padding: 10px 14px; outline: none; transition: border var(--transition);
-  }
-  .login-field input:focus { border-color: var(--brand); }
-  .login-btn {
-    width: 100%; background: var(--brand); color: #fff; padding: 11px;
-    border-radius: 8px; font-weight: 600; font-size: 14px; margin-top: 8px;
-    transition: background var(--transition);
-  }
-  .login-btn:hover { background: var(--brand-dim); }
-  .login-btn:disabled { opacity: 0.5; cursor: not-allowed; }
-  .login-error { color: #f87171; font-size: 12px; margin-top: 10px; min-height: 16px; }
+/* MAIN */
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0}
 
-  /* ─── CHANGE PASSWORD MODAL ─────────────────────────────── */
-  .modal-overlay {
-    display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5);
-    align-items: center; justify-content: center; z-index: 200;
-  }
-  .modal-overlay.active { display: flex; }
-  .modal-box {
-    background: var(--card-bg); border-radius: 14px; padding: 32px;
-    width: 380px; box-shadow: var(--shadow-md);
-  }
-  .modal-title { font-size: 17px; font-weight: 700; margin-bottom: 6px; }
-  .modal-sub { color: var(--text-secondary); font-size: 13px; margin-bottom: 24px; }
-  .modal-field { margin-bottom: 14px; }
-  .modal-field label { display: block; font-size: 12px; font-weight: 600; color: var(--text-secondary); margin-bottom: 5px; }
-  .modal-field input {
-    width: 100%; border: 1px solid var(--border); border-radius: 8px;
-    padding: 9px 12px; outline: none; transition: border var(--transition);
-  }
-  .modal-field input:focus { border-color: var(--brand); }
-  .modal-actions { display: flex; gap: 10px; margin-top: 20px; }
-  .btn { padding: 9px 18px; border-radius: 8px; font-weight: 600; font-size: 13px; transition: all var(--transition); }
-  .btn-primary { background: var(--brand); color: #fff; }
-  .btn-primary:hover { background: var(--brand-dim); }
-  .btn-ghost { background: var(--border); color: var(--text-primary); }
-  .btn-ghost:hover { background: #d9dce3; }
-  .modal-error { color: var(--danger); font-size: 12px; margin-top: 8px; }
+/* TOPBAR */
+.topbar{display:flex;align-items:center;gap:8px;padding:0 18px;height:50px;background:var(--sur);border-bottom:1px solid var(--bdr);flex-shrink:0}
+.view-title{font-size:15px;font-weight:700;color:var(--tx);flex:1}
+.search{display:flex;align-items:center;gap:7px;background:var(--sur2);border:1px solid var(--bdr);border-radius:6px;padding:6px 10px;width:200px}
+.search input{background:none;border:none;outline:none;font-family:inherit;font-size:12px;color:var(--tx);width:100%}
+.search input::placeholder{color:var(--tx3)}
+.btn{padding:6px 13px;border-radius:6px;font-size:12px;font-weight:500;cursor:pointer;border:none;font-family:inherit;transition:all .12s;white-space:nowrap}
+.btn-ghost{background:transparent;color:var(--tx2);border:1px solid var(--bdr)}
+.btn-ghost:hover{background:var(--sur2);color:var(--tx)}
+.btn-brand{background:var(--brand);color:#fff;font-weight:700}
+.btn-brand:hover{background:var(--brand-h)}
+.btn-sm{padding:4px 10px;font-size:11px}
+.btn-danger{background:transparent;color:var(--red);border:1px solid rgba(220,38,38,.3)}
+.btn-danger:hover{background:var(--red-b)}
 
-  /* ─── SIDEBAR INTERIOR ──────────────────────────────────── */
-  .sidebar-logo {
-    padding: 20px 18px 16px; display: flex; align-items: center; gap: 10px;
-    border-bottom: 1px solid var(--sidebar-border);
-  }
-  .logo-mark {
-    width: 32px; height: 32px; background: var(--brand); border-radius: 7px;
-    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
-  }
-  .logo-mark svg { width: 18px; height: 18px; }
-  .logo-text { color: #fff; font-size: 15px; font-weight: 700; letter-spacing: -0.2px; }
-  .sidebar-nav { flex: 1; padding: 12px 10px; display: flex; flex-direction: column; gap: 2px; }
-  .nav-item {
-    display: flex; align-items: center; gap: 10px; padding: 9px 10px;
-    border-radius: 8px; color: rgba(255,255,255,0.45); font-size: 13.5px; font-weight: 500;
-    transition: all var(--transition); cursor: pointer;
-  }
-  .nav-item:hover { background: rgba(255,255,255,0.07); color: rgba(255,255,255,0.8); }
-  .nav-item.active { background: var(--brand-faint); color: var(--brand); }
-  .nav-item.active svg { stroke: var(--brand); }
-  .nav-item svg { width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 2; flex-shrink: 0; }
-  .nav-section { padding: 16px 10px 6px; color: rgba(255,255,255,0.25); font-size: 10px; font-weight: 700; letter-spacing: 0.8px; text-transform: uppercase; }
-  .sidebar-footer {
-    padding: 14px 14px; border-top: 1px solid var(--sidebar-border);
-    display: flex; align-items: center; gap: 10px;
-  }
-  .user-avatar {
-    width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center;
-    justify-content: center; color: #fff; font-size: 12px; font-weight: 700; flex-shrink: 0;
-  }
-  .user-info { flex: 1; min-width: 0; }
-  .user-name { color: #fff; font-size: 12.5px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .user-role { color: rgba(255,255,255,0.3); font-size: 11px; }
-  .logout-btn { color: rgba(255,255,255,0.3); padding: 4px; border-radius: 4px; transition: color var(--transition); }
-  .logout-btn:hover { color: rgba(255,255,255,0.7); }
-  .logout-btn svg { width: 15px; height: 15px; stroke: currentColor; fill: none; stroke-width: 2; }
+/* TOOLBAR */
+.toolbar{display:flex;align-items:center;gap:6px;padding:7px 18px;background:var(--sur);border-bottom:1px solid var(--bdr);flex-shrink:0}
+.tool-seg{display:flex;background:var(--sur2);border:1px solid var(--bdr);border-radius:6px;overflow:hidden}
+.tool-seg button{background:none;border:none;padding:5px 11px;font-size:11.5px;font-weight:500;color:var(--tx2);cursor:pointer;font-family:inherit;transition:all .1s}
+.tool-seg button.on{background:var(--sur);color:var(--tx);box-shadow:0 1px 3px rgba(0,0,0,.1)}
+.tool-sep{width:1px;background:var(--bdr);height:20px;flex-shrink:0}
+.filter-chip{display:flex;align-items:center;gap:4px;padding:4px 9px;border-radius:5px;font-size:11px;font-weight:500;border:1px solid var(--bdr);background:var(--sur);color:var(--tx2);cursor:pointer;transition:all .1s}
+.filter-chip:hover{border-color:var(--brand);color:var(--brand)}
+.filter-chip.on{border-color:var(--brand);background:var(--brand-l);color:var(--brand)}
+.sort-btn{padding:4px 10px;border-radius:5px;font-size:11px;color:var(--tx2);border:1px solid var(--bdr);background:var(--sur);cursor:pointer;font-family:inherit;transition:all .1s}
 
-  /* ─── TOPBAR ───────────────────────────────────────────── */
-  .topbar-title { font-size: 16px; font-weight: 700; flex: 1; }
-  .topbar-search {
-    display: flex; align-items: center; gap: 8px; background: var(--content-bg);
-    border: 1px solid var(--border); border-radius: 8px; padding: 7px 12px; width: 240px;
-  }
-  .topbar-search svg { width: 14px; height: 14px; stroke: var(--text-muted); fill: none; stroke-width: 2; flex-shrink: 0; }
-  .topbar-search input { border: none; background: none; outline: none; color: var(--text-primary); width: 100%; font-size: 13px; }
-  .topbar-search input::placeholder { color: var(--text-muted); }
-  .topbar-sync {
-    display: flex; align-items: center; gap: 6px; padding: 7px 14px;
-    background: var(--brand-faint); color: var(--brand); border-radius: 8px;
-    font-size: 12.5px; font-weight: 600; transition: all var(--transition);
-  }
-  .topbar-sync:hover { background: rgba(9,98,255,0.15); }
-  .topbar-sync svg { width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 2; }
-  .topbar-sync.spinning svg { animation: spin 1s linear infinite; }
-  @keyframes spin { to { transform: rotate(360deg); } }
+/* STATS */
+.stats{display:flex;border-bottom:1px solid var(--bdr);background:var(--sur);flex-shrink:0;overflow-x:auto}
+.stat{display:flex;align-items:center;gap:10px;padding:9px 16px;border-right:1px solid var(--bdr);flex-shrink:0;cursor:pointer;transition:background .1s}
+.stat:hover{background:var(--sur2)}
+.stat.active-filter{background:var(--brand-l)}
+.stat-n{font-size:19px;font-weight:800;color:var(--tx)}
+.stat-l{font-size:9.5px;color:var(--tx3);text-transform:uppercase;letter-spacing:.07em}
 
-  /* ─── CARDS ───────────────────────────────────────────── */
-  .card {
-    background: var(--card-bg); border-radius: var(--radius);
-    border: 1px solid var(--border); box-shadow: var(--shadow);
-  }
+/* CONTENT */
+.content{flex:1;overflow:auto}
 
-  /* ─── DASHBOARD ───────────────────────────────────────── */
-  .kpi-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 24px; }
-  .kpi-card { padding: 20px; }
-  .kpi-label { font-size: 11px; font-weight: 600; letter-spacing: 0.5px; text-transform: uppercase; color: var(--text-muted); margin-bottom: 10px; }
-  .kpi-value { font-size: 32px; font-weight: 800; letter-spacing: -1px; line-height: 1; margin-bottom: 6px; }
-  .kpi-sub { font-size: 12px; color: var(--text-secondary); }
-  .kpi-icon { width: 36px; height: 36px; border-radius: 9px; display: flex; align-items: center; justify-content: center; margin-bottom: 14px; }
-  .kpi-icon svg { width: 18px; height: 18px; stroke: currentColor; fill: none; stroke-width: 2; }
+/* KANBAN */
+.kb-wrap{padding:14px 18px 40px;min-width:max-content}
+.kb-board{display:flex;gap:11px}
+.kb-col{width:252px;flex-shrink:0}
+.col-hd{display:flex;align-items:center;justify-content:space-between;padding:8px 11px;border-radius:7px 7px 0 0;background:var(--sur);border:1px solid var(--bdr);border-bottom:none}
+.col-hd-left{display:flex;align-items:center;gap:6px;font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--tx)}
+.col-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.col-ct{font-size:10px;font-weight:600;background:var(--sur2);color:var(--tx3);border-radius:8px;padding:1px 7px}
+.col-body{background:var(--sur2);border:1px solid var(--bdr);border-top:3px solid transparent;border-radius:0 0 7px 7px;min-height:80px;padding:7px;display:flex;flex-direction:column;gap:6px}
 
-  .dashboard-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-  .section-title { font-size: 14px; font-weight: 700; margin-bottom: 16px; }
+/* CARDS */
+.card{background:#fff;border:1px solid var(--bdr);border-radius:7px;padding:10px 11px;cursor:pointer;transition:all .12s;box-shadow:0 1px 2px rgba(0,0,0,.05);position:relative}
+.card:hover{border-color:var(--brand);box-shadow:0 3px 10px rgba(9,98,255,.1);transform:translateY(-1px)}
+.card-top{display:flex;align-items:flex-start;gap:8px}
+.av{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;flex-shrink:0;color:#fff}
+.card-info{flex:1;min-width:0}
+.card-name{font-size:13px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.card-sub{font-size:11px;color:var(--tx3);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-top:1px}
+.tags{display:flex;flex-wrap:wrap;gap:3px;margin-top:6px}
+.tag{font-size:9px;font-weight:700;padding:2px 5px;border-radius:4px;text-transform:uppercase;letter-spacing:.04em}
+.t-high{background:var(--red-b);color:var(--red)}
+.t-med{background:var(--org-b);color:var(--org)}
+.t-low{background:var(--grn-b);color:var(--grn)}
+.t-goal{background:var(--brand-l);color:var(--brand)}
+.t-mem{background:var(--sur2);color:var(--tx2);border:1px solid var(--bdr)}
+.card-foot{display:flex;align-items:center;justify-content:space-between;margin-top:7px;padding-top:6px;border-top:1px solid var(--bdr)}
+.coach-dot{width:7px;height:7px;border-radius:50%;display:inline-block;margin-right:4px}
+.coach-lbl{font-size:10px;color:var(--tx3)}
+.att-good{color:var(--grn);font-size:10.5px;font-weight:500}
+.att-warn{color:var(--org);font-size:10.5px;font-weight:500}
+.att-bad{color:var(--red);font-size:10.5px;font-weight:500}
 
-  /* ─── MEMBERS ──────────────────────────────────────────── */
-  .view-toggle { display: flex; gap: 4px; background: var(--content-bg); border: 1px solid var(--border); border-radius: 8px; padding: 3px; }
-  .view-btn { padding: 5px 10px; border-radius: 6px; color: var(--text-muted); font-size: 12px; font-weight: 600; transition: all var(--transition); }
-  .view-btn.active { background: var(--card-bg); color: var(--text-primary); box-shadow: var(--shadow); }
-  .view-btn svg { width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 2; vertical-align: middle; }
+/* TABLE */
+.tbl-wrap{overflow:auto}
+table{width:100%;border-collapse:collapse;font-size:12.5px}
+thead tr{background:var(--sur);border-bottom:2px solid var(--bdr);position:sticky;top:0;z-index:10}
+th{padding:9px 13px;text-align:left;font-size:9.5px;text-transform:uppercase;letter-spacing:.08em;color:var(--tx3);font-weight:700;cursor:pointer;white-space:nowrap;user-select:none}
+th:hover{color:var(--tx2)}
+tbody tr{border-bottom:1px solid var(--bdr);transition:background .08s;cursor:pointer}
+tbody tr:hover{background:var(--sur2)}
+td{padding:9px 13px;vertical-align:middle}
+.td-n{font-weight:600}
+.td-s{font-size:11px;color:var(--tx3);margin-top:1px}
+.pill{display:inline-block;font-size:9px;font-weight:700;padding:2px 7px;border-radius:8px;text-transform:uppercase;letter-spacing:.05em}
 
-  .filter-bar { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; flex-wrap: wrap; }
-  .filter-select {
-    border: 1px solid var(--border); border-radius: 8px; padding: 7px 10px;
-    background: var(--card-bg); color: var(--text-primary); outline: none; font-size: 13px;
-    cursor: pointer;
-  }
-  .add-btn {
-    display: flex; align-items: center; gap: 6px; padding: 8px 16px;
-    background: var(--brand); color: #fff; border-radius: 8px; font-weight: 600; font-size: 13px;
-    transition: background var(--transition); margin-left: auto;
-  }
-  .add-btn:hover { background: var(--brand-dim); }
-  .add-btn svg { width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 2.5; }
+/* DETAIL PANEL */
+.detail-overlay{position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:200;display:flex;align-items:center;justify-content:center;padding:20px;animation:fi .15s}
+@keyframes fi{from{opacity:0}to{opacity:1}}
+.detail-modal{background:#fff;border:1px solid var(--bdr);border-radius:10px;width:100%;max-width:540px;max-height:90vh;overflow-y:auto;animation:su .17s;box-shadow:0 20px 60px rgba(0,0,0,.18)}
+@keyframes su{from{transform:translateY(14px);opacity:0}to{transform:none;opacity:1}}
+.mhd{display:flex;align-items:center;justify-content:space-between;padding:15px 19px 13px;border-bottom:1px solid var(--bdr)}
+.mhd-title{font-size:15px;font-weight:700}
+.mclose{background:none;border:none;color:var(--tx3);font-size:19px;cursor:pointer;padding:2px 5px;border-radius:4px;line-height:1}
+.mclose:hover{color:var(--tx);background:var(--sur2)}
+.mbody{padding:16px 19px 20px}
+.d-grid{display:grid;grid-template-columns:1fr 1fr;gap:11px;margin-bottom:13px}
+.di label{font-size:9.5px;text-transform:uppercase;letter-spacing:.08em;color:var(--tx3);display:block;margin-bottom:3px;font-weight:700}
+.di span{font-size:13px;color:var(--tx);font-weight:500}
+.sec-hd{font-size:9.5px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--tx3);margin:13px 0 7px}
+.frow{display:grid;grid-template-columns:1fr 1fr;gap:11px}
+.fg{display:flex;flex-direction:column;gap:4px;margin-bottom:11px}
+.fg label{font-size:9.5px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--tx2)}
+.fi,.fs,.fta{background:var(--sur2);border:1px solid var(--bdr);border-radius:6px;padding:7px 10px;color:var(--tx);font-size:12.5px;font-family:inherit;outline:none;transition:border-color .12s;width:100%}
+.fi:focus,.fs:focus,.fta:focus{border-color:var(--brand);background:#fff}
+.fta{resize:vertical;min-height:65px}
+.mfoot{display:flex;gap:7px;justify-content:flex-end;padding-top:13px;border-top:1px solid var(--bdr);margin-top:13px}
+.save-ind{font-size:10px;color:var(--tx3);margin-right:auto;align-self:center;min-height:14px}
+.save-ind.saving{color:var(--brand)}
+.save-ind.saved{color:var(--grn)}
 
-  /* TABLE */
-  .data-table { width: 100%; border-collapse: collapse; }
-  .data-table th {
-    text-align: left; font-size: 11px; font-weight: 700; letter-spacing: 0.5px;
-    text-transform: uppercase; color: var(--text-muted); padding: 0 16px 12px;
-    border-bottom: 1px solid var(--border);
-  }
-  .data-table td { padding: 13px 16px; border-bottom: 1px solid var(--border); vertical-align: middle; }
-  .data-table tr:last-child td { border-bottom: none; }
-  .data-table tbody tr { transition: background var(--transition); cursor: pointer; }
-  .data-table tbody tr:hover { background: #f9fafb; }
-  .member-name { font-weight: 600; font-size: 13.5px; }
-  .member-email { color: var(--text-secondary); font-size: 12px; }
-  .badge {
-    display: inline-flex; align-items: center; padding: 3px 9px; border-radius: 20px;
-    font-size: 11px; font-weight: 600;
-  }
-  .badge-active { background: rgba(22,163,74,0.1); color: #16a34a; }
-  .badge-atrisk { background: rgba(239,68,68,0.1); color: #ef4444; }
-  .badge-new { background: rgba(9,98,255,0.1); color: var(--brand); }
-  .badge-paused { background: rgba(156,163,175,0.15); color: #6b7280; }
-  .coach-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; margin-right: 6px; }
+/* FILTER MODAL */
+.filter-overlay{position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:300;display:flex;align-items:center;justify-content:center;padding:20px}
+.filter-modal{background:#fff;border-radius:10px;width:100%;max-width:500px;padding:0;box-shadow:0 20px 60px rgba(0,0,0,.18)}
+.tp{display:flex;flex-wrap:wrap;gap:4px}
+.tp-o{padding:3px 9px;border-radius:5px;font-size:10px;font-weight:600;cursor:pointer;border:1px solid var(--bdr);background:var(--sur2);color:var(--tx2);transition:all .1s;text-transform:uppercase;letter-spacing:.05em;user-select:none}
+.tp-o.sel{border-color:var(--brand);color:var(--brand);background:var(--brand-l)}
 
-  /* KANBAN */
-  .kanban-board { display: flex; gap: 14px; overflow-x: auto; padding-bottom: 8px; }
-  .kanban-col {
-    min-width: 240px; max-width: 240px; background: var(--content-bg);
-    border-radius: var(--radius); border: 1px solid var(--border); flex-shrink: 0;
-  }
-  .kanban-col-header {
-    padding: 12px 14px; border-bottom: 1px solid var(--border);
-    display: flex; align-items: center; justify-content: space-between;
-  }
-  .kanban-col-title { font-size: 12px; font-weight: 700; color: var(--text-primary); }
-  .kanban-count {
-    background: var(--card-bg); border: 1px solid var(--border); border-radius: 20px;
-    font-size: 11px; font-weight: 700; color: var(--text-secondary); padding: 1px 7px;
-  }
-  .kanban-cards { padding: 10px; display: flex; flex-direction: column; gap: 8px; min-height: 60px; }
-  .kanban-card {
-    background: var(--card-bg); border: 1px solid var(--border); border-radius: 8px;
-    padding: 12px; cursor: pointer; transition: all var(--transition);
-    box-shadow: var(--shadow);
-  }
-  .kanban-card:hover { box-shadow: var(--shadow-md); transform: translateY(-1px); }
-  .kanban-card-name { font-weight: 600; font-size: 13px; margin-bottom: 4px; }
-  .kanban-card-meta { font-size: 11px; color: var(--text-secondary); }
-  .kanban-card-footer { display: flex; align-items: center; justify-content: space-between; margin-top: 10px; }
+/* LOGIN */
+.login-page{display:flex;align-items:center;justify-content:center;height:100vh;background:var(--bg)}
+.login-box{background:var(--sur);border:1px solid var(--bdr);border-radius:12px;padding:36px;width:360px;box-shadow:0 4px 24px rgba(0,0,0,.08)}
+.login-logo{display:flex;align-items:center;gap:10px;margin-bottom:24px}
+.login-title{font-size:20px;font-weight:700;margin-bottom:4px}
+.login-sub{font-size:12px;color:var(--tx3);margin-bottom:22px}
+.login-field{margin-bottom:14px}
+.login-field label{display:block;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--tx2);margin-bottom:5px}
+.login-btn{width:100%;background:var(--brand);color:#fff;padding:10px;border-radius:7px;font-weight:700;font-size:13px;cursor:pointer;border:none;font-family:inherit;transition:background .1s;margin-top:6px}
+.login-btn:hover{background:var(--brand-h)}
+.login-btn:disabled{opacity:.5;cursor:not-allowed}
+.login-err{color:var(--red);font-size:11px;margin-top:8px;min-height:14px}
 
-  /* ─── SIDEBAR PANEL ───────────────────────────────────── */
-  .side-panel {
-    width: 380px; background: var(--card-bg); border-left: 1px solid var(--border);
-    height: 100%; overflow-y: auto; flex-shrink: 0; display: none;
-    flex-direction: column;
-  }
-  .side-panel.open { display: flex; }
-  .panel-header {
-    padding: 18px 20px; border-bottom: 1px solid var(--border);
-    display: flex; align-items: center; gap: 12px; flex-shrink: 0;
-  }
-  .panel-title { font-size: 15px; font-weight: 700; flex: 1; }
-  .panel-close { color: var(--text-muted); padding: 4px; border-radius: 5px; transition: all var(--transition); }
-  .panel-close:hover { background: var(--border); color: var(--text-primary); }
-  .panel-close svg { width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 2; }
-  .panel-body { padding: 20px; flex: 1; }
-  .panel-field { margin-bottom: 18px; }
-  .panel-field label { display: block; font-size: 11px; font-weight: 600; letter-spacing: 0.4px; text-transform: uppercase; color: var(--text-muted); margin-bottom: 6px; }
-  .panel-field input, .panel-field select, .panel-field textarea {
-    width: 100%; border: 1px solid var(--border); border-radius: 8px; padding: 9px 12px;
-    outline: none; transition: border var(--transition); background: var(--card-bg); color: var(--text-primary);
-  }
-  .panel-field input:focus, .panel-field select:focus, .panel-field textarea:focus { border-color: var(--brand); }
-  .panel-field textarea { min-height: 80px; resize: vertical; }
-  .panel-field input:read-only { background: #f9fafb; color: var(--text-secondary); cursor: default; }
-  .auto-save-indicator { font-size: 11px; color: var(--text-muted); display: flex; align-items: center; gap: 5px; margin-top: 4px; height: 16px; }
-  .auto-save-indicator.saved { color: var(--success); }
-  .auto-save-indicator.saving { color: var(--brand); }
-  .panel-section { font-size: 11px; font-weight: 700; letter-spacing: 0.5px; text-transform: uppercase; color: var(--text-muted); margin: 20px 0 12px; padding-top: 20px; border-top: 1px solid var(--border); }
+/* CHANGE PW MODAL */
+.pw-overlay{position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:500;display:flex;align-items:center;justify-content:center}
+.pw-modal{background:#fff;border-radius:10px;padding:28px;width:380px;box-shadow:0 20px 60px rgba(0,0,0,.18)}
 
-  /* ─── ACTIVITY ─────────────────────────────────────────── */
-  .activity-list { display: flex; flex-direction: column; }
-  .activity-item {
-    display: flex; align-items: flex-start; gap: 12px; padding: 14px 20px;
-    border-bottom: 1px solid var(--border);
-  }
-  .activity-item:last-child { border-bottom: none; }
-  .activity-avatar {
-    width: 30px; height: 30px; border-radius: 7px; display: flex; align-items: center;
-    justify-content: center; color: #fff; font-size: 11px; font-weight: 700; flex-shrink: 0;
-  }
-  .activity-body { flex: 1; }
-  .activity-text { font-size: 13px; line-height: 1.5; }
-  .activity-text strong { font-weight: 600; }
-  .activity-time { font-size: 11px; color: var(--text-muted); margin-top: 3px; }
+/* DASHBOARD */
+.dash-kpi{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;padding:16px 18px;border-bottom:1px solid var(--bdr)}
+.kpi{background:var(--sur);border:1px solid var(--bdr);border-radius:8px;padding:14px 16px;cursor:pointer;transition:border-color .1s}
+.kpi:hover{border-color:var(--bdr2)}
+.kpi-val{font-size:28px;font-weight:800;letter-spacing:-1px}
+.kpi-lbl{font-size:9.5px;text-transform:uppercase;letter-spacing:.07em;color:var(--tx3);margin-top:2px}
+.kpi-sub{font-size:11px;color:var(--tx2);margin-top:4px}
+.dash-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;padding:16px 18px}
+.dash-card{background:var(--sur);border:1px solid var(--bdr);border-radius:8px;padding:16px}
+.dash-card-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--tx3);margin-bottom:12px}
+.coach-bar{margin-bottom:10px}
+.coach-bar-top{display:flex;justify-content:space-between;margin-bottom:4px}
+.coach-bar-name{font-size:12.5px;font-weight:600}
+.coach-bar-ct{font-size:11px;color:var(--tx3)}
+.coach-bar-track{height:5px;background:var(--sur2);border-radius:20px;overflow:hidden}
+.coach-bar-fill{height:100%;border-radius:20px;transition:width .5s}
+.recent-row{display:flex;align-items:center;gap:9px;padding:7px 0;border-bottom:1px solid var(--bdr);cursor:pointer}
+.recent-row:last-child{border-bottom:none}
+.recent-row:hover .card-name{color:var(--brand)}
 
-  /* ─── LEADS ────────────────────────────────────────────── */
-  .leads-kanban .kanban-col { min-width: 220px; max-width: 220px; }
+/* TOAST */
+.toast{position:fixed;bottom:20px;right:20px;background:var(--tx);color:#fff;padding:10px 16px;border-radius:8px;font-size:12.5px;font-weight:500;box-shadow:0 4px 16px rgba(0,0,0,.2);z-index:999;animation:slideIn .2s ease}
+@keyframes slideIn{from{transform:translateX(20px);opacity:0}to{transform:translateX(0);opacity:1}}
+.toast.success{background:var(--grn)}
+.toast.error{background:var(--red)}
+.toast.warn{background:var(--org)}
+.hidden{display:none!important}
 
-  /* ─── TOASTS ───────────────────────────────────────────── */
-  #toast-container { position: fixed; bottom: 24px; right: 24px; z-index: 999; display: flex; flex-direction: column; gap: 8px; }
-  .toast {
-    background: var(--sidebar-bg); color: #fff; padding: 12px 18px; border-radius: 10px;
-    font-size: 13px; font-weight: 500; box-shadow: 0 4px 16px rgba(0,0,0,0.2);
-    animation: slideIn 0.2s ease; display: flex; align-items: center; gap: 8px;
-  }
-  .toast.success { border-left: 3px solid var(--success); }
-  .toast.error { border-left: 3px solid var(--danger); }
-  @keyframes slideIn { from { transform: translateX(20px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
-
-  /* ─── EMPTY STATE ──────────────────────────────────────── */
-  .empty-state { text-align: center; padding: 60px 20px; color: var(--text-muted); }
-  .empty-state svg { width: 40px; height: 40px; stroke: currentColor; fill: none; stroke-width: 1.5; margin-bottom: 12px; opacity: 0.4; }
-  .empty-state p { font-size: 13px; }
-
-  /* ─── LOADING ──────────────────────────────────────────── */
-  .loading { display: flex; align-items: center; justify-content: center; gap: 10px; padding: 40px; color: var(--text-muted); font-size: 13px; }
-  .spinner { width: 18px; height: 18px; border: 2px solid var(--border); border-top-color: var(--brand); border-radius: 50%; animation: spin 0.8s linear infinite; }
-
-  /* ─── PERMISSION READONLY ─────────────────────────────── */
-  .readonly-notice {
-    display: inline-flex; align-items: center; gap: 6px; background: rgba(217,119,6,0.1);
-    color: var(--warning); font-size: 11.5px; font-weight: 600; padding: 5px 10px; border-radius: 6px;
-  }
-
-  /* Scrollbar */
-  ::-webkit-scrollbar { width: 5px; height: 5px; }
-  ::-webkit-scrollbar-track { background: transparent; }
-  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 20px; }
-
-  /* ─── STATS ROW ─────────────────────────────────────── */
-  .stats-mini { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 10px; }
-  .stat-chip { background: var(--content-bg); border: 1px solid var(--border); border-radius: 6px; padding: 4px 10px; font-size: 11px; color: var(--text-secondary); }
-  .stat-chip strong { color: var(--text-primary); font-weight: 700; }
+/* READONLY BADGE */
+.ro-badge{display:flex;align-items:center;gap:5px;font-size:10.5px;font-weight:600;color:var(--org);background:var(--org-b);border:1px solid rgba(217,119,6,.2);border-radius:5px;padding:3px 8px}
 </style>
 </head>
 <body>
 
-<!-- ═══════════════════════════════════════════════════════ LOGIN -->
-<div id="login-screen" class="active">
+<!-- LOGIN -->
+<div id="loginPage" class="login-page">
   <div class="login-box">
     <div class="login-logo">
-      <div class="login-logo-mark">
-        <svg viewBox="0 0 20 20" fill="none" stroke="white" stroke-width="2.5"><path d="M3 10 L10 3 L17 10 L17 17 L3 17 Z"/></svg>
-      </div>
-      <div class="login-logo-text">Andwell CRM</div>
+      <div class="sb-logo-mark"><svg viewBox="0 0 20 20"><path d="M3 10L10 3L17 10V17H3Z"/></svg></div>
+      <span style="font-size:16px;font-weight:700">Andwell CRM</span>
     </div>
     <div class="login-title">Welcome back</div>
     <div class="login-sub">Sign in to your account to continue</div>
-    <div class="login-field">
-      <label>Email</label>
-      <input type="email" id="login-email" placeholder="you@andwellfitness.ca" autocomplete="email">
-    </div>
-    <div class="login-field">
-      <label>Password</label>
-      <input type="password" id="login-password" placeholder="••••••••" autocomplete="current-password">
-    </div>
-    <button class="login-btn" id="login-btn" onclick="doLogin()">Sign in</button>
-    <div class="login-error" id="login-error"></div>
+    <div class="login-field"><label>Email</label><input class="fi" type="email" id="loginEmail" placeholder="you@andwellfitness.ca" autocomplete="email"></div>
+    <div class="login-field"><label>Password</label><input class="fi" type="password" id="loginPw" placeholder="••••••••" autocomplete="current-password"></div>
+    <button class="login-btn" id="loginBtn" onclick="doLogin()">Sign in</button>
+    <div class="login-err" id="loginErr"></div>
   </div>
 </div>
 
-<!-- ═══════════════════════════════════════════════════════ CHANGE PASSWORD MODAL -->
-<div class="modal-overlay" id="change-pw-modal">
-  <div class="modal-box">
-    <div class="modal-title">Change Password</div>
-    <div class="modal-sub" id="change-pw-reason">Update your account password.</div>
-    <div class="modal-field">
-      <label>Current Password</label>
-      <input type="password" id="cp-current" placeholder="••••••••">
-    </div>
-    <div class="modal-field">
-      <label>New Password</label>
-      <input type="password" id="cp-new" placeholder="Min. 8 characters">
-    </div>
-    <div class="modal-field">
-      <label>Confirm New Password</label>
-      <input type="password" id="cp-confirm" placeholder="Repeat new password">
-    </div>
-    <div class="modal-error" id="cp-error"></div>
-    <div class="modal-actions">
-      <button class="btn btn-primary" onclick="doChangePassword()">Update Password</button>
-      <button class="btn btn-ghost" id="cp-cancel-btn" onclick="closeChangePw()">Cancel</button>
+<!-- CHANGE PASSWORD MODAL -->
+<div id="pwOverlay" class="pw-overlay hidden">
+  <div class="pw-modal">
+    <div class="mhd"><div class="mhd-title">Change Password</div><button class="mclose" id="pwClose" onclick="closePw()">×</button></div>
+    <div class="mbody">
+      <div class="fg"><label>Current Password</label><input class="fi" type="password" id="pwCurrent"></div>
+      <div class="fg"><label>New Password</label><input class="fi" type="password" id="pwNew" placeholder="Min 8 characters"></div>
+      <div class="fg"><label>Confirm New Password</label><input class="fi" type="password" id="pwConfirm"></div>
+      <div class="login-err" id="pwErr"></div>
+      <div class="mfoot">
+        <button class="btn btn-brand" onclick="doChangePw()">Update Password</button>
+        <button class="btn btn-ghost" id="pwCancelBtn" onclick="closePw()">Cancel</button>
+      </div>
     </div>
   </div>
 </div>
 
-<!-- ═══════════════════════════════════════════════════════ MAIN APP -->
-<div id="app" style="display:none">
+<!-- DETAIL / EDIT PANEL -->
+<div id="detailOverlay" class="detail-overlay hidden" onclick="if(event.target===this)closeDetail()">
+  <div class="detail-modal">
+    <div class="mhd">
+      <div><div class="mhd-title" id="detailTitle">Member</div><div style="font-size:11px;color:var(--tx3);margin-top:2px" id="detailMeta"></div></div>
+      <div style="display:flex;gap:6px;align-items:center">
+        <div id="detailSaveInd" class="save-ind"></div>
+        <button class="mclose" onclick="closeDetail()">×</button>
+      </div>
+    </div>
+    <div class="mbody" id="detailBody"></div>
+  </div>
+</div>
+
+<!-- FILTER MODAL -->
+<div id="filterOverlay" class="filter-overlay hidden" onclick="if(event.target===this)closeFilter()">
+  <div class="filter-modal">
+    <div class="mhd"><div class="mhd-title">Filter Members</div><button class="mclose" onclick="closeFilter()">×</button></div>
+    <div class="mbody" id="filterBody"></div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div id="toastEl" class="toast hidden"></div>
+
+<!-- APP -->
+<div id="appShell" class="app hidden">
 
   <!-- SIDEBAR -->
-  <div id="sidebar">
-    <div class="sidebar-logo">
-      <div class="logo-mark">
-        <svg viewBox="0 0 20 20" fill="none" stroke="white" stroke-width="2.5"><path d="M3 10 L10 3 L17 10 L17 17 L3 17 Z"/></svg>
-      </div>
-      <div class="logo-text">Andwell CRM</div>
+  <div class="sidebar">
+    <div class="sb-logo">
+      <div class="sb-logo-mark"><svg viewBox="0 0 20 20"><path d="M3 10L10 3L17 10V17H3Z"/></svg></div>
+      <span class="sb-logo-text">Andwell CRM</span>
     </div>
-    <nav class="sidebar-nav">
-      <div class="nav-section">Main</div>
-      <div class="nav-item active" onclick="showView('dashboard')" data-view="dashboard">
-        <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
-        Dashboard
+    <div class="sb-scroll">
+      <div class="sb-label">Overview</div>
+      <div class="nav on" data-view="dashboard" onclick="switchView('dashboard',this)"><span class="nav-ic">◈</span>Dashboard</div>
+      <div class="sb-label" style="margin-top:8px">Boards</div>
+      <div class="nav" data-view="leads" onclick="switchView('leads',this)"><span class="nav-ic">🎯</span>Leads Pipeline<span class="nav-ct" id="ct-leads">0</span></div>
+      <div class="nav" data-view="members" onclick="switchView('members',this)"><span class="nav-ic">⬡</span>Members Board<span class="nav-ct" id="ct-members">0</span></div>
+      <div class="sb-div"></div>
+      <div class="sb-label">Members</div>
+      <div class="nav" onclick="switchView('members',document.querySelector('[data-view=members]'));setFilter('all')"><span class="nav-ic">👥</span>All Members<span class="nav-ct" id="ct-all">0</span></div>
+      <div class="nav" onclick="switchView('members',document.querySelector('[data-view=members]'));setFilter('needscontact')"><span class="nav-ic">🔔</span>Needs Contact<span class="nav-ct hot" id="ct-needscontact">0</span></div>
+      <div class="sb-div"></div>
+      <div class="sb-label">By Coach</div>
+      <div class="nav" onclick="switchView('members',document.querySelector('[data-view=members]'));setFilter('coach-Xuan')"><span class="nav-ic">●</span><span style="color:var(--xuan)">Xuan</span><span class="nav-ct" id="ct-coach-Xuan">0</span></div>
+      <div class="nav" onclick="switchView('members',document.querySelector('[data-view=members]'));setFilter('coach-Linda')"><span class="nav-ic">●</span><span style="color:var(--linda)">Linda</span><span class="nav-ct" id="ct-coach-Linda">0</span></div>
+      <div class="nav" onclick="switchView('members',document.querySelector('[data-view=members]'));setFilter('coach-Alvin')"><span class="nav-ic">●</span><span style="color:var(--alvin)">Alvin</span><span class="nav-ct" id="ct-coach-Alvin">0</span></div>
+      <div class="nav" onclick="switchView('members',document.querySelector('[data-view=members]'));setFilter('coach-Andrew')"><span class="nav-ic">●</span><span style="color:var(--andrew)">Andrew</span><span class="nav-ct" id="ct-coach-Andrew">0</span></div>
+      <div class="sb-div"></div>
+      <div class="sb-label">By Needs</div>
+      <div class="nav" onclick="switchView('members',document.querySelector('[data-view=members]'));setFilter('needs-High')"><span class="nav-ic" style="color:var(--red)">■</span>High<span class="nav-ct hot" id="ct-needs-High">0</span></div>
+      <div class="nav" onclick="switchView('members',document.querySelector('[data-view=members]'));setFilter('needs-Med')"><span class="nav-ic" style="color:var(--org)">■</span>Med<span class="nav-ct" id="ct-needs-Med">0</span></div>
+      <div class="nav" onclick="switchView('members',document.querySelector('[data-view=members]'));setFilter('needs-Low')"><span class="nav-ic" style="color:var(--grn)">■</span>Low<span class="nav-ct" id="ct-needs-Low">0</span></div>
+      <div class="sb-div"></div>
+      <div class="sb-label">System</div>
+      <div class="nav" onclick="switchView('activity',this)" data-view="activity"><span class="nav-ic">🕐</span>Activity Log</div>
+    </div>
+    <div class="sb-bottom">
+      <div id="roBadgeWrap" class="hidden" style="padding:4px 6px 6px"><div class="ro-badge">👁 View Only Mode</div></div>
+      <div class="sb-user" onclick="showChangePw(false)">
+        <div class="sb-avatar" id="sbAvatar">X</div>
+        <div class="sb-user-info">
+          <div class="sb-user-name" id="sbName">Xuan</div>
+          <div class="sb-user-role" id="sbRole">Coach</div>
+        </div>
+        <span class="logout-ic" title="Change password">⚙</span>
       </div>
-      <div class="nav-item" onclick="showView('members')" data-view="members">
-        <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-        Members
-      </div>
-      <div style="padding:0 10px 4px">
-        <div style="font-size:10px;font-weight:700;letter-spacing:0.6px;text-transform:uppercase;color:rgba(255,255,255,0.2);padding:6px 0 4px">By Coach</div>
-        <div class="nav-item" style="padding:6px 10px" onclick="filterByCoach('Xuan')"><span style="width:8px;height:8px;border-radius:50%;background:#0962ff;display:inline-block;flex-shrink:0"></span><span style="flex:1;font-size:12.5px">Xuan</span><span id="sidebar-count-xuan" style="font-size:11px;color:rgba(255,255,255,0.25)">—</span></div>
-        <div class="nav-item" style="padding:6px 10px" onclick="filterByCoach('Linda')"><span style="width:8px;height:8px;border-radius:50%;background:#7c3aed;display:inline-block;flex-shrink:0"></span><span style="flex:1;font-size:12.5px">Linda</span><span id="sidebar-count-linda" style="font-size:11px;color:rgba(255,255,255,0.25)">—</span></div>
-        <div class="nav-item" style="padding:6px 10px" onclick="filterByCoach('Alvin')"><span style="width:8px;height:8px;border-radius:50%;background:#16a34a;display:inline-block;flex-shrink:0"></span><span style="flex:1;font-size:12.5px">Alvin</span><span id="sidebar-count-alvin" style="font-size:11px;color:rgba(255,255,255,0.25)">—</span></div>
-        <div class="nav-item" style="padding:6px 10px" onclick="filterByCoach('Andrew')"><span style="width:8px;height:8px;border-radius:50%;background:#d97706;display:inline-block;flex-shrink:0"></span><span style="flex:1;font-size:12.5px">Andrew</span><span id="sidebar-count-andrew" style="font-size:11px;color:rgba(255,255,255,0.25)">—</span></div>
-        <div class="nav-item" style="padding:6px 10px" onclick="filterByCoach('unassigned')"><span style="width:8px;height:8px;border-radius:50%;background:#6b7280;display:inline-block;flex-shrink:0"></span><span style="flex:1;font-size:12.5px">Unassigned</span><span id="sidebar-count-unassigned" style="font-size:11px;color:rgba(255,255,255,0.25)">—</span></div>
-      </div>
-      <div class="nav-item" onclick="showView('leads')" data-view="leads">
-        <svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
-        Leads
-      </div>
-      <div class="nav-section">System</div>
-      <div class="nav-item" onclick="showView('activity')" data-view="activity">
-        <svg viewBox="0 0 24 24"><path d="M12 8v4l3 3"/><circle cx="12" cy="12" r="9"/></svg>
-        Activity Log
-      </div>
-      <div class="nav-item" onclick="showChangePassword(false)" id="settings-nav">
-        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
-        Change Password
-      </div>
-    </nav>
-    <div class="sidebar-footer">
-      <div class="user-avatar" id="sidebar-avatar">X</div>
-      <div class="user-info">
-        <div class="user-name" id="sidebar-name">Xuan</div>
-        <div class="user-role" id="sidebar-role">Coach</div>
-      </div>
-      <button class="logout-btn" onclick="logout()" title="Log out">
-        <svg viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
-      </button>
+      <div class="nav" onclick="logout()" style="color:var(--tx3);margin-top:2px"><span class="nav-ic">↩</span>Sign Out</div>
     </div>
   </div>
 
   <!-- MAIN -->
-  <div id="main">
-    <div id="topbar">
-      <div class="topbar-title" id="topbar-title">Dashboard</div>
-      <div class="topbar-search">
-        <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-        <input type="text" id="global-search" placeholder="Search members or leads…" oninput="handleSearch(this.value)">
-      </div>
-      <button class="topbar-sync" id="sync-btn" onclick="triggerSync()">
-        <svg viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
-        Sync Momence
-      </button>
-      <div id="readonly-badge" style="display:none">
-        <div class="readonly-notice">👁 View Only</div>
-      </div>
+  <div class="main">
+    <div class="topbar">
+      <div class="view-title" id="viewTitle">Dashboard</div>
+      <div class="search"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="color:var(--tx3);flex-shrink:0"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg><input id="searchInput" placeholder="Search…" oninput="renderMain()"></div>
+      <div id="roBadgeTop" class="ro-badge hidden">👁 View Only</div>
+      <button id="syncBtn" class="btn btn-ghost btn-sm" onclick="triggerSync()">↺ Sync Momence</button>
+      <button class="btn btn-brand btn-sm" id="addBtn" onclick="openAdd()">+ Add</button>
     </div>
-
-    <div style="display:flex; flex:1; overflow:hidden">
-      <div id="content">
-        <!-- Views injected here -->
+    <div class="toolbar hidden" id="mainToolbar">
+      <div class="tool-seg">
+        <button id="lb-kanban" class="on" onclick="setLayout('kanban',this)">▦ Board</button>
+        <button id="lb-table" onclick="setLayout('table',this)">≡ List</button>
       </div>
-      <div class="side-panel" id="side-panel">
-        <div class="panel-header">
-          <div class="panel-title" id="panel-title">Edit Member</div>
-          <button class="panel-close" onclick="closePanel()">
-            <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-          </button>
-        </div>
-        <div class="panel-body" id="panel-body"></div>
-      </div>
+      <div class="tool-sep"></div>
+      <div id="activeFiltersRow" style="display:flex;gap:5px;flex-wrap:wrap;align-items:center"></div>
+      <button class="filter-chip" onclick="openFilter()">⊕ Filter</button>
+      <div class="tool-sep"></div>
+      <select class="sort-btn" id="sortSel" onchange="renderMain()">
+        <option value="name">Sort: Name</option>
+        <option value="status">Sort: Status</option>
+        <option value="coach">Sort: Coach</option>
+        <option value="last_visit">Sort: Last Visit</option>
+        <option value="needs">Sort: Needs</option>
+      </select>
     </div>
+    <div class="stats hidden" id="statsRow"></div>
+    <div class="content" id="mainContent"></div>
   </div>
 </div>
 
-<!-- TOAST CONTAINER -->
-<div id="toast-container"></div>
-
 <script>
-// ═══════════════════════════════════════════════════════════ CONFIG
+// ═══════════════════════════════════════════════ CONFIG
 const API = 'https://andwell-crm-production.up.railway.app';
-const COACH_COLORS = { xuan: '#0962ff', linda: '#7c3aed', alvin: '#16a34a', andrew: '#d97706' };
+const COACHES = ['Xuan','Linda','Alvin','Andrew'];
+const COACH_COLORS = {Xuan:'#0962ff',Linda:'#7c3aed',Alvin:'#16a34a',Andrew:'#d97706'};
+const AV_COLORS = ['#0962ff','#16a34a','#7c3aed','#d97706','#0891b2','#dc2626'];
 
-// ═══════════════════════════════════════════════════════════ STATE
-let token = null;
-let currentUser = null;
+// ═══════════════════════════════════════════════ STATE
+let token = null, currentUser = null;
+let members = [], leads = [];
 let currentView = 'dashboard';
-let allMembers = [];
-let allLeads = [];
-let memberView = 'list';
+let currentLayout = 'kanban'; // for members/leads
+let currentFilter = 'all'; // sidebar filter
+let activeFilters = {}; // {coach:[], needs:[], status:[]}
+let sortKey = 'name', sortDir = 1;
 let saveTimers = {};
-let searchQuery = '';
+let editingId = null, editingType = null;
 
-// ═══════════════════════════════════════════════════════════ AUTH
+// ═══════════════════════════════════════════════ AUTH
 async function doLogin() {
-  const email = document.getElementById('login-email').value.trim();
-  const pw = document.getElementById('login-password').value;
-  const btn = document.getElementById('login-btn');
-  const err = document.getElementById('login-error');
+  const email = document.getElementById('loginEmail').value.trim();
+  const pw = document.getElementById('loginPw').value;
+  const err = document.getElementById('loginErr');
+  const btn = document.getElementById('loginBtn');
   err.textContent = '';
   if (!email || !pw) { err.textContent = 'Please enter email and password.'; return; }
   btn.disabled = true; btn.textContent = 'Signing in…';
   try {
     const res = await fetch(`${API}/api/login`, {
       method: 'POST', headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({ email, password: pw })
+      body: JSON.stringify({email, password: pw})
     });
     const data = await res.json();
     if (!res.ok) throw new Error(data.error || 'Login failed');
-    token = data.token;
-    currentUser = data.user;
+    token = data.token; currentUser = data.user;
     localStorage.setItem('andwell_token', token);
     localStorage.setItem('andwell_user', JSON.stringify(currentUser));
     enterApp();
@@ -532,800 +399,678 @@ function logout() {
   token = null; currentUser = null;
   localStorage.removeItem('andwell_token');
   localStorage.removeItem('andwell_user');
-  document.getElementById('app').style.display = 'none';
-  document.getElementById('login-screen').classList.add('active');
-  document.getElementById('login-password').value = '';
-  document.getElementById('login-error').textContent = '';
+  document.getElementById('appShell').classList.add('hidden');
+  document.getElementById('loginPage').style.display = 'flex';
+  document.getElementById('loginPw').value = '';
 }
 
 async function tryAutoLogin() {
   const t = localStorage.getItem('andwell_token');
   const u = localStorage.getItem('andwell_user');
-  if (t && u) {
-    token = t;
-    currentUser = JSON.parse(u);
-    enterApp();
-  } else {
-    document.getElementById('login-screen').classList.add('active');
-  }
+  if (t && u) { token = t; currentUser = JSON.parse(u); enterApp(); }
 }
 
-function enterApp() {
-  document.getElementById('login-screen').classList.remove('active');
-  document.getElementById('app').style.display = 'flex';
-  // Populate sidebar user info
+async function enterApp() {
+  document.getElementById('loginPage').style.display = 'none';
+  document.getElementById('appShell').classList.remove('hidden');
   const name = currentUser.name || currentUser.email.split('@')[0];
-  document.getElementById('sidebar-name').textContent = name;
-  document.getElementById('sidebar-role').textContent = currentUser.role === 'readonly' ? 'View Only' : 'Coach';
-  const avatar = document.getElementById('sidebar-avatar');
-  avatar.textContent = name[0].toUpperCase();
-  const color = getCoachColor(currentUser.email);
-  avatar.style.background = color;
+  document.getElementById('sbName').textContent = name;
+  document.getElementById('sbRole').textContent = currentUser.role === 'readonly' ? 'View Only' : 'Coach';
+  const av = document.getElementById('sbAvatar');
+  av.textContent = name[0].toUpperCase();
+  av.style.background = getCoachColor(currentUser.email);
   if (currentUser.role === 'readonly') {
-    document.getElementById('readonly-badge').style.display = 'block';
-    document.getElementById('sync-btn').style.display = 'none';
+    document.getElementById('roBadgeWrap').classList.remove('hidden');
+    document.getElementById('roBadgeTop').classList.remove('hidden');
+    document.getElementById('syncBtn').classList.add('hidden');
+    document.getElementById('addBtn').classList.add('hidden');
   }
-  // If default password — prompt change
-  if (currentUser.must_change_password) {
-    showChangePassword(true);
-  }
-  showView('dashboard');
-  loadMembers();
-  loadLeads();
+  if (currentUser.must_change_password) showChangePw(true);
+  await Promise.all([loadMembers(), loadLeads()]);
+  switchView('dashboard', document.querySelector('[data-view=dashboard]'));
 }
 
-// ═══════════════════════════════════════════════════════════ CHANGE PASSWORD
-function showChangePassword(forced = false) {
-  document.getElementById('change-pw-reason').textContent = forced
-    ? 'Please set a new password before continuing.' : 'Update your account password.';
-  document.getElementById('cp-cancel-btn').style.display = forced ? 'none' : '';
-  document.getElementById('cp-error').textContent = '';
-  document.getElementById('cp-current').value = '';
-  document.getElementById('cp-new').value = '';
-  document.getElementById('cp-confirm').value = '';
-  document.getElementById('change-pw-modal').classList.add('active');
+// ═══════════════════════════════════════════════ CHANGE PW
+function showChangePw(forced) {
+  document.getElementById('pwErr').textContent = '';
+  document.getElementById('pwCurrent').value = '';
+  document.getElementById('pwNew').value = '';
+  document.getElementById('pwConfirm').value = '';
+  document.getElementById('pwClose').style.display = forced ? 'none' : '';
+  document.getElementById('pwCancelBtn').style.display = forced ? 'none' : '';
+  document.getElementById('pwOverlay').classList.remove('hidden');
 }
-function closeChangePw() { document.getElementById('change-pw-modal').classList.remove('active'); }
-async function doChangePassword() {
-  const cur = document.getElementById('cp-current').value;
-  const nw = document.getElementById('cp-new').value;
-  const conf = document.getElementById('cp-confirm').value;
-  const err = document.getElementById('cp-error');
+function closePw() { document.getElementById('pwOverlay').classList.add('hidden'); }
+async function doChangePw() {
+  const cur = document.getElementById('pwCurrent').value;
+  const nw = document.getElementById('pwNew').value;
+  const cf = document.getElementById('pwConfirm').value;
+  const err = document.getElementById('pwErr');
   err.textContent = '';
-  if (!cur || !nw || !conf) { err.textContent = 'All fields are required.'; return; }
-  if (nw !== conf) { err.textContent = 'New passwords do not match.'; return; }
+  if (!cur||!nw||!cf) { err.textContent = 'All fields required.'; return; }
+  if (nw !== cf) { err.textContent = 'New passwords do not match.'; return; }
   if (nw.length < 8) { err.textContent = 'Password must be at least 8 characters.'; return; }
   try {
-    const res = await apiFetch('/api/change-password', { method:'POST', body: JSON.stringify({ currentPassword: cur, newPassword: nw }) });
-    closeChangePw();
-    toast('Password updated successfully', 'success');
+    await apiFetch('/api/change-password', {method:'POST', body: JSON.stringify({currentPassword:cur, newPassword:nw})});
+    closePw(); toast('Password updated', 'success');
   } catch(e) { err.textContent = e.message; }
 }
 
-// ═══════════════════════════════════════════════════════════ API HELPER
-async function apiFetch(path, opts = {}) {
-  const headers = { 'Content-Type': 'application/json', ...(opts.headers || {}) };
+// ═══════════════════════════════════════════════ API
+async function apiFetch(path, opts={}) {
+  const headers = {'Content-Type':'application/json', ...(opts.headers||{})};
   if (token) headers['Authorization'] = `Bearer ${token}`;
-  const res = await fetch(`${API}${path}`, { ...opts, headers });
+  const res = await fetch(`${API}${path}`, {...opts, headers});
   if (res.status === 401) { logout(); throw new Error('Session expired'); }
   const data = await res.json();
   if (!res.ok) throw new Error(data.error || 'Request failed');
   return data;
 }
 
-// ═══════════════════════════════════════════════════════════ NAVIGATION
-function showView(view) {
-  currentView = view;
-  document.querySelectorAll('.nav-item').forEach(el => {
-    el.classList.toggle('active', el.dataset.view === view);
-  });
-  const titles = { dashboard: 'Dashboard', members: 'Members', leads: 'Leads Pipeline', activity: 'Activity Log' };
-  document.getElementById('topbar-title').textContent = titles[view] || 'Andwell CRM';
-  closePanel();
-  renderView(view);
-}
-
-function renderView(view) {
-  const c = document.getElementById('content');
-  if (view === 'dashboard') renderDashboard(c);
-  else if (view === 'members') renderMembers(c);
-  else if (view === 'leads') renderLeads(c);
-  else if (view === 'activity') renderActivity(c);
-}
-
-// ═══════════════════════════════════════════════════════════ SEARCH
-function filterByCoach(name) {
-  showView('members');
-  setTimeout(() => {
-    const cf = document.getElementById('coach-filter');
-    if (cf) { cf.value = name; renderMembers(document.getElementById('content')); }
-  }, 50);
-}
-
-function handleSearch(q) {
-  searchQuery = q.toLowerCase();
-  if (currentView === 'members') renderMembers(document.getElementById('content'));
-  if (currentView === 'leads') renderLeads(document.getElementById('content'));
-}
-
-// ═══════════════════════════════════════════════════════════ DASHBOARD
-async function renderDashboard(c) {
-  c.innerHTML = `<div class="loading"><div class="spinner"></div> Loading dashboard…</div>`;
-  try {
-    const stats = await apiFetch('/api/stats');
-    c.innerHTML = `
-      <div class="kpi-grid">
-        ${kpiCard('Active Members', stats.active_members ?? '-', 'Total active this month', '#0962ff', `<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>`)}
-        ${kpiCard('At Risk', stats.at_risk ?? '-', 'Need follow-up', '#ef4444', `<path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>`)}
-        ${kpiCard('New Leads', stats.new_leads ?? '-', 'In pipeline', '#16a34a', `<path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>`)}
-        ${kpiCard('Total Members', stats.total_members ?? allMembers.length, 'In database', '#7c3aed', `<path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>`)}
-      </div>
-      <div class="dashboard-grid">
-        <div class="card" style="padding:20px">
-          <div class="section-title">Recent Members</div>
-          ${renderRecentMembers()}
-        </div>
-        <div class="card" style="padding:20px">
-          <div class="section-title">Coach Breakdown</div>
-          ${renderCoachBreakdown()}
-        </div>
-      </div>
-    `;
-  } catch(e) {
-    c.innerHTML = `<div class="empty-state"><p>Could not load dashboard: ${e.message}</p></div>`;
-  }
-}
-
-function kpiCard(label, value, sub, color, iconPath) {
-  return `<div class="card kpi-card">
-    <div class="kpi-icon" style="background:${color}18; color:${color}">
-      <svg viewBox="0 0 24 24" style="stroke:${color}">${iconPath}</svg>
-    </div>
-    <div class="kpi-value" style="color:${color}">${value}</div>
-    <div class="kpi-label">${label}</div>
-    <div class="kpi-sub">${sub}</div>
-  </div>`;
-}
-
-function renderRecentMembers() {
-  const recent = [...allMembers].slice(0, 6);
-  if (!recent.length) return `<div class="empty-state"><p>No members loaded yet</p></div>`;
-  return recent.map(m => `
-    <div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border);cursor:pointer" onclick="openMemberPanel(${m.id})">
-      <div style="width:32px;height:32px;border-radius:8px;background:${getCoachColor(m.email)};display:flex;align-items:center;justify-content:center;color:#fff;font-size:12px;font-weight:700;flex-shrink:0">${(m.name||'?')[0].toUpperCase()}</div>
-      <div style="flex:1">
-        <div style="font-weight:600;font-size:13px">${m.name || 'Unknown'}</div>
-        <div style="font-size:11px;color:var(--text-muted)">${m.email || ''}</div>
-      </div>
-      <div>${statusBadge(m.status)}</div>
-    </div>`).join('');
-}
-
-function renderCoachBreakdown() {
-  const coaches = {};
-  allMembers.forEach(m => {
-    const c = m.coach || 'Unassigned';
-    coaches[c] = (coaches[c] || 0) + 1;
-  });
-  if (!Object.keys(coaches).length) return `<div class="empty-state"><p>No data yet</p></div>`;
-  const total = allMembers.length || 1;
-  return Object.entries(coaches).sort((a,b)=>b[1]-a[1]).map(([name, count]) => {
-    const pct = Math.round(count/total*100);
-    const color = getCoachColorByName(name);
-    return `<div style="margin-bottom:14px">
-      <div style="display:flex;justify-content:space-between;margin-bottom:5px">
-        <span style="font-size:13px;font-weight:600">${name}</span>
-        <span style="font-size:12px;color:var(--text-muted)">${count} members</span>
-      </div>
-      <div style="height:6px;background:var(--border);border-radius:20px;overflow:hidden">
-        <div style="height:100%;background:${color};width:${pct}%;border-radius:20px;transition:width 0.5s ease"></div>
-      </div>
-    </div>`;
-  }).join('');
-}
-
-// ═══════════════════════════════════════════════════════════ MEMBERS
+// ═══════════════════════════════════════════════ DATA
 async function loadMembers() {
   try {
     const data = await apiFetch('/api/members');
-    // API returns array-like object or array
-    allMembers = Array.isArray(data) ? data : Array.isArray(data.members) ? data.members : Object.values(data);
-    updateSidebarCounts();
+    members = Array.isArray(data) ? data : Array.isArray(data.members) ? data.members : Object.values(data);
+    updateCounts();
   } catch(e) { console.warn('Members load failed:', e.message); }
 }
+async function loadLeads() {
+  try {
+    const data = await apiFetch('/api/leads');
+    leads = Array.isArray(data) ? data : Array.isArray(data.leads) ? data.leads : data;
+    document.getElementById('ct-leads').textContent = leads.length;
+  } catch(e) { console.warn('Leads load failed:', e.message); }
+}
 
-function updateSidebarCounts() {
-  const coaches = ['Xuan','Linda','Alvin','Andrew'];
-  coaches.forEach(name => {
-    const el = document.getElementById(`sidebar-count-${name.toLowerCase()}`);
-    if (el) el.textContent = allMembers.filter(m => (m.coach||'').toLowerCase() === name.toLowerCase()).length;
+function updateCounts() {
+  document.getElementById('ct-members').textContent = members.length;
+  document.getElementById('ct-all').textContent = members.length;
+  const nc = members.filter(m => needsContact(m)).length;
+  document.getElementById('ct-needscontact').textContent = nc;
+  COACHES.forEach(c => {
+    const el = document.getElementById(`ct-coach-${c}`);
+    if (el) el.textContent = members.filter(m => m.coach === c).length;
   });
-  const unassigned = document.getElementById('sidebar-count-unassigned');
-  if (unassigned) unassigned.textContent = allMembers.filter(m => !m.coach).length;
+  ['High','Med','Low'].forEach(n => {
+    const el = document.getElementById(`ct-needs-${n}`);
+    if (el) el.textContent = members.filter(m => (m.needs||'').includes(n)).length;
+  });
 }
 
-let sortField = 'name';
-let sortDir = 1;
-
-function sortBy(field) {
-  if (sortField === field) sortDir *= -1;
-  else { sortField = field; sortDir = 1; }
-  renderMembers(document.getElementById('content'));
+function needsContact(m) {
+  const d = daysSince(m.last_visit);
+  return d !== null && d > 14;
+}
+function daysSince(d) {
+  if (!d) return null;
+  const n = new Date(d);
+  if (isNaN(n)) return null;
+  return Math.floor((Date.now() - n) / 86400000);
 }
 
-function sortArrow(field) {
-  if (sortField !== field) return '<span style="color:var(--border);margin-left:3px">↕</span>';
-  return sortDir === 1 ? '<span style="margin-left:3px">↑</span>' : '<span style="margin-left:3px">↓</span>';
+// ═══════════════════════════════════════════════ NAVIGATION
+function switchView(view, navEl) {
+  currentView = view;
+  document.querySelectorAll('.nav[data-view]').forEach(el => el.classList.remove('on'));
+  if (navEl && navEl.dataset.view) navEl.classList.add('on');
+  const titles = {dashboard:'Dashboard', members:'Members Board', leads:'Leads Pipeline', activity:'Activity Log'};
+  document.getElementById('viewTitle').textContent = titles[view] || view;
+  const showToolbar = view === 'members' || view === 'leads';
+  document.getElementById('mainToolbar').classList.toggle('hidden', !showToolbar);
+  document.getElementById('statsRow').classList.toggle('hidden', !showToolbar);
+  renderMain();
+}
+
+function setFilter(f) {
+  currentFilter = f;
+  renderMain();
+}
+
+function setLayout(l, btn) {
+  currentLayout = l;
+  document.querySelectorAll('.tool-seg button').forEach(b => b.classList.remove('on'));
+  if (btn) btn.classList.add('on');
+  renderMain();
+}
+
+// ═══════════════════════════════════════════════ RENDER
+function renderMain() {
+  const c = document.getElementById('mainContent');
+  if (currentView === 'dashboard') renderDashboard(c);
+  else if (currentView === 'members') renderMembers(c);
+  else if (currentView === 'leads') renderLeads(c);
+  else if (currentView === 'activity') renderActivity(c);
+}
+
+// ─── DASHBOARD ───────────────────────────────────
+async function renderDashboard(c) {
+  const active = members.filter(m => (m.status||'').toLowerCase().includes('active') && !(m.status||'').toLowerCase().includes('risk')).length;
+  const atRisk = members.filter(m => (m.status||'').toLowerCase().includes('risk')).length;
+  const nc = members.filter(m => needsContact(m)).length;
+  let coachHtml = '';
+  COACHES.forEach(name => {
+    const ct = members.filter(m => m.coach === name).length;
+    const pct = members.length ? Math.round(ct/members.length*100) : 0;
+    coachHtml += `<div class="coach-bar">
+      <div class="coach-bar-top"><span class="coach-bar-name">${name}</span><span class="coach-bar-ct">${ct} members</span></div>
+      <div class="coach-bar-track"><div class="coach-bar-fill" style="width:${pct}%;background:${COACH_COLORS[name]}"></div></div>
+    </div>`;
+  });
+  const recent = [...members].slice(0,8);
+  const recentHtml = recent.map(m => `
+    <div class="recent-row" onclick="openDetail('member','${m.id}')">
+      <div class="av" style="background:${coachColor(m.coach)};width:26px;height:26px;font-size:10px">${initials(m.name)}</div>
+      <div style="flex:1;min-width:0">
+        <div class="card-name" style="font-size:12.5px">${esc(m.name||'—')}</div>
+        <div class="card-sub">${esc(m.email||'')}</div>
+      </div>
+      ${needsBadge(m.needs)}
+      ${statusPill(m.status)}
+    </div>`).join('');
+  c.innerHTML = `
+    <div class="dash-kpi">
+      <div class="kpi" onclick="switchView('members',document.querySelector('[data-view=members]'));setFilter('all')">
+        <div class="kpi-val" style="color:var(--brand)">${members.length}</div>
+        <div class="kpi-lbl">Total Members</div>
+        <div class="kpi-sub">In database</div>
+      </div>
+      <div class="kpi" onclick="switchView('members',document.querySelector('[data-view=members]'));setFilter('status-Active')">
+        <div class="kpi-val" style="color:var(--grn)">${active}</div>
+        <div class="kpi-lbl">Active Members</div>
+        <div class="kpi-sub">Currently active</div>
+      </div>
+      <div class="kpi" onclick="switchView('members',document.querySelector('[data-view=members]'));setFilter('needs-High')">
+        <div class="kpi-val" style="color:var(--red)">${atRisk}</div>
+        <div class="kpi-lbl">At Risk</div>
+        <div class="kpi-sub">Need attention</div>
+      </div>
+      <div class="kpi" onclick="switchView('members',document.querySelector('[data-view=members]'));setFilter('needscontact')">
+        <div class="kpi-val" style="color:var(--org)">${nc}</div>
+        <div class="kpi-lbl">Needs Contact</div>
+        <div class="kpi-sub">14+ days absent</div>
+      </div>
+    </div>
+    <div class="dash-grid">
+      <div class="dash-card">
+        <div class="dash-card-title">Coach Breakdown</div>
+        ${coachHtml || '<div style="color:var(--tx3);font-size:12px">No coach data yet</div>'}
+      </div>
+      <div class="dash-card">
+        <div class="dash-card-title">Recent Members</div>
+        ${recentHtml || '<div style="color:var(--tx3);font-size:12px">No members yet</div>'}
+      </div>
+    </div>`;
+}
+
+// ─── MEMBERS ─────────────────────────────────────
+function getFilteredMembers() {
+  let arr = [...members];
+  const q = (document.getElementById('searchInput')?.value||'').toLowerCase();
+  if (q) arr = arr.filter(m => (m.name||'').toLowerCase().includes(q)||(m.email||'').toLowerCase().includes(q));
+  // sidebar filter
+  if (currentFilter === 'needscontact') arr = arr.filter(m => needsContact(m));
+  else if (currentFilter.startsWith('coach-')) arr = arr.filter(m => m.coach === currentFilter.slice(6));
+  else if (currentFilter.startsWith('needs-')) arr = arr.filter(m => (m.needs||'').includes(currentFilter.slice(6)));
+  else if (currentFilter.startsWith('status-')) arr = arr.filter(m => (m.status||'').toLowerCase().includes(currentFilter.slice(7).toLowerCase()));
+  // active filters from filter modal
+  if (activeFilters.coach?.length) arr = arr.filter(m => activeFilters.coach.includes(m.coach));
+  if (activeFilters.needs?.length) arr = arr.filter(m => activeFilters.needs.some(n => (m.needs||'').includes(n)));
+  if (activeFilters.status?.length) arr = arr.filter(m => activeFilters.status.some(s => (m.status||'').toLowerCase().includes(s.toLowerCase())));
+  // sort
+  arr.sort((a,b) => {
+    let av = a[sortKey]||'', bv = b[sortKey]||'';
+    if (sortKey === 'needs') { av = needsOrder(a.needs); bv = needsOrder(b.needs); return (av-bv)*sortDir; }
+    if (sortKey === 'last_visit') return (new Date(av||0) - new Date(bv||0)) * sortDir;
+    return String(av).localeCompare(String(bv)) * sortDir;
+  });
+  return arr;
 }
 
 function needsOrder(n) {
   if (!n) return 99;
-  const l = n.toLowerCase();
-  if (l.includes('high')) return 1;
-  if (l.includes('med')) return 2;
-  if (l.includes('low')) return 3;
+  if (n.includes('High')) return 1;
+  if (n.includes('Med')) return 2;
+  if (n.includes('Low')) return 3;
   return 99;
-}
-function needsBadge(needs) {
-  if (!needs) return '';
-  const n = (needs||'').toLowerCase();
-  if (n.includes('high')) return `<span class="badge" style="background:rgba(239,68,68,0.1);color:#ef4444">High</span>`;
-  if (n.includes('med')) return `<span class="badge" style="background:rgba(217,119,6,0.1);color:#d97706">Med</span>`;
-  if (n.includes('low')) return `<span class="badge" style="background:rgba(22,163,74,0.1);color:#16a34a">Low</span>`;
-  return `<span class="badge badge-paused">${needs}</span>`;
 }
 
 function renderMembers(c) {
-  const filtered = allMembers.filter(m => {
-    if (!searchQuery) return true;
-    return (m.name||'').toLowerCase().includes(searchQuery) ||
-           (m.email||'').toLowerCase().includes(searchQuery) ||
-           (m.phone||'').toLowerCase().includes(searchQuery);
-  });
+  const arr = getFilteredMembers();
+  updateStatsRow(arr);
+  updateActiveFiltersRow();
+  if (currentLayout === 'kanban') renderKanban(c, arr, 'member');
+  else renderTable(c, arr, 'member');
+}
 
-  const sf = document.getElementById('status-filter')?.value || '';
-  const cf = document.getElementById('coach-filter')?.value || '';
-  const nf = document.getElementById('needs-filter')?.value || '';
-
-  c.innerHTML = `
-    <div class="filter-bar">
-      <select class="filter-select" id="status-filter" onchange="renderMembers(document.getElementById('content'))">
-        <option value="" ${sf===''?'selected':''}>All Statuses</option>
-        <option value="Active" ${sf==='Active'?'selected':''}>Active</option>
-        <option value="At-Risk" ${sf==='At-Risk'?'selected':''}>At Risk</option>
-        <option value="New" ${sf==='New'?'selected':''}>New</option>
-        <option value="Paused" ${sf==='Paused'?'selected':''}>Paused</option>
-      </select>
-      <select class="filter-select" id="coach-filter" onchange="renderMembers(document.getElementById('content'))">
-        <option value="" ${cf===''?'selected':''}>All Coaches</option>
-        <option value="Xuan" ${cf==='Xuan'?'selected':''}>Xuan</option>
-        <option value="Linda" ${cf==='Linda'?'selected':''}>Linda</option>
-        <option value="Alvin" ${cf==='Alvin'?'selected':''}>Alvin</option>
-        <option value="Andrew" ${cf==='Andrew'?'selected':''}>Andrew</option>
-        <option value="unassigned" ${cf==='unassigned'?'selected':''}>Unassigned</option>
-      </select>
-      <select class="filter-select" id="needs-filter" onchange="renderMembers(document.getElementById('content'))">
-        <option value="" ${nf===''?'selected':''}>All Needs</option>
-        <option value="High" ${nf==='High'?'selected':''}>High</option>
-        <option value="Med" ${nf==='Med'?'selected':''}>Med</option>
-        <option value="Low" ${nf==='Low'?'selected':''}>Low</option>
-      </select>
-      <div class="view-toggle">
-        <button class="view-btn ${memberView==='list'?'active':''}" onclick="setMemberView('list')">
-          <svg viewBox="0 0 24 24"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
-          List
-        </button>
-        <button class="view-btn ${memberView==='kanban'?'active':''}" onclick="setMemberView('kanban')">
-          <svg viewBox="0 0 24 24"><rect x="3" y="3" width="5" height="18" rx="1"/><rect x="10" y="3" width="5" height="12" rx="1"/><rect x="17" y="3" width="5" height="15" rx="1"/></svg>
-          Board
-        </button>
-      </div>
-      ${canEdit() ? `<button class="add-btn" onclick="openNewMemberPanel()"><svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Add Member</button>` : ''}
-    </div>
-    <div class="stats-mini">
-      <div class="stat-chip"><strong>${allMembers.length}</strong> total</div>
-      <div class="stat-chip"><strong>${allMembers.filter(m=>(m.status||'').toLowerCase().includes('active')&&!(m.status||'').toLowerCase().includes('risk')).length}</strong> active</div>
-      <div class="stat-chip"><strong>${allMembers.filter(m=>(m.status||'').toLowerCase().includes('risk')).length}</strong> at risk</div>
-      <div class="stat-chip"><strong>${allMembers.filter(m=>!m.coach).length}</strong> unassigned</div>
-    </div>
+function updateStatsRow(arr) {
+  const sr = document.getElementById('statsRow');
+  const active = arr.filter(m => (m.status||'').toLowerCase().includes('active')&&!(m.status||'').toLowerCase().includes('risk')).length;
+  const atRisk = arr.filter(m => (m.status||'').toLowerCase().includes('risk')).length;
+  const nc = arr.filter(m => needsContact(m)).length;
+  sr.innerHTML = `
+    <div class="stat"><div><div class="stat-n">${arr.length}</div><div class="stat-l">Total</div></div></div>
+    <div class="stat"><div><div class="stat-n" style="color:var(--grn)">${active}</div><div class="stat-l">Active</div></div></div>
+    <div class="stat"><div><div class="stat-n" style="color:var(--red)">${atRisk}</div><div class="stat-l">At Risk</div></div></div>
+    <div class="stat"><div><div class="stat-n" style="color:var(--org)">${nc}</div><div class="stat-l">Needs Contact</div></div></div>
+    ${COACHES.map(name => {
+      const ct = arr.filter(m => m.coach === name).length;
+      return `<div class="stat"><div><div class="stat-n" style="color:${COACH_COLORS[name]}">${ct}</div><div class="stat-l">${name}</div></div></div>`;
+    }).join('')}
   `;
+}
 
-  let display = filtered;
-  if (sf) display = display.filter(m => (m.status||'').toLowerCase().replace('-','').replace(' ','') === sf.toLowerCase().replace('-','').replace(' ',''));
-  if (cf === 'unassigned') display = display.filter(m => !m.coach);
-  else if (cf) display = display.filter(m => (m.coach||'').toLowerCase() === cf.toLowerCase());
-  if (nf) display = display.filter(m => (m.needs||'').toLowerCase().includes(nf.toLowerCase()));
-
-  if (memberView === 'list') {
-    const wrap = document.createElement('div');
-    wrap.className = 'card';
-    wrap.innerHTML = renderMemberTable(display);
-    c.appendChild(wrap);
-  } else {
-    const wrap = document.createElement('div');
-    wrap.className = 'kanban-board';
-    wrap.innerHTML = renderMemberKanban(display);
-    c.appendChild(wrap);
+function updateActiveFiltersRow() {
+  const row = document.getElementById('activeFiltersRow');
+  let chips = '';
+  if (currentFilter !== 'all') {
+    const labels = {needscontact:'Needs Contact'};
+    const label = labels[currentFilter] || currentFilter.replace('coach-','Coach: ').replace('needs-','Needs: ').replace('status-','Status: ');
+    chips += `<div class="filter-chip on">${label} <span class="fc-x" onclick="setFilter('all')">×</span></div>`;
   }
-}
-
-function setMemberView(v) { memberView = v; renderMembers(document.getElementById('content')); }
-
-function renderMemberTable(members) {
-  if (!members.length) return `<div class="empty-state"><svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg><p>No members found</p></div>`;
-  const sorted = [...members].sort((a,b) => {
-    let av, bv;
-    if (sortField === 'needs') { av = needsOrder(a.needs); bv = needsOrder(b.needs); return (av-bv)*sortDir; }
-    if (sortField === 'last_visit') { av = a.last_visit||''; bv = b.last_visit||''; }
-    else if (sortField === 'status') { av = a.status||''; bv = b.status||''; }
-    else if (sortField === 'coach') { av = a.coach||''; bv = b.coach||''; }
-    else { av = a.name||''; bv = b.name||''; }
-    return av.localeCompare(bv) * sortDir;
+  Object.entries(activeFilters).forEach(([key, vals]) => {
+    (vals||[]).forEach(v => {
+      chips += `<div class="filter-chip on">${key}: ${v} <span class="fc-x" onclick="removeFilter('${key}','${v}')">×</span></div>`;
+    });
   });
-  return `<table class="data-table">
-    <thead><tr>
-      <th style="cursor:pointer" onclick="sortBy('name')">Member ${sortArrow('name')}</th>
-      <th style="cursor:pointer" onclick="sortBy('status')">Status ${sortArrow('status')}</th>
-      <th style="cursor:pointer" onclick="sortBy('needs')">Needs ${sortArrow('needs')}</th>
-      <th style="cursor:pointer" onclick="sortBy('coach')">Coach ${sortArrow('coach')}</th>
-      <th style="cursor:pointer" onclick="sortBy('last_visit')">Last Visit ${sortArrow('last_visit')}</th>
-      <th>Goals</th>
-    </tr></thead>
-    <tbody>${sorted.map(m => `
-      <tr onclick="openMemberPanel('${m.id}')">
-        <td>
-          <div class="member-name">${m.name || '—'}</div>
-          <div class="member-email">${m.email || ''}</div>
-        </td>
-        <td>${statusBadge(m.status)}</td>
-        <td>${needsBadge(m.needs)}</td>
-        <td>
-          <span class="coach-dot" style="background:${getCoachColorByName(m.coach)}"></span>
-          <span style="font-size:13px">${m.coach || 'Unassigned'}</span>
-        </td>
-        <td style="color:var(--text-secondary);font-size:12px">${fmtDate(m.last_visit)}</td>
-        <td style="max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--text-secondary);font-size:12px">${m.goals || '—'}</td>
-      </tr>`).join('')}
-    </tbody>
-  </table>`;
+  row.innerHTML = chips;
 }
 
-function renderMemberKanban(members) {
-  const cols = [
-    { key: 'new', label: 'New', color: '#0962ff' },
-    { key: 'active', label: 'Active', color: '#16a34a' },
-    { key: 'at_risk', label: 'At Risk', color: '#ef4444' },
-    { key: 'paused', label: 'Paused', color: '#9ba3b2' },
-  ];
-  return cols.map(col => {
-    const items = members.filter(m => (m.status||'').toLowerCase().replace('-','').replace(' ','') === col.key.replace('_','').replace(' ',''));
-    return `<div class="kanban-col">
-      <div class="kanban-col-header">
-        <div class="kanban-col-title" style="color:${col.color}">${col.label}</div>
-        <div class="kanban-count">${items.length}</div>
-      </div>
-      <div class="kanban-cards">
-        ${items.length ? items.map(m => `
-          <div class="kanban-card" onclick="openMemberPanel('${m.id}')">
-            <div class="kanban-card-name">${m.name || '—'}</div>
-            <div class="kanban-card-meta" style="display:flex;align-items:center;gap:6px;margin-top:4px">
-              ${needsBadge(m.needs)}
-            </div>
-            <div class="kanban-card-meta" style="margin-top:4px;font-size:11px;color:var(--text-muted)">${m.goals ? m.goals.slice(0,50)+(m.goals.length>50?'…':'') : ''}</div>
-            <div class="kanban-card-footer">
-              <div style="display:flex;align-items:center">
-                <span class="coach-dot" style="background:${getCoachColorByName(m.coach)}"></span>
-                <span style="font-size:11px;color:var(--text-secondary)">${m.coach || 'None'}</span>
-              </div>
-              <span style="font-size:10px;color:var(--text-muted)">↩ ${fmtDate(m.last_visit)}</span>
-            </div>
-          </div>`).join('') : `<div style="padding:10px;text-align:center;color:var(--text-muted);font-size:12px">Empty</div>`}
-      </div>
+function removeFilter(key, val) {
+  if (activeFilters[key]) activeFilters[key] = activeFilters[key].filter(v => v !== val);
+  renderMain();
+}
+
+// ─── KANBAN ───────────────────────────────────────
+function renderKanban(c, arr, type) {
+  const cols = type === 'member'
+    ? [{key:'New Member',color:'#0891b2'},{key:'Active',color:'#16a34a'},{key:'At-Risk',color:'#d97706'},{key:'Paused',color:'#dc2626'}]
+    : [{key:'New Inquiry',color:'#0962ff'},{key:'Contacted',color:'#7c3aed'},{key:'Consult Booked',color:'#16a34a'},{key:'Consult Done',color:'#0891b2'},{key:'Joined',color:'#16a34a'},{key:'Lost',color:'#dc2626'}];
+  c.innerHTML = `<div class="kb-wrap"><div class="kb-board">${cols.map(col => {
+    const items = arr.filter(m => statusMatch(m.status||m.stage, col.key));
+    return `<div class="kb-col">
+      <div class="col-hd"><div class="col-hd-left"><div class="col-dot" style="background:${col.color}"></div>${esc(col.key)}</div><div class="col-ct">${items.length}</div></div>
+      <div class="col-body" style="border-top-color:${col.color}">${items.length ? items.map(m => type==='member'?memberCard(m):leadCard(m)).join('') : '<div style="text-align:center;color:var(--tx3);padding:12px;font-size:11px">Empty</div>'}</div>
     </div>`;
+  }).join('')}</div></div>`;
+}
+
+function statusMatch(status, colKey) {
+  if (!status) return colKey === 'New Member' || colKey === 'New Inquiry';
+  const s = status.toLowerCase();
+  const k = colKey.toLowerCase();
+  if (k === 'active') return s === 'active';
+  if (k === 'at-risk') return s.includes('risk');
+  if (k === 'paused') return s === 'paused';
+  if (k === 'new member') return s === 'new member' || s === 'new';
+  return s.includes(k.split(' ')[0]);
+}
+
+function memberCard(m) {
+  const ds = daysSince(m.last_visit);
+  const attCls = ds===null?'':ds<=7?'att-good':ds<=21?'att-warn':'att-bad';
+  const attLbl = ds===null?'—':ds===0?'Today':ds===1?'1d ago':`${ds}d ago`;
+  return `<div class="card" onclick="openDetail('member','${m.id}')">
+    <div class="card-top">
+      <div class="av" style="background:${coachColor(m.coach)}">${initials(m.name)}</div>
+      <div class="card-info">
+        <div class="card-name">${esc(m.name||'—')}</div>
+        <div class="card-sub">${esc(m.email||'')}</div>
+      </div>
+    </div>
+    <div class="tags">
+      ${needsBadge(m.needs)}
+      ${m.goals ? `<span class="tag t-goal">${esc(m.goals.split(/[,\n]/)[0].slice(0,20))}</span>` : ''}
+      ${m.membership && m.membership!=='Unknown' ? `<span class="tag t-mem">${esc(m.membership)}</span>` : ''}
+    </div>
+    <div class="card-foot">
+      <span class="coach-lbl"><span class="coach-dot" style="background:${coachColor(m.coach)}"></span>${esc(m.coach||'—')}</span>
+      <span class="${attCls}">${attLbl}</span>
+    </div>
+  </div>`;
+}
+
+function leadCard(l) {
+  return `<div class="card" onclick="openDetail('lead','${l.id}')">
+    <div class="card-top">
+      <div class="av" style="background:${coachColor(l.assigned_to||l.coach)}">${initials(l.name)}</div>
+      <div class="card-info">
+        <div class="card-name">${esc(l.name||'—')}</div>
+        <div class="card-sub">${esc(l.email||l.phone||'')}</div>
+      </div>
+    </div>
+    <div class="card-foot">
+      <span class="coach-lbl"><span class="coach-dot" style="background:${coachColor(l.assigned_to||l.coach)}"></span>${esc(l.assigned_to||l.coach||'—')}</span>
+      <span style="font-size:10px;color:var(--tx3)">${fmtDate(l.created_at)}</span>
+    </div>
+  </div>`;
+}
+
+// ─── TABLE ────────────────────────────────────────
+function renderTable(c, arr, type) {
+  const headers = type === 'member'
+    ? [{k:'name',l:'Member'},{k:'status',l:'Status'},{k:'needs',l:'Needs'},{k:'coach',l:'Coach'},{k:'last_visit',l:'Last Visit'},{k:'goals',l:'Goals'}]
+    : [{k:'name',l:'Name'},{k:'stage',l:'Stage'},{k:'assigned_to',l:'Assigned'},{k:'created_at',l:'Added'}];
+  const thHtml = headers.map(h => `<th onclick="toggleSort('${h.k}')">${h.l}${sortKey===h.k?(sortDir===1?' ↑':' ↓'):''}</th>`).join('');
+  const rowHtml = arr.map(m => {
+    if (type === 'member') return `<tr onclick="openDetail('member','${m.id}')">
+      <td><div class="td-n">${esc(m.name||'—')}</div><div class="td-s">${esc(m.email||'')}</div></td>
+      <td>${statusPill(m.status)}</td>
+      <td>${needsBadge(m.needs)}</td>
+      <td><span class="coach-dot" style="background:${coachColor(m.coach)}"></span>${esc(m.coach||'—')}</td>
+      <td style="color:var(--tx3)">${fmtDate(m.last_visit)}</td>
+      <td style="max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--tx2)">${esc(m.goals||'—')}</td>
+    </tr>`;
+    return `<tr onclick="openDetail('lead','${m.id}')">
+      <td><div class="td-n">${esc(m.name||'—')}</div><div class="td-s">${esc(m.email||'')}</div></td>
+      <td>${statusPill(m.stage||m.status)}</td>
+      <td><span class="coach-dot" style="background:${coachColor(m.assigned_to||m.coach)}"></span>${esc(m.assigned_to||m.coach||'—')}</td>
+      <td style="color:var(--tx3)">${fmtDate(m.created_at)}</td>
+    </tr>`;
   }).join('');
+  c.innerHTML = `<div class="tbl-wrap"><table><thead><tr>${thHtml}</tr></thead><tbody>${rowHtml||`<tr><td colspan="${headers.length}" style="text-align:center;color:var(--tx3);padding:30px">No members found</td></tr>`}</tbody></table></div>`;
 }
 
-// ═══════════════════════════════════════════════════════════ MEMBER PANEL
-function openMemberPanel(id) {
-  const m = allMembers.find(x => String(x.id) === String(id));
-  if (!m) return;
-  const panel = document.getElementById('side-panel');
-  document.getElementById('panel-title').textContent = m.name || 'Edit Member';
-  document.getElementById('panel-body').innerHTML = buildMemberForm(m);
-  panel.classList.add('open');
-  if (canEdit()) attachAutoSave('member', id);
+function toggleSort(key) {
+  if (sortKey === key) sortDir *= -1;
+  else { sortKey = key; sortDir = 1; }
+  renderMain();
 }
 
-function openNewMemberPanel() {
-  const panel = document.getElementById('side-panel');
-  document.getElementById('panel-title').textContent = 'Add Member';
-  document.getElementById('panel-body').innerHTML = buildMemberForm(null);
-  panel.classList.add('open');
-}
-
-function buildMemberForm(m) {
-  const ro = !canEdit();
-  const v = (val) => val || '';
-  return `
-    <div class="panel-field">
-      <label>Full Name</label>
-      <input type="text" data-field="name" value="${v(m?.name)}" ${ro ? 'readonly' : ''} placeholder="Member name">
-    </div>
-    <div class="panel-field">
-      <label>Email</label>
-      <input type="email" data-field="email" value="${v(m?.email)}" ${ro ? 'readonly' : ''} placeholder="email@example.com">
-    </div>
-    <div class="panel-field">
-      <label>Phone</label>
-      <input type="tel" data-field="phone" value="${v(m?.phone)}" ${ro ? 'readonly' : ''} placeholder="+1 416 000 0000">
-    </div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
-      <div class="panel-field">
-        <label>Status</label>
-        <select data-field="status" ${ro ? 'disabled' : ''}>
-          <option value="New" ${(m?.status||'').toLowerCase()==='new'?'selected':''}>New</option>
-          <option value="Active" ${(m?.status||'').toLowerCase()==='active'?'selected':''}>Active</option>
-          <option value="At-Risk" ${(m?.status||'').toLowerCase().includes('risk')?'selected':''}>At Risk</option>
-          <option value="Paused" ${(m?.status||'').toLowerCase()==='paused'?'selected':''}>Paused</option>
-        </select>
-      </div>
-      <div class="panel-field">
-        <label>Needs Level</label>
-        <select data-field="needs" ${ro ? 'disabled' : ''}>
-          <option value="" ${!m?.needs?'selected':''}>—</option>
-          <option value="High" ${(m?.needs||'').toLowerCase().includes('high')?'selected':''}>🔴 High</option>
-          <option value="Med" ${(m?.needs||'').toLowerCase().includes('med')?'selected':''}>🟡 Med</option>
-          <option value="Low" ${(m?.needs||'').toLowerCase().includes('low')?'selected':''}>🟢 Low</option>
-        </select>
-      </div>
-    </div>
-    <div class="panel-field">
-      <label>Assigned Coach</label>
-      <select data-field="coach" ${ro ? 'disabled' : ''}>
-        <option value="" ${!m?.coach?'selected':''}>Unassigned</option>
-        <option value="Xuan" ${m?.coach==='Xuan'?'selected':''}>Xuan</option>
-        <option value="Linda" ${m?.coach==='Linda'?'selected':''}>Linda</option>
-        <option value="Alvin" ${m?.coach==='Alvin'?'selected':''}>Alvin</option>
-        <option value="Andrew" ${m?.coach==='Andrew'?'selected':''}>Andrew</option>
-      </select>
-    </div>
-    <div class="panel-section">Goals & Notes</div>
-    <div class="panel-field">
-      <label>Member Goals</label>
-      <textarea data-field="goals" ${ro ? 'readonly' : ''} placeholder="What are their goals?">${v(m?.goals)}</textarea>
-    </div>
-    <div class="panel-field">
-      <label>Internal Notes</label>
-      <textarea data-field="notes" ${ro ? 'readonly' : ''} placeholder="Coach notes, follow-up reminders…">${v(m?.notes)}</textarea>
-    </div>
-    ${m ? `
-    <div class="panel-section">Info</div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
-      <div class="panel-field">
-        <label>Last Visit</label>
-        <input type="text" value="${fmtDate(m?.last_visit)}" readonly>
-      </div>
-      <div class="panel-field">
-        <label>Total Visits</label>
-        <input type="text" value="${m?.total_visits || m?.visits_7d !== undefined ? (m.total_visits||'—') : '—'}" readonly>
-      </div>
-    </div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
-      <div class="panel-field">
-        <label>Membership</label>
-        <input type="text" value="${v(m?.membership)}" readonly>
-      </div>
-      <div class="panel-field">
-        <label>Joined</label>
-        <input type="text" value="${fmtDate(m?.created_at)}" readonly>
-      </div>
-    </div>` : ''}
-    <div class="auto-save-indicator" id="save-indicator"></div>
-    ${!ro && m ? '' : ''}
-    ${!ro && !m ? `<button class="btn btn-primary" onclick="createMember()" style="width:100%;margin-top:8px">Add Member</button>` : ''}
-  `;
-}
-
-function attachAutoSave(type, id) {
-  const panel = document.getElementById('panel-body');
-  const inputs = panel.querySelectorAll('[data-field]');
-  inputs.forEach(input => {
-    input.addEventListener('input', () => {
-      clearTimeout(saveTimers[`${type}-${id}`]);
-      setIndicator('saving', '● Saving…');
-      saveTimers[`${type}-${id}`] = setTimeout(() => patchRecord(type, id), 900);
-    });
-    input.addEventListener('change', () => {
-      clearTimeout(saveTimers[`${type}-${id}`]);
-      patchRecord(type, id);
-    });
-  });
-}
-
-async function patchRecord(type, id) {
-  const panel = document.getElementById('panel-body');
-  const inputs = panel.querySelectorAll('[data-field]');
-  const body = {};
-  inputs.forEach(el => { body[el.dataset.field] = el.value; });
-  try {
-    const endpoint = type === 'member' ? `/api/members/${id}` : `/api/leads/${id}`;
-    await apiFetch(endpoint, { method: 'PATCH', body: JSON.stringify(body) });
-    // Update local state
-    if (type === 'member') {
-      const idx = allMembers.findIndex(m => m.id === id);
-      if (idx !== -1) allMembers[idx] = { ...allMembers[idx], ...body };
-    } else {
-      const idx = allLeads.findIndex(l => l.id === id);
-      if (idx !== -1) allLeads[idx] = { ...allLeads[idx], ...body };
-    }
-    setIndicator('saved', '✓ Saved');
-    setTimeout(() => setIndicator('', ''), 2000);
-  } catch(e) {
-    setIndicator('', '');
-    toast('Save failed: ' + e.message, 'error');
-  }
-}
-
-function setIndicator(cls, text) {
-  const el = document.getElementById('save-indicator');
-  if (el) { el.className = `auto-save-indicator ${cls}`; el.textContent = text; }
-}
-
-async function createMember() {
-  const panel = document.getElementById('panel-body');
-  const inputs = panel.querySelectorAll('[data-field]');
-  const body = {};
-  inputs.forEach(el => { body[el.dataset.field] = el.value; });
-  try {
-    const data = await apiFetch('/api/members', { method: 'POST', body: JSON.stringify(body) });
-    allMembers.unshift(data.member || data);
-    closePanel();
-    renderView(currentView);
-    toast('Member added', 'success');
-  } catch(e) { toast('Error: ' + e.message, 'error'); }
-}
-
-function closePanel() {
-  document.getElementById('side-panel').classList.remove('open');
-}
-
-// ═══════════════════════════════════════════════════════════ LEADS
-async function loadLeads() {
-  try {
-    const data = await apiFetch('/api/leads');
-    allLeads = data.leads || data || [];
-  } catch(e) { console.warn('Leads load failed:', e.message); }
-}
-
+// ─── LEADS ───────────────────────────────────────
 function renderLeads(c) {
-  const filtered = allLeads.filter(l => {
-    if (!searchQuery) return true;
-    return (l.name||'').toLowerCase().includes(searchQuery) ||
-           (l.email||'').toLowerCase().includes(searchQuery);
-  });
-
-  const cols = [
-    { key: 'new', label: 'New Inquiry' },
-    { key: 'contacted', label: 'Contacted' },
-    { key: 'consultation_booked', label: 'Consult Booked' },
-    { key: 'consultation_done', label: 'Consult Done' },
-    { key: 'joined', label: 'Joined ✓' },
-    { key: 'lost', label: 'Lost' },
-  ];
-
-  c.innerHTML = `
-    <div class="filter-bar">
-      <div style="font-size:13px;color:var(--text-secondary);font-weight:500">${filtered.length} leads total</div>
-      ${canEdit() ? `<button class="add-btn" onclick="openNewLeadPanel()"><svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Add Lead</button>` : ''}
-    </div>
-    <div class="kanban-board leads-kanban">
-      ${cols.map(col => {
-        const items = filtered.filter(l => l.stage === col.key || (!l.stage && col.key === 'new'));
-        return `<div class="kanban-col">
-          <div class="kanban-col-header">
-            <div class="kanban-col-title">${col.label}</div>
-            <div class="kanban-count">${items.length}</div>
-          </div>
-          <div class="kanban-cards">
-            ${items.length ? items.map(l => `
-              <div class="kanban-card" onclick="openLeadPanel(${l.id})">
-                <div class="kanban-card-name">${l.name || '—'}</div>
-                <div class="kanban-card-meta">${l.email || l.phone || ''}</div>
-                <div class="kanban-card-footer">
-                  <span style="font-size:10px;color:var(--text-muted)">${fmtDate(l.created_at)}</span>
-                  <span class="coach-dot" style="background:${getCoachColorByName(l.assigned_to)}"></span>
-                </div>
-              </div>`).join('') : `<div style="padding:10px;text-align:center;color:var(--text-muted);font-size:12px">Empty</div>`}
-          </div>
-        </div>`;
-      }).join('')}
-    </div>
-  `;
+  const q = (document.getElementById('searchInput')?.value||'').toLowerCase();
+  let arr = leads.filter(l => !q || (l.name||'').toLowerCase().includes(q)||(l.email||'').toLowerCase().includes(q));
+  updateStatsRowLeads(arr);
+  if (currentLayout === 'kanban') renderKanban(c, arr, 'lead');
+  else renderTable(c, arr, 'lead');
 }
 
-function openLeadPanel(id) {
-  const l = allLeads.find(x => x.id === id);
-  if (!l) return;
-  document.getElementById('panel-title').textContent = l.name || 'Edit Lead';
-  document.getElementById('panel-body').innerHTML = buildLeadForm(l);
-  document.getElementById('side-panel').classList.add('open');
-  if (canEdit()) attachAutoSave('lead', id);
+function updateStatsRowLeads(arr) {
+  const sr = document.getElementById('statsRow');
+  sr.innerHTML = `<div class="stat"><div><div class="stat-n">${arr.length}</div><div class="stat-l">Total Leads</div></div></div>`;
 }
 
-function openNewLeadPanel() {
-  document.getElementById('panel-title').textContent = 'Add Lead';
-  document.getElementById('panel-body').innerHTML = buildLeadForm(null);
-  document.getElementById('side-panel').classList.add('open');
-}
-
-function buildLeadForm(l) {
-  const ro = !canEdit();
-  const v = (val) => val || '';
-  const stages = ['new','contacted','consultation_booked','consultation_done','joined','lost'];
-  const stageLabels = { new:'New Inquiry', contacted:'Contacted', consultation_booked:'Consult Booked', consultation_done:'Consult Done', joined:'Joined', lost:'Lost' };
-  return `
-    <div class="panel-field">
-      <label>Full Name</label>
-      <input type="text" data-field="name" value="${v(l?.name)}" ${ro?'readonly':''} placeholder="Lead name">
-    </div>
-    <div class="panel-field">
-      <label>Email</label>
-      <input type="email" data-field="email" value="${v(l?.email)}" ${ro?'readonly':''} placeholder="email@example.com">
-    </div>
-    <div class="panel-field">
-      <label>Phone</label>
-      <input type="tel" data-field="phone" value="${v(l?.phone)}" ${ro?'readonly':''} placeholder="+1 416 000 0000">
-    </div>
-    <div class="panel-field">
-      <label>Stage</label>
-      <select data-field="stage" ${ro?'disabled':''}>
-        ${stages.map(s => `<option value="${s}" ${l?.stage===s?'selected':''}>${stageLabels[s]}</option>`).join('')}
-      </select>
-    </div>
-    <div class="panel-field">
-      <label>Assigned To</label>
-      <select data-field="assigned_to" ${ro?'disabled':''}>
-        <option value="" ${!l?.assigned_to?'selected':''}>Unassigned</option>
-        <option value="Xuan" ${l?.assigned_to==='Xuan'?'selected':''}>Xuan</option>
-        <option value="Linda" ${l?.assigned_to==='Linda'?'selected':''}>Linda</option>
-        <option value="Alvin" ${l?.assigned_to==='Alvin'?'selected':''}>Alvin</option>
-        <option value="Andrew" ${l?.assigned_to==='Andrew'?'selected':''}>Andrew</option>
-      </select>
-    </div>
-    <div class="panel-section">Notes</div>
-    <div class="panel-field">
-      <label>Notes / Context</label>
-      <textarea data-field="notes" ${ro?'readonly':''} placeholder="How did they hear about us? What are they looking for?">${v(l?.notes)}</textarea>
-    </div>
-    <div class="auto-save-indicator" id="save-indicator"></div>
-    ${!ro && !l ? `
-      <button class="btn btn-primary" onclick="createLead()" style="width:100%;margin-top:8px">Add Lead</button>` : ''}
-    ${!ro && l ? `
-      <div style="margin-top:20px;padding-top:20px;border-top:1px solid var(--border)">
-        <button class="btn btn-ghost" onclick="deleteLead(${l.id})" style="color:var(--danger);width:100%">Delete Lead</button>
-      </div>` : ''}
-  `;
-}
-
-async function createLead() {
-  const panel = document.getElementById('panel-body');
-  const inputs = panel.querySelectorAll('[data-field]');
-  const body = {};
-  inputs.forEach(el => { body[el.dataset.field] = el.value; });
-  try {
-    const data = await apiFetch('/api/leads', { method: 'POST', body: JSON.stringify(body) });
-    allLeads.unshift(data.lead || data);
-    closePanel();
-    renderView(currentView);
-    toast('Lead added', 'success');
-  } catch(e) { toast('Error: ' + e.message, 'error'); }
-}
-
-async function deleteLead(id) {
-  if (!confirm('Delete this lead? This cannot be undone.')) return;
-  try {
-    await apiFetch(`/api/leads/${id}`, { method: 'DELETE' });
-    allLeads = allLeads.filter(l => l.id !== id);
-    closePanel();
-    renderView(currentView);
-    toast('Lead deleted', 'success');
-  } catch(e) { toast('Error: ' + e.message, 'error'); }
-}
-
-// ═══════════════════════════════════════════════════════════ ACTIVITY
+// ─── ACTIVITY ─────────────────────────────────────
 async function renderActivity(c) {
-  c.innerHTML = `<div class="loading"><div class="spinner"></div> Loading activity…</div>`;
+  c.innerHTML = '<div style="padding:30px;color:var(--tx3);text-align:center">Loading…</div>';
   try {
     const data = await apiFetch('/api/activity');
     const logs = data.logs || data || [];
-    c.innerHTML = `<div class="card"><div class="activity-list">${
-      logs.length ? logs.map(log => `
-        <div class="activity-item">
-          <div class="activity-avatar" style="background:${getCoachColorByName(log.user_name)}">${(log.user_name||'?')[0].toUpperCase()}</div>
-          <div class="activity-body">
-            <div class="activity-text"><strong>${log.user_name||'Unknown'}</strong> ${log.action} <strong>${log.target_name||log.target_id||'record'}</strong></div>
-            <div class="activity-time">${fmtDateTime(log.created_at)}</div>
-          </div>
-        </div>`).join('') : `<div class="empty-state"><svg viewBox="0 0 24 24"><path d="M12 8v4l3 3"/><circle cx="12" cy="12" r="9"/></svg><p>No activity yet</p></div>`
-    }</div></div>`;
-  } catch(e) {
-    c.innerHTML = `<div class="empty-state"><p>Could not load activity: ${e.message}</p></div>`;
+    c.innerHTML = `<div style="padding:14px 18px">
+      <table style="width:100%;border-collapse:collapse">
+        <thead><tr>
+          <th style="text-align:left;padding:8px 12px;font-size:9.5px;text-transform:uppercase;letter-spacing:.08em;color:var(--tx3);font-weight:700;border-bottom:2px solid var(--bdr)">User</th>
+          <th style="text-align:left;padding:8px 12px;font-size:9.5px;text-transform:uppercase;letter-spacing:.08em;color:var(--tx3);font-weight:700;border-bottom:2px solid var(--bdr)">Action</th>
+          <th style="text-align:left;padding:8px 12px;font-size:9.5px;text-transform:uppercase;letter-spacing:.08em;color:var(--tx3);font-weight:700;border-bottom:2px solid var(--bdr)">Target</th>
+          <th style="text-align:left;padding:8px 12px;font-size:9.5px;text-transform:uppercase;letter-spacing:.08em;color:var(--tx3);font-weight:700;border-bottom:2px solid var(--bdr)">Time</th>
+        </tr></thead>
+        <tbody>${logs.map(l => `<tr style="border-bottom:1px solid var(--bdr)">
+          <td style="padding:9px 12px"><span class="coach-dot" style="background:${coachColor(l.user_name)}"></span>${esc(l.user_name||'—')}</td>
+          <td style="padding:9px 12px;color:var(--tx2)">${esc(l.action||'—')}</td>
+          <td style="padding:9px 12px;font-weight:600">${esc(l.target_name||l.target_id||'—')}</td>
+          <td style="padding:9px 12px;color:var(--tx3)">${fmtDateTime(l.created_at)}</td>
+        </tr>`).join('') || '<tr><td colspan="4" style="padding:30px;text-align:center;color:var(--tx3)">No activity yet</td></tr>'}</tbody>
+      </table>
+    </div>`;
+  } catch(e) { c.innerHTML = `<div style="padding:30px;color:var(--red)">Error: ${e.message}</div>`; }
+}
+
+// ═══════════════════════════════════════════════ DETAIL / EDIT
+function openDetail(type, id) {
+  editingType = type;
+  editingId = id;
+  const item = type === 'member' ? members.find(m => String(m.id)===String(id)) : leads.find(l => String(l.id)===String(id));
+  if (!item) return;
+  const ro = currentUser?.role === 'readonly';
+  document.getElementById('detailTitle').textContent = item.name || (type === 'member' ? 'Member' : 'Lead');
+  document.getElementById('detailMeta').textContent = item.email || '';
+  document.getElementById('detailBody').innerHTML = type === 'member' ? buildMemberForm(item, ro) : buildLeadForm(item, ro);
+  document.getElementById('detailOverlay').classList.remove('hidden');
+  if (!ro) {
+    document.getElementById('detailBody').querySelectorAll('[data-field]').forEach(el => {
+      el.addEventListener('change', () => autoSave(type, id));
+      el.addEventListener('input', () => {
+        clearTimeout(saveTimers[`${type}-${id}`]);
+        setInd('saving','● Saving…');
+        saveTimers[`${type}-${id}`] = setTimeout(() => autoSave(type, id), 900);
+      });
+    });
   }
 }
 
-// ═══════════════════════════════════════════════════════════ SYNC
+function closeDetail() {
+  document.getElementById('detailOverlay').classList.add('hidden');
+  editingId = null; editingType = null;
+}
+
+function setInd(cls, text) {
+  const el = document.getElementById('detailSaveInd');
+  if (el) { el.className = `save-ind ${cls}`; el.textContent = text; }
+}
+
+async function autoSave(type, id) {
+  const body = {};
+  document.getElementById('detailBody').querySelectorAll('[data-field]').forEach(el => { body[el.dataset.field] = el.value; });
+  try {
+    const endpoint = type === 'member' ? `/api/members/${id}` : `/api/leads/${id}`;
+    await apiFetch(endpoint, {method:'PATCH', body: JSON.stringify(body)});
+    if (type === 'member') { const idx = members.findIndex(m => String(m.id)===String(id)); if (idx!==-1) members[idx] = {...members[idx],...body}; }
+    else { const idx = leads.findIndex(l => String(l.id)===String(id)); if (idx!==-1) leads[idx] = {...leads[idx],...body}; }
+    setInd('saved','✓ Saved');
+    updateCounts();
+    setTimeout(() => setInd('',''), 2000);
+  } catch(e) { setInd('',''); toast('Save failed: '+e.message,'error'); }
+}
+
+function buildMemberForm(m, ro) {
+  const v = x => esc(x||'');
+  const dis = ro ? 'disabled' : '';
+  return `
+    <div class="frow">
+      <div class="fg"><label>Full Name</label><input class="fi" data-field="name" value="${v(m.name)}" ${ro?'readonly':''} placeholder="Member name"></div>
+      <div class="fg"><label>Email</label><input class="fi" type="email" data-field="email" value="${v(m.email)}" ${ro?'readonly':''}></div>
+    </div>
+    <div class="frow">
+      <div class="fg"><label>Phone</label><input class="fi" type="tel" data-field="phone" value="${v(m.phone)}" ${ro?'readonly':''}></div>
+      <div class="fg"><label>Membership</label><input class="fi" data-field="membership" value="${v(m.membership)}" ${ro?'readonly':''}></div>
+    </div>
+    <div class="frow">
+      <div class="fg"><label>Status</label><select class="fs" data-field="status" ${dis}>
+        <option value="New Member" ${(m.status||'')==='New Member'||!(m.status)?'selected':''}>New Member</option>
+        <option value="Active" ${(m.status||'')==='Active'?'selected':''}>Active</option>
+        <option value="At-Risk" ${(m.status||'').includes('Risk')?'selected':''}>At-Risk</option>
+        <option value="Paused" ${(m.status||'')==='Paused'?'selected':''}>Paused</option>
+      </select></div>
+      <div class="fg"><label>Needs Level</label><select class="fs" data-field="needs" ${dis}>
+        <option value="" ${!m.needs?'selected':''}>—</option>
+        <option value="High" ${(m.needs||'').includes('High')?'selected':''}>🔴 High</option>
+        <option value="Med" ${(m.needs||'').includes('Med')?'selected':''}>🟡 Med</option>
+        <option value="Low" ${(m.needs||'').includes('Low')?'selected':''}>🟢 Low</option>
+      </select></div>
+    </div>
+    <div class="fg"><label>Assigned Coach</label><select class="fs" data-field="coach" ${dis}>
+      <option value="" ${!m.coach?'selected':''}>Unassigned</option>
+      ${COACHES.map(c => `<option value="${c}" ${m.coach===c?'selected':''}>${c}</option>`).join('')}
+    </select></div>
+    <div class="fg"><label>Goals</label><textarea class="fta" data-field="goals" ${ro?'readonly':''}>${v(m.goals)}</textarea></div>
+    <div class="fg"><label>Internal Notes</label><textarea class="fta" data-field="notes" ${ro?'readonly':''}>${v(m.notes)}</textarea></div>
+    <div class="sec-hd">Info</div>
+    <div class="d-grid">
+      <div class="di"><label>Last Visit</label><span>${fmtDate(m.last_visit)}</span></div>
+      <div class="di"><label>Days Since Visit</label><span>${daysSince(m.last_visit)===null?'—':daysSince(m.last_visit)+'d ago'}</span></div>
+      <div class="di"><label>Total Visits</label><span>${m.total_visits||'—'}</span></div>
+      <div class="di"><label>Joined</label><span>${fmtDate(m.created_at)}</span></div>
+    </div>`;
+}
+
+function buildLeadForm(l, ro) {
+  const v = x => esc(x||'');
+  const dis = ro ? 'disabled' : '';
+  const stages = ['New Inquiry','Contacted','Consult Booked','Consult Done','Joined','Lost'];
+  return `
+    <div class="frow">
+      <div class="fg"><label>Full Name</label><input class="fi" data-field="name" value="${v(l.name)}" ${ro?'readonly':''}></div>
+      <div class="fg"><label>Email</label><input class="fi" type="email" data-field="email" value="${v(l.email)}" ${ro?'readonly':''}></div>
+    </div>
+    <div class="frow">
+      <div class="fg"><label>Phone</label><input class="fi" type="tel" data-field="phone" value="${v(l.phone)}" ${ro?'readonly':''}></div>
+      <div class="fg"><label>Stage</label><select class="fs" data-field="stage" ${dis}>${stages.map(s=>`<option value="${s}" ${(l.stage||l.status)===s?'selected':''}>${s}</option>`).join('')}</select></div>
+    </div>
+    <div class="fg"><label>Assigned To</label><select class="fs" data-field="assigned_to" ${dis}>
+      <option value="" ${!l.assigned_to?'selected':''}>Unassigned</option>
+      ${COACHES.map(c=>`<option value="${c}" ${(l.assigned_to||l.coach)===c?'selected':''}>${c}</option>`).join('')}
+    </select></div>
+    <div class="fg"><label>Notes</label><textarea class="fta" data-field="notes" ${ro?'readonly':''}>${v(l.notes)}</textarea></div>
+    ${!ro ? `<div class="mfoot"><button class="btn btn-danger btn-sm" onclick="deleteLead('${l.id}')">Delete Lead</button></div>` : ''}`;
+}
+
+function openAdd() {
+  if (currentView === 'leads') openAddLead();
+  else openAddMember();
+}
+
+function openAddMember() {
+  editingType = 'member'; editingId = null;
+  document.getElementById('detailTitle').textContent = 'Add Member';
+  document.getElementById('detailMeta').textContent = '';
+  document.getElementById('detailSaveInd').textContent = '';
+  document.getElementById('detailBody').innerHTML = `
+    ${buildMemberForm({},false)}
+    <div class="mfoot"><button class="btn btn-brand" onclick="createMember()">Add Member</button></div>`;
+  document.getElementById('detailOverlay').classList.remove('hidden');
+}
+
+async function createMember() {
+  const body = {};
+  document.getElementById('detailBody').querySelectorAll('[data-field]').forEach(el => { body[el.dataset.field] = el.value; });
+  try {
+    const data = await apiFetch('/api/members', {method:'POST', body: JSON.stringify(body)});
+    members.unshift(data.member||data);
+    updateCounts();
+    closeDetail(); renderMain(); toast('Member added','success');
+  } catch(e) { toast('Error: '+e.message,'error'); }
+}
+
+function openAddLead() {
+  editingType = 'lead'; editingId = null;
+  document.getElementById('detailTitle').textContent = 'Add Lead';
+  document.getElementById('detailMeta').textContent = '';
+  document.getElementById('detailSaveInd').textContent = '';
+  document.getElementById('detailBody').innerHTML = `
+    ${buildLeadForm({},false)}
+    <div class="mfoot"><button class="btn btn-brand" onclick="createLead()">Add Lead</button></div>`;
+  document.getElementById('detailOverlay').classList.remove('hidden');
+}
+
+async function createLead() {
+  const body = {};
+  document.getElementById('detailBody').querySelectorAll('[data-field]').forEach(el => { body[el.dataset.field] = el.value; });
+  try {
+    const data = await apiFetch('/api/leads', {method:'POST', body: JSON.stringify(body)});
+    leads.unshift(data.lead||data);
+    closeDetail(); renderMain(); toast('Lead added','success');
+  } catch(e) { toast('Error: '+e.message,'error'); }
+}
+
+async function deleteLead(id) {
+  if (!confirm('Delete this lead?')) return;
+  try {
+    await apiFetch(`/api/leads/${id}`, {method:'DELETE'});
+    leads = leads.filter(l => String(l.id)!==String(id));
+    closeDetail(); renderMain(); toast('Lead deleted','success');
+  } catch(e) { toast('Error: '+e.message,'error'); }
+}
+
+// ═══════════════════════════════════════════════ FILTER MODAL
+function openFilter() {
+  const coaches = COACHES;
+  const needsLevels = ['High','Med','Low'];
+  const statuses = ['Active','At-Risk','New Member','Paused'];
+  document.getElementById('filterBody').innerHTML = `
+    <div class="fg"><label>Coach</label><div class="tp">${coaches.map(c=>`<div class="tp-o ${(activeFilters.coach||[]).includes(c)?'sel':''}" onclick="toggleFilter('coach','${c}',this)">${c}</div>`).join('')}</div></div>
+    <div class="fg"><label>Needs Level</label><div class="tp">${needsLevels.map(n=>`<div class="tp-o ${(activeFilters.needs||[]).includes(n)?'sel':''}" onclick="toggleFilter('needs','${n}',this)">${n}</div>`).join('')}</div></div>
+    <div class="fg"><label>Status</label><div class="tp">${statuses.map(s=>`<div class="tp-o ${(activeFilters.status||[]).includes(s)?'sel':''}" onclick="toggleFilter('status','${s}',this)">${s}</div>`).join('')}</div></div>
+    <div class="mfoot"><button class="btn btn-ghost" onclick="clearFilters()">Clear All</button><button class="btn btn-brand" onclick="closeFilter()">Apply</button></div>`;
+  document.getElementById('filterOverlay').classList.remove('hidden');
+}
+function closeFilter() { document.getElementById('filterOverlay').classList.add('hidden'); renderMain(); }
+function toggleFilter(key, val, el) {
+  if (!activeFilters[key]) activeFilters[key] = [];
+  const idx = activeFilters[key].indexOf(val);
+  if (idx === -1) { activeFilters[key].push(val); el.classList.add('sel'); }
+  else { activeFilters[key].splice(idx,1); el.classList.remove('sel'); }
+}
+function clearFilters() { activeFilters = {}; closeFilter(); }
+
+// ═══════════════════════════════════════════════ SYNC
 async function triggerSync() {
-  const btn = document.getElementById('sync-btn');
-  btn.classList.add('spinning');
-  btn.querySelector('span') && (btn.querySelector('span').textContent = 'Syncing…');
+  const btn = document.getElementById('syncBtn');
+  btn.textContent = '↻ Syncing…'; btn.disabled = true;
   try {
     const res = await fetch(`${API}/api/sync/members`, {
-      method: 'POST',
-      headers: { 'x-sync-secret': 'andwell-sync-2026', 'Content-Type': 'application/json' }
+      method:'POST', headers:{'Content-Type':'application/json','x-sync-secret':'andwell-sync-2026'}
     });
     const data = await res.json();
     await loadMembers();
-    toast(`Sync complete — ${data.synced || 0} members updated`, 'success');
-    if (currentView === 'members') renderView('members');
-    if (currentView === 'dashboard') renderView('dashboard');
-  } catch(e) {
-    toast('Sync failed: ' + e.message, 'error');
-  } finally {
-    btn.classList.remove('spinning');
-  }
+    toast(`Sync complete — ${data.synced||0} members updated`, 'success');
+    renderMain();
+  } catch(e) { toast('Sync failed: '+e.message,'error'); }
+  finally { btn.textContent = '↺ Sync Momence'; btn.disabled = false; }
 }
 
-// ═══════════════════════════════════════════════════════════ HELPERS
-function canEdit() { return currentUser && currentUser.role !== 'readonly'; }
-
-function statusBadge(status) {
-  const map = { active: ['badge-active','Active'], at_risk: ['badge-atrisk','At Risk'], new: ['badge-new','New'], paused: ['badge-paused','Paused'] };
-  const [cls, label] = map[status] || ['badge-paused', status || 'Unknown'];
-  return `<span class="badge ${cls}">${label}</span>`;
+// ═══════════════════════════════════════════════ HELPERS
+function esc(s) { return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function initials(name) { return (name||'?').split(' ').map(w=>w[0]||'').join('').toUpperCase().slice(0,2)||'?'; }
+function coachColor(name) {
+  if (!name) return '#9ba3b2';
+  return COACH_COLORS[name] || '#9ba3b2';
 }
-
 function getCoachColor(email) {
   if (!email) return '#9ba3b2';
-  if (email.includes('xuan')) return COACH_COLORS.xuan;
-  if (email.includes('linda')) return COACH_COLORS.linda;
-  if (email.includes('alvin') || email.includes('al.yeung')) return COACH_COLORS.alvin;
-  if (email.includes('andrew') || email.includes('jennings')) return COACH_COLORS.andrew;
+  if (email.includes('xuan')) return COACH_COLORS.Xuan;
+  if (email.includes('linda')) return COACH_COLORS.Linda;
+  if (email.includes('alvin')||email.includes('al.yeung')) return COACH_COLORS.Alvin;
+  if (email.includes('andrew')||email.includes('jennings')) return COACH_COLORS.Andrew;
   return '#9ba3b2';
 }
-
-function getCoachColorByName(name) {
-  if (!name) return '#9ba3b2';
-  const n = name.toLowerCase();
-  if (n.includes('xuan')) return COACH_COLORS.xuan;
-  if (n.includes('linda')) return COACH_COLORS.linda;
-  if (n.includes('alvin')) return COACH_COLORS.alvin;
-  if (n.includes('andrew')) return COACH_COLORS.andrew;
-  return '#9ba3b2';
-}
-
 function fmtDate(d) {
   if (!d) return '—';
-  try { return new Date(d).toLocaleDateString('en-CA', { month: 'short', day: 'numeric', year: 'numeric' }); }
-  catch { return d; }
+  try { return new Date(d).toLocaleDateString('en-CA',{month:'short',day:'numeric',year:'numeric'}); } catch { return d; }
 }
 function fmtDateTime(d) {
   if (!d) return '—';
-  try { return new Date(d).toLocaleString('en-CA', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }); }
-  catch { return d; }
+  try { return new Date(d).toLocaleString('en-CA',{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'}); } catch { return d; }
+}
+function statusPill(s) {
+  if (!s) return '';
+  const sl = (s||'').toLowerCase();
+  let bg = '#e5e8ed', color = '#555870';
+  if (sl.includes('active')&&!sl.includes('risk')) { bg='#dcfce7'; color='#16a34a'; }
+  else if (sl.includes('risk')) { bg='#fef3c7'; color='#d97706'; }
+  else if (sl.includes('new')) { bg='#e8f0ff'; color='#0962ff'; }
+  else if (sl.includes('paused')||sl.includes('lost')) { bg='#fee2e2'; color='#dc2626'; }
+  else if (sl.includes('joined')) { bg='#dcfce7'; color='#16a34a'; }
+  return `<span class="pill" style="background:${bg};color:${color}">${esc(s)}</span>`;
+}
+function needsBadge(n) {
+  if (!n) return '';
+  if (n.includes('High')) return `<span class="tag t-high">High</span>`;
+  if (n.includes('Med')) return `<span class="tag t-med">Med</span>`;
+  if (n.includes('Low')) return `<span class="tag t-low">Low</span>`;
+  return '';
+}
+function toast(msg, type='') {
+  const el = document.getElementById('toastEl');
+  el.textContent = msg; el.className = `toast${type?' '+type:''}`;
+  el.classList.remove('hidden');
+  clearTimeout(el._t); el._t = setTimeout(() => el.classList.add('hidden'), 3500);
 }
 
-function toast(msg, type = 'success') {
-  const div = document.createElement('div');
-  div.className = `toast ${type}`;
-  div.textContent = msg;
-  document.getElementById('toast-container').appendChild(div);
-  setTimeout(() => div.remove(), 3500);
-}
-
-// Enter on login
+// ═══════════════════════════════════════════════ INIT
 document.addEventListener('DOMContentLoaded', () => {
-  document.getElementById('login-password').addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
-  document.getElementById('login-email').addEventListener('keydown', e => { if (e.key === 'Enter') document.getElementById('login-password').focus(); });
+  document.getElementById('loginPw').addEventListener('keydown', e => { if(e.key==='Enter') doLogin(); });
+  document.getElementById('loginEmail').addEventListener('keydown', e => { if(e.key==='Enter') document.getElementById('loginPw').focus(); });
   tryAutoLogin();
 });
 </script>
