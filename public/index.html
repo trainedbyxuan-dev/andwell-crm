@@ -766,6 +766,7 @@ function needsOrder(n) {
   if (l.includes('low')) return 3;
   return 99;
 }
+function needsBadge(needs) {
   if (!needs) return '';
   const n = (needs||'').toLowerCase();
   if (n.includes('high')) return `<span class="badge" style="background:rgba(239,68,68,0.1);color:#ef4444">High</span>`;
