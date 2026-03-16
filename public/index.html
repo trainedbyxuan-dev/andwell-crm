@@ -744,7 +744,28 @@ function updateSidebarCounts() {
   if (unassigned) unassigned.textContent = allMembers.filter(m => !m.coach).length;
 }
 
-function needsBadge(needs) {
+let sortField = 'name';
+let sortDir = 1;
+
+function sortBy(field) {
+  if (sortField === field) sortDir *= -1;
+  else { sortField = field; sortDir = 1; }
+  renderMembers(document.getElementById('content'));
+}
+
+function sortArrow(field) {
+  if (sortField !== field) return '<span style="color:var(--border);margin-left:3px">↕</span>';
+  return sortDir === 1 ? '<span style="margin-left:3px">↑</span>' : '<span style="margin-left:3px">↓</span>';
+}
+
+function needsOrder(n) {
+  if (!n) return 99;
+  const l = n.toLowerCase();
+  if (l.includes('high')) return 1;
+  if (l.includes('med')) return 2;
+  if (l.includes('low')) return 3;
+  return 99;
+}
   if (!needs) return '';
   const n = (needs||'').toLowerCase();
   if (n.includes('high')) return `<span class="badge" style="background:rgba(239,68,68,0.1);color:#ef4444">High</span>`;
@@ -831,11 +852,25 @@ function setMemberView(v) { memberView = v; renderMembers(document.getElementByI
 
 function renderMemberTable(members) {
   if (!members.length) return `<div class="empty-state"><svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg><p>No members found</p></div>`;
+  const sorted = [...members].sort((a,b) => {
+    let av, bv;
+    if (sortField === 'needs') { av = needsOrder(a.needs); bv = needsOrder(b.needs); return (av-bv)*sortDir; }
+    if (sortField === 'last_visit') { av = a.last_visit||''; bv = b.last_visit||''; }
+    else if (sortField === 'status') { av = a.status||''; bv = b.status||''; }
+    else if (sortField === 'coach') { av = a.coach||''; bv = b.coach||''; }
+    else { av = a.name||''; bv = b.name||''; }
+    return av.localeCompare(bv) * sortDir;
+  });
   return `<table class="data-table">
     <thead><tr>
-      <th>Member</th><th>Status</th><th>Needs</th><th>Coach</th><th>Last Visit</th><th>Goals</th>
+      <th style="cursor:pointer" onclick="sortBy('name')">Member ${sortArrow('name')}</th>
+      <th style="cursor:pointer" onclick="sortBy('status')">Status ${sortArrow('status')}</th>
+      <th style="cursor:pointer" onclick="sortBy('needs')">Needs ${sortArrow('needs')}</th>
+      <th style="cursor:pointer" onclick="sortBy('coach')">Coach ${sortArrow('coach')}</th>
+      <th style="cursor:pointer" onclick="sortBy('last_visit')">Last Visit ${sortArrow('last_visit')}</th>
+      <th>Goals</th>
     </tr></thead>
-    <tbody>${members.map(m => `
+    <tbody>${sorted.map(m => `
       <tr onclick="openMemberPanel('${m.id}')">
         <td>
           <div class="member-name">${m.name || '—'}</div>
@@ -923,14 +958,25 @@ function buildMemberForm(m) {
       <label>Phone</label>
       <input type="tel" data-field="phone" value="${v(m?.phone)}" ${ro ? 'readonly' : ''} placeholder="+1 416 000 0000">
     </div>
-    <div class="panel-field">
-      <label>Status</label>
-      <select data-field="status" ${ro ? 'disabled' : ''}>
-        <option value="new" ${m?.status==='new'?'selected':''}>New</option>
-        <option value="active" ${m?.status==='active'?'selected':''}>Active</option>
-        <option value="at_risk" ${m?.status==='at_risk'?'selected':''}>At Risk</option>
-        <option value="paused" ${m?.status==='paused'?'selected':''}>Paused</option>
-      </select>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+      <div class="panel-field">
+        <label>Status</label>
+        <select data-field="status" ${ro ? 'disabled' : ''}>
+          <option value="New" ${(m?.status||'').toLowerCase()==='new'?'selected':''}>New</option>
+          <option value="Active" ${(m?.status||'').toLowerCase()==='active'?'selected':''}>Active</option>
+          <option value="At-Risk" ${(m?.status||'').toLowerCase().includes('risk')?'selected':''}>At Risk</option>
+          <option value="Paused" ${(m?.status||'').toLowerCase()==='paused'?'selected':''}>Paused</option>
+        </select>
+      </div>
+      <div class="panel-field">
+        <label>Needs Level</label>
+        <select data-field="needs" ${ro ? 'disabled' : ''}>
+          <option value="" ${!m?.needs?'selected':''}>—</option>
+          <option value="High" ${(m?.needs||'').toLowerCase().includes('high')?'selected':''}>🔴 High</option>
+          <option value="Med" ${(m?.needs||'').toLowerCase().includes('med')?'selected':''}>🟡 Med</option>
+          <option value="Low" ${(m?.needs||'').toLowerCase().includes('low')?'selected':''}>🟢 Low</option>
+        </select>
+      </div>
     </div>
     <div class="panel-field">
       <label>Assigned Coach</label>
@@ -953,13 +999,25 @@ function buildMemberForm(m) {
     </div>
     ${m ? `
     <div class="panel-section">Info</div>
-    <div class="panel-field">
-      <label>Momence ID</label>
-      <input type="text" value="${v(m?.momence_id)}" readonly>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+      <div class="panel-field">
+        <label>Last Visit</label>
+        <input type="text" value="${fmtDate(m?.last_visit)}" readonly>
+      </div>
+      <div class="panel-field">
+        <label>Total Visits</label>
+        <input type="text" value="${m?.total_visits || m?.visits_7d !== undefined ? (m.total_visits||'—') : '—'}" readonly>
+      </div>
     </div>
-    <div class="panel-field">
-      <label>Added</label>
-      <input type="text" value="${fmtDate(m?.created_at)}" readonly>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+      <div class="panel-field">
+        <label>Membership</label>
+        <input type="text" value="${v(m?.membership)}" readonly>
+      </div>
+      <div class="panel-field">
+        <label>Joined</label>
+        <input type="text" value="${fmtDate(m?.created_at)}" readonly>
+      </div>
     </div>` : ''}
     <div class="auto-save-indicator" id="save-indicator"></div>
     ${!ro && m ? '' : ''}
