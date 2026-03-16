@@ -1,0 +1,1222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Andwell CRM</title>
+<style>
+  /* ─── RESET & BASE ───────────────────────────────────────── */
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --brand: #0962ff;
+    --brand-dim: #0952d4;
+    --brand-faint: rgba(9,98,255,0.08);
+    --sidebar-bg: #0f1117;
+    --sidebar-border: rgba(255,255,255,0.07);
+    --content-bg: #f5f6f8;
+    --card-bg: #ffffff;
+    --text-primary: #0f1117;
+    --text-secondary: #5a6172;
+    --text-muted: #9ba3b2;
+    --border: #e5e8ed;
+    --danger: #ef4444;
+    --success: #16a34a;
+    --warning: #d97706;
+    --info: #0891b2;
+    --alvin: #16a34a;
+    --linda: #7c3aed;
+    --xuan: #0962ff;
+    --andrew: #d97706;
+    --radius: 10px;
+    --shadow: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+    --shadow-md: 0 4px 12px rgba(0,0,0,0.08);
+    --transition: 0.15s ease;
+  }
+  html, body { height: 100%; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; }
+  body { background: var(--content-bg); color: var(--text-primary); font-size: 14px; line-height: 1.5; }
+  button { cursor: pointer; border: none; background: none; font-family: inherit; font-size: 14px; }
+  input, select, textarea { font-family: inherit; font-size: 14px; }
+  a { text-decoration: none; color: inherit; }
+
+  /* ─── LAYOUT ───────────────────────────────────────────────── */
+  #app { display: flex; height: 100vh; overflow: hidden; }
+  #sidebar {
+    width: 220px; min-width: 220px; background: var(--sidebar-bg);
+    display: flex; flex-direction: column; border-right: 1px solid var(--sidebar-border);
+    position: relative; z-index: 10;
+  }
+  #main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+  #topbar {
+    height: 56px; background: var(--card-bg); border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; padding: 0 24px; gap: 12px; flex-shrink: 0;
+  }
+  #content { flex: 1; overflow-y: auto; padding: 28px 28px 40px; }
+
+  /* ─── LOGIN ───────────────────────────────────────────────── */
+  #login-screen {
+    display: none; position: fixed; inset: 0; background: var(--sidebar-bg);
+    align-items: center; justify-content: center; z-index: 100;
+  }
+  #login-screen.active { display: flex; }
+  .login-box {
+    width: 380px; background: #161b27; border: 1px solid var(--sidebar-border);
+    border-radius: 16px; padding: 40px 36px;
+  }
+  .login-logo { margin-bottom: 28px; display: flex; align-items: center; gap: 10px; }
+  .login-logo-mark {
+    width: 36px; height: 36px; background: var(--brand); border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .login-logo-mark svg { width: 20px; height: 20px; }
+  .login-logo-text { color: #fff; font-size: 17px; font-weight: 700; letter-spacing: -0.3px; }
+  .login-title { color: #fff; font-size: 22px; font-weight: 700; margin-bottom: 6px; }
+  .login-sub { color: var(--text-muted); font-size: 13px; margin-bottom: 28px; }
+  .login-field { margin-bottom: 16px; }
+  .login-field label { display: block; color: rgba(255,255,255,0.5); font-size: 11px; font-weight: 600; letter-spacing: 0.6px; text-transform: uppercase; margin-bottom: 6px; }
+  .login-field input {
+    width: 100%; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 8px; color: #fff; padding: 10px 14px; outline: none; transition: border var(--transition);
+  }
+  .login-field input:focus { border-color: var(--brand); }
+  .login-btn {
+    width: 100%; background: var(--brand); color: #fff; padding: 11px;
+    border-radius: 8px; font-weight: 600; font-size: 14px; margin-top: 8px;
+    transition: background var(--transition);
+  }
+  .login-btn:hover { background: var(--brand-dim); }
+  .login-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+  .login-error { color: #f87171; font-size: 12px; margin-top: 10px; min-height: 16px; }
+
+  /* ─── CHANGE PASSWORD MODAL ─────────────────────────────── */
+  .modal-overlay {
+    display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5);
+    align-items: center; justify-content: center; z-index: 200;
+  }
+  .modal-overlay.active { display: flex; }
+  .modal-box {
+    background: var(--card-bg); border-radius: 14px; padding: 32px;
+    width: 380px; box-shadow: var(--shadow-md);
+  }
+  .modal-title { font-size: 17px; font-weight: 700; margin-bottom: 6px; }
+  .modal-sub { color: var(--text-secondary); font-size: 13px; margin-bottom: 24px; }
+  .modal-field { margin-bottom: 14px; }
+  .modal-field label { display: block; font-size: 12px; font-weight: 600; color: var(--text-secondary); margin-bottom: 5px; }
+  .modal-field input {
+    width: 100%; border: 1px solid var(--border); border-radius: 8px;
+    padding: 9px 12px; outline: none; transition: border var(--transition);
+  }
+  .modal-field input:focus { border-color: var(--brand); }
+  .modal-actions { display: flex; gap: 10px; margin-top: 20px; }
+  .btn { padding: 9px 18px; border-radius: 8px; font-weight: 600; font-size: 13px; transition: all var(--transition); }
+  .btn-primary { background: var(--brand); color: #fff; }
+  .btn-primary:hover { background: var(--brand-dim); }
+  .btn-ghost { background: var(--border); color: var(--text-primary); }
+  .btn-ghost:hover { background: #d9dce3; }
+  .modal-error { color: var(--danger); font-size: 12px; margin-top: 8px; }
+
+  /* ─── SIDEBAR INTERIOR ──────────────────────────────────── */
+  .sidebar-logo {
+    padding: 20px 18px 16px; display: flex; align-items: center; gap: 10px;
+    border-bottom: 1px solid var(--sidebar-border);
+  }
+  .logo-mark {
+    width: 32px; height: 32px; background: var(--brand); border-radius: 7px;
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+  }
+  .logo-mark svg { width: 18px; height: 18px; }
+  .logo-text { color: #fff; font-size: 15px; font-weight: 700; letter-spacing: -0.2px; }
+  .sidebar-nav { flex: 1; padding: 12px 10px; display: flex; flex-direction: column; gap: 2px; }
+  .nav-item {
+    display: flex; align-items: center; gap: 10px; padding: 9px 10px;
+    border-radius: 8px; color: rgba(255,255,255,0.45); font-size: 13.5px; font-weight: 500;
+    transition: all var(--transition); cursor: pointer;
+  }
+  .nav-item:hover { background: rgba(255,255,255,0.07); color: rgba(255,255,255,0.8); }
+  .nav-item.active { background: var(--brand-faint); color: var(--brand); }
+  .nav-item.active svg { stroke: var(--brand); }
+  .nav-item svg { width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 2; flex-shrink: 0; }
+  .nav-section { padding: 16px 10px 6px; color: rgba(255,255,255,0.25); font-size: 10px; font-weight: 700; letter-spacing: 0.8px; text-transform: uppercase; }
+  .sidebar-footer {
+    padding: 14px 14px; border-top: 1px solid var(--sidebar-border);
+    display: flex; align-items: center; gap: 10px;
+  }
+  .user-avatar {
+    width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center;
+    justify-content: center; color: #fff; font-size: 12px; font-weight: 700; flex-shrink: 0;
+  }
+  .user-info { flex: 1; min-width: 0; }
+  .user-name { color: #fff; font-size: 12.5px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .user-role { color: rgba(255,255,255,0.3); font-size: 11px; }
+  .logout-btn { color: rgba(255,255,255,0.3); padding: 4px; border-radius: 4px; transition: color var(--transition); }
+  .logout-btn:hover { color: rgba(255,255,255,0.7); }
+  .logout-btn svg { width: 15px; height: 15px; stroke: currentColor; fill: none; stroke-width: 2; }
+
+  /* ─── TOPBAR ───────────────────────────────────────────── */
+  .topbar-title { font-size: 16px; font-weight: 700; flex: 1; }
+  .topbar-search {
+    display: flex; align-items: center; gap: 8px; background: var(--content-bg);
+    border: 1px solid var(--border); border-radius: 8px; padding: 7px 12px; width: 240px;
+  }
+  .topbar-search svg { width: 14px; height: 14px; stroke: var(--text-muted); fill: none; stroke-width: 2; flex-shrink: 0; }
+  .topbar-search input { border: none; background: none; outline: none; color: var(--text-primary); width: 100%; font-size: 13px; }
+  .topbar-search input::placeholder { color: var(--text-muted); }
+  .topbar-sync {
+    display: flex; align-items: center; gap: 6px; padding: 7px 14px;
+    background: var(--brand-faint); color: var(--brand); border-radius: 8px;
+    font-size: 12.5px; font-weight: 600; transition: all var(--transition);
+  }
+  .topbar-sync:hover { background: rgba(9,98,255,0.15); }
+  .topbar-sync svg { width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 2; }
+  .topbar-sync.spinning svg { animation: spin 1s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* ─── CARDS ───────────────────────────────────────────── */
+  .card {
+    background: var(--card-bg); border-radius: var(--radius);
+    border: 1px solid var(--border); box-shadow: var(--shadow);
+  }
+
+  /* ─── DASHBOARD ───────────────────────────────────────── */
+  .kpi-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 24px; }
+  .kpi-card { padding: 20px; }
+  .kpi-label { font-size: 11px; font-weight: 600; letter-spacing: 0.5px; text-transform: uppercase; color: var(--text-muted); margin-bottom: 10px; }
+  .kpi-value { font-size: 32px; font-weight: 800; letter-spacing: -1px; line-height: 1; margin-bottom: 6px; }
+  .kpi-sub { font-size: 12px; color: var(--text-secondary); }
+  .kpi-icon { width: 36px; height: 36px; border-radius: 9px; display: flex; align-items: center; justify-content: center; margin-bottom: 14px; }
+  .kpi-icon svg { width: 18px; height: 18px; stroke: currentColor; fill: none; stroke-width: 2; }
+
+  .dashboard-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .section-title { font-size: 14px; font-weight: 700; margin-bottom: 16px; }
+
+  /* ─── MEMBERS ──────────────────────────────────────────── */
+  .view-toggle { display: flex; gap: 4px; background: var(--content-bg); border: 1px solid var(--border); border-radius: 8px; padding: 3px; }
+  .view-btn { padding: 5px 10px; border-radius: 6px; color: var(--text-muted); font-size: 12px; font-weight: 600; transition: all var(--transition); }
+  .view-btn.active { background: var(--card-bg); color: var(--text-primary); box-shadow: var(--shadow); }
+  .view-btn svg { width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 2; vertical-align: middle; }
+
+  .filter-bar { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; flex-wrap: wrap; }
+  .filter-select {
+    border: 1px solid var(--border); border-radius: 8px; padding: 7px 10px;
+    background: var(--card-bg); color: var(--text-primary); outline: none; font-size: 13px;
+    cursor: pointer;
+  }
+  .add-btn {
+    display: flex; align-items: center; gap: 6px; padding: 8px 16px;
+    background: var(--brand); color: #fff; border-radius: 8px; font-weight: 600; font-size: 13px;
+    transition: background var(--transition); margin-left: auto;
+  }
+  .add-btn:hover { background: var(--brand-dim); }
+  .add-btn svg { width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 2.5; }
+
+  /* TABLE */
+  .data-table { width: 100%; border-collapse: collapse; }
+  .data-table th {
+    text-align: left; font-size: 11px; font-weight: 700; letter-spacing: 0.5px;
+    text-transform: uppercase; color: var(--text-muted); padding: 0 16px 12px;
+    border-bottom: 1px solid var(--border);
+  }
+  .data-table td { padding: 13px 16px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+  .data-table tr:last-child td { border-bottom: none; }
+  .data-table tbody tr { transition: background var(--transition); cursor: pointer; }
+  .data-table tbody tr:hover { background: #f9fafb; }
+  .member-name { font-weight: 600; font-size: 13.5px; }
+  .member-email { color: var(--text-secondary); font-size: 12px; }
+  .badge {
+    display: inline-flex; align-items: center; padding: 3px 9px; border-radius: 20px;
+    font-size: 11px; font-weight: 600;
+  }
+  .badge-active { background: rgba(22,163,74,0.1); color: #16a34a; }
+  .badge-atrisk { background: rgba(239,68,68,0.1); color: #ef4444; }
+  .badge-new { background: rgba(9,98,255,0.1); color: var(--brand); }
+  .badge-paused { background: rgba(156,163,175,0.15); color: #6b7280; }
+  .coach-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; margin-right: 6px; }
+
+  /* KANBAN */
+  .kanban-board { display: flex; gap: 14px; overflow-x: auto; padding-bottom: 8px; }
+  .kanban-col {
+    min-width: 240px; max-width: 240px; background: var(--content-bg);
+    border-radius: var(--radius); border: 1px solid var(--border); flex-shrink: 0;
+  }
+  .kanban-col-header {
+    padding: 12px 14px; border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .kanban-col-title { font-size: 12px; font-weight: 700; color: var(--text-primary); }
+  .kanban-count {
+    background: var(--card-bg); border: 1px solid var(--border); border-radius: 20px;
+    font-size: 11px; font-weight: 700; color: var(--text-secondary); padding: 1px 7px;
+  }
+  .kanban-cards { padding: 10px; display: flex; flex-direction: column; gap: 8px; min-height: 60px; }
+  .kanban-card {
+    background: var(--card-bg); border: 1px solid var(--border); border-radius: 8px;
+    padding: 12px; cursor: pointer; transition: all var(--transition);
+    box-shadow: var(--shadow);
+  }
+  .kanban-card:hover { box-shadow: var(--shadow-md); transform: translateY(-1px); }
+  .kanban-card-name { font-weight: 600; font-size: 13px; margin-bottom: 4px; }
+  .kanban-card-meta { font-size: 11px; color: var(--text-secondary); }
+  .kanban-card-footer { display: flex; align-items: center; justify-content: space-between; margin-top: 10px; }
+
+  /* ─── SIDEBAR PANEL ───────────────────────────────────── */
+  .side-panel {
+    width: 380px; background: var(--card-bg); border-left: 1px solid var(--border);
+    height: 100%; overflow-y: auto; flex-shrink: 0; display: none;
+    flex-direction: column;
+  }
+  .side-panel.open { display: flex; }
+  .panel-header {
+    padding: 18px 20px; border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; gap: 12px; flex-shrink: 0;
+  }
+  .panel-title { font-size: 15px; font-weight: 700; flex: 1; }
+  .panel-close { color: var(--text-muted); padding: 4px; border-radius: 5px; transition: all var(--transition); }
+  .panel-close:hover { background: var(--border); color: var(--text-primary); }
+  .panel-close svg { width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 2; }
+  .panel-body { padding: 20px; flex: 1; }
+  .panel-field { margin-bottom: 18px; }
+  .panel-field label { display: block; font-size: 11px; font-weight: 600; letter-spacing: 0.4px; text-transform: uppercase; color: var(--text-muted); margin-bottom: 6px; }
+  .panel-field input, .panel-field select, .panel-field textarea {
+    width: 100%; border: 1px solid var(--border); border-radius: 8px; padding: 9px 12px;
+    outline: none; transition: border var(--transition); background: var(--card-bg); color: var(--text-primary);
+  }
+  .panel-field input:focus, .panel-field select:focus, .panel-field textarea:focus { border-color: var(--brand); }
+  .panel-field textarea { min-height: 80px; resize: vertical; }
+  .panel-field input:read-only { background: #f9fafb; color: var(--text-secondary); cursor: default; }
+  .auto-save-indicator { font-size: 11px; color: var(--text-muted); display: flex; align-items: center; gap: 5px; margin-top: 4px; height: 16px; }
+  .auto-save-indicator.saved { color: var(--success); }
+  .auto-save-indicator.saving { color: var(--brand); }
+  .panel-section { font-size: 11px; font-weight: 700; letter-spacing: 0.5px; text-transform: uppercase; color: var(--text-muted); margin: 20px 0 12px; padding-top: 20px; border-top: 1px solid var(--border); }
+
+  /* ─── ACTIVITY ─────────────────────────────────────────── */
+  .activity-list { display: flex; flex-direction: column; }
+  .activity-item {
+    display: flex; align-items: flex-start; gap: 12px; padding: 14px 20px;
+    border-bottom: 1px solid var(--border);
+  }
+  .activity-item:last-child { border-bottom: none; }
+  .activity-avatar {
+    width: 30px; height: 30px; border-radius: 7px; display: flex; align-items: center;
+    justify-content: center; color: #fff; font-size: 11px; font-weight: 700; flex-shrink: 0;
+  }
+  .activity-body { flex: 1; }
+  .activity-text { font-size: 13px; line-height: 1.5; }
+  .activity-text strong { font-weight: 600; }
+  .activity-time { font-size: 11px; color: var(--text-muted); margin-top: 3px; }
+
+  /* ─── LEADS ────────────────────────────────────────────── */
+  .leads-kanban .kanban-col { min-width: 220px; max-width: 220px; }
+
+  /* ─── TOASTS ───────────────────────────────────────────── */
+  #toast-container { position: fixed; bottom: 24px; right: 24px; z-index: 999; display: flex; flex-direction: column; gap: 8px; }
+  .toast {
+    background: var(--sidebar-bg); color: #fff; padding: 12px 18px; border-radius: 10px;
+    font-size: 13px; font-weight: 500; box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+    animation: slideIn 0.2s ease; display: flex; align-items: center; gap: 8px;
+  }
+  .toast.success { border-left: 3px solid var(--success); }
+  .toast.error { border-left: 3px solid var(--danger); }
+  @keyframes slideIn { from { transform: translateX(20px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+
+  /* ─── EMPTY STATE ──────────────────────────────────────── */
+  .empty-state { text-align: center; padding: 60px 20px; color: var(--text-muted); }
+  .empty-state svg { width: 40px; height: 40px; stroke: currentColor; fill: none; stroke-width: 1.5; margin-bottom: 12px; opacity: 0.4; }
+  .empty-state p { font-size: 13px; }
+
+  /* ─── LOADING ──────────────────────────────────────────── */
+  .loading { display: flex; align-items: center; justify-content: center; gap: 10px; padding: 40px; color: var(--text-muted); font-size: 13px; }
+  .spinner { width: 18px; height: 18px; border: 2px solid var(--border); border-top-color: var(--brand); border-radius: 50%; animation: spin 0.8s linear infinite; }
+
+  /* ─── PERMISSION READONLY ─────────────────────────────── */
+  .readonly-notice {
+    display: inline-flex; align-items: center; gap: 6px; background: rgba(217,119,6,0.1);
+    color: var(--warning); font-size: 11.5px; font-weight: 600; padding: 5px 10px; border-radius: 6px;
+  }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 5px; height: 5px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 20px; }
+
+  /* ─── STATS ROW ─────────────────────────────────────── */
+  .stats-mini { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 10px; }
+  .stat-chip { background: var(--content-bg); border: 1px solid var(--border); border-radius: 6px; padding: 4px 10px; font-size: 11px; color: var(--text-secondary); }
+  .stat-chip strong { color: var(--text-primary); font-weight: 700; }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════════════ LOGIN -->
+<div id="login-screen" class="active">
+  <div class="login-box">
+    <div class="login-logo">
+      <div class="login-logo-mark">
+        <svg viewBox="0 0 20 20" fill="none" stroke="white" stroke-width="2.5"><path d="M3 10 L10 3 L17 10 L17 17 L3 17 Z"/></svg>
+      </div>
+      <div class="login-logo-text">Andwell CRM</div>
+    </div>
+    <div class="login-title">Welcome back</div>
+    <div class="login-sub">Sign in to your account to continue</div>
+    <div class="login-field">
+      <label>Email</label>
+      <input type="email" id="login-email" placeholder="you@andwellfitness.ca" autocomplete="email">
+    </div>
+    <div class="login-field">
+      <label>Password</label>
+      <input type="password" id="login-password" placeholder="••••••••" autocomplete="current-password">
+    </div>
+    <button class="login-btn" id="login-btn" onclick="doLogin()">Sign in</button>
+    <div class="login-error" id="login-error"></div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════ CHANGE PASSWORD MODAL -->
+<div class="modal-overlay" id="change-pw-modal">
+  <div class="modal-box">
+    <div class="modal-title">Change Password</div>
+    <div class="modal-sub" id="change-pw-reason">Update your account password.</div>
+    <div class="modal-field">
+      <label>Current Password</label>
+      <input type="password" id="cp-current" placeholder="••••••••">
+    </div>
+    <div class="modal-field">
+      <label>New Password</label>
+      <input type="password" id="cp-new" placeholder="Min. 8 characters">
+    </div>
+    <div class="modal-field">
+      <label>Confirm New Password</label>
+      <input type="password" id="cp-confirm" placeholder="Repeat new password">
+    </div>
+    <div class="modal-error" id="cp-error"></div>
+    <div class="modal-actions">
+      <button class="btn btn-primary" onclick="doChangePassword()">Update Password</button>
+      <button class="btn btn-ghost" id="cp-cancel-btn" onclick="closeChangePw()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════ MAIN APP -->
+<div id="app" style="display:none">
+
+  <!-- SIDEBAR -->
+  <div id="sidebar">
+    <div class="sidebar-logo">
+      <div class="logo-mark">
+        <svg viewBox="0 0 20 20" fill="none" stroke="white" stroke-width="2.5"><path d="M3 10 L10 3 L17 10 L17 17 L3 17 Z"/></svg>
+      </div>
+      <div class="logo-text">Andwell CRM</div>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-section">Main</div>
+      <div class="nav-item active" onclick="showView('dashboard')" data-view="dashboard">
+        <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+        Dashboard
+      </div>
+      <div class="nav-item" onclick="showView('members')" data-view="members">
+        <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        Members
+      </div>
+      <div class="nav-item" onclick="showView('leads')" data-view="leads">
+        <svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+        Leads
+      </div>
+      <div class="nav-section">System</div>
+      <div class="nav-item" onclick="showView('activity')" data-view="activity">
+        <svg viewBox="0 0 24 24"><path d="M12 8v4l3 3"/><circle cx="12" cy="12" r="9"/></svg>
+        Activity Log
+      </div>
+      <div class="nav-item" onclick="showChangePassword(false)" id="settings-nav">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        Change Password
+      </div>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="user-avatar" id="sidebar-avatar">X</div>
+      <div class="user-info">
+        <div class="user-name" id="sidebar-name">Xuan</div>
+        <div class="user-role" id="sidebar-role">Coach</div>
+      </div>
+      <button class="logout-btn" onclick="logout()" title="Log out">
+        <svg viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- MAIN -->
+  <div id="main">
+    <div id="topbar">
+      <div class="topbar-title" id="topbar-title">Dashboard</div>
+      <div class="topbar-search">
+        <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input type="text" id="global-search" placeholder="Search members or leads…" oninput="handleSearch(this.value)">
+      </div>
+      <button class="topbar-sync" id="sync-btn" onclick="triggerSync()">
+        <svg viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+        Sync Momence
+      </button>
+      <div id="readonly-badge" style="display:none">
+        <div class="readonly-notice">👁 View Only</div>
+      </div>
+    </div>
+
+    <div style="display:flex; flex:1; overflow:hidden">
+      <div id="content">
+        <!-- Views injected here -->
+      </div>
+      <div class="side-panel" id="side-panel">
+        <div class="panel-header">
+          <div class="panel-title" id="panel-title">Edit Member</div>
+          <button class="panel-close" onclick="closePanel()">
+            <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          </button>
+        </div>
+        <div class="panel-body" id="panel-body"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST CONTAINER -->
+<div id="toast-container"></div>
+
+<script>
+// ═══════════════════════════════════════════════════════════ CONFIG
+const API = 'https://andwell-crm-production.up.railway.app';
+const COACH_COLORS = { xuan: '#0962ff', linda: '#7c3aed', alvin: '#16a34a', andrew: '#d97706' };
+
+// ═══════════════════════════════════════════════════════════ STATE
+let token = null;
+let currentUser = null;
+let currentView = 'dashboard';
+let allMembers = [];
+let allLeads = [];
+let memberView = 'list';
+let saveTimers = {};
+let searchQuery = '';
+
+// ═══════════════════════════════════════════════════════════ AUTH
+async function doLogin() {
+  const email = document.getElementById('login-email').value.trim();
+  const pw = document.getElementById('login-password').value;
+  const btn = document.getElementById('login-btn');
+  const err = document.getElementById('login-error');
+  err.textContent = '';
+  if (!email || !pw) { err.textContent = 'Please enter email and password.'; return; }
+  btn.disabled = true; btn.textContent = 'Signing in…';
+  try {
+    const res = await fetch(`${API}/api/login`, {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ email, password: pw })
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Login failed');
+    token = data.token;
+    currentUser = data.user;
+    localStorage.setItem('andwell_token', token);
+    localStorage.setItem('andwell_user', JSON.stringify(currentUser));
+    enterApp();
+  } catch(e) {
+    err.textContent = e.message;
+    btn.disabled = false; btn.textContent = 'Sign in';
+  }
+}
+
+function logout() {
+  token = null; currentUser = null;
+  localStorage.removeItem('andwell_token');
+  localStorage.removeItem('andwell_user');
+  document.getElementById('app').style.display = 'none';
+  document.getElementById('login-screen').classList.add('active');
+  document.getElementById('login-password').value = '';
+  document.getElementById('login-error').textContent = '';
+}
+
+async function tryAutoLogin() {
+  const t = localStorage.getItem('andwell_token');
+  const u = localStorage.getItem('andwell_user');
+  if (t && u) {
+    token = t;
+    currentUser = JSON.parse(u);
+    enterApp();
+  } else {
+    document.getElementById('login-screen').classList.add('active');
+  }
+}
+
+function enterApp() {
+  document.getElementById('login-screen').classList.remove('active');
+  document.getElementById('app').style.display = 'flex';
+  // Populate sidebar user info
+  const name = currentUser.name || currentUser.email.split('@')[0];
+  document.getElementById('sidebar-name').textContent = name;
+  document.getElementById('sidebar-role').textContent = currentUser.role === 'readonly' ? 'View Only' : 'Coach';
+  const avatar = document.getElementById('sidebar-avatar');
+  avatar.textContent = name[0].toUpperCase();
+  const color = getCoachColor(currentUser.email);
+  avatar.style.background = color;
+  if (currentUser.role === 'readonly') {
+    document.getElementById('readonly-badge').style.display = 'block';
+    document.getElementById('sync-btn').style.display = 'none';
+  }
+  // If default password — prompt change
+  if (currentUser.must_change_password) {
+    showChangePassword(true);
+  }
+  showView('dashboard');
+  loadMembers();
+  loadLeads();
+}
+
+// ═══════════════════════════════════════════════════════════ CHANGE PASSWORD
+function showChangePassword(forced = false) {
+  document.getElementById('change-pw-reason').textContent = forced
+    ? 'Please set a new password before continuing.' : 'Update your account password.';
+  document.getElementById('cp-cancel-btn').style.display = forced ? 'none' : '';
+  document.getElementById('cp-error').textContent = '';
+  document.getElementById('cp-current').value = '';
+  document.getElementById('cp-new').value = '';
+  document.getElementById('cp-confirm').value = '';
+  document.getElementById('change-pw-modal').classList.add('active');
+}
+function closeChangePw() { document.getElementById('change-pw-modal').classList.remove('active'); }
+async function doChangePassword() {
+  const cur = document.getElementById('cp-current').value;
+  const nw = document.getElementById('cp-new').value;
+  const conf = document.getElementById('cp-confirm').value;
+  const err = document.getElementById('cp-error');
+  err.textContent = '';
+  if (!cur || !nw || !conf) { err.textContent = 'All fields are required.'; return; }
+  if (nw !== conf) { err.textContent = 'New passwords do not match.'; return; }
+  if (nw.length < 8) { err.textContent = 'Password must be at least 8 characters.'; return; }
+  try {
+    const res = await apiFetch('/api/change-password', { method:'POST', body: JSON.stringify({ currentPassword: cur, newPassword: nw }) });
+    closeChangePw();
+    toast('Password updated successfully', 'success');
+  } catch(e) { err.textContent = e.message; }
+}
+
+// ═══════════════════════════════════════════════════════════ API HELPER
+async function apiFetch(path, opts = {}) {
+  const headers = { 'Content-Type': 'application/json', ...(opts.headers || {}) };
+  if (token) headers['Authorization'] = `Bearer ${token}`;
+  const res = await fetch(`${API}${path}`, { ...opts, headers });
+  if (res.status === 401) { logout(); throw new Error('Session expired'); }
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error || 'Request failed');
+  return data;
+}
+
+// ═══════════════════════════════════════════════════════════ NAVIGATION
+function showView(view) {
+  currentView = view;
+  document.querySelectorAll('.nav-item').forEach(el => {
+    el.classList.toggle('active', el.dataset.view === view);
+  });
+  const titles = { dashboard: 'Dashboard', members: 'Members', leads: 'Leads Pipeline', activity: 'Activity Log' };
+  document.getElementById('topbar-title').textContent = titles[view] || 'Andwell CRM';
+  closePanel();
+  renderView(view);
+}
+
+function renderView(view) {
+  const c = document.getElementById('content');
+  if (view === 'dashboard') renderDashboard(c);
+  else if (view === 'members') renderMembers(c);
+  else if (view === 'leads') renderLeads(c);
+  else if (view === 'activity') renderActivity(c);
+}
+
+// ═══════════════════════════════════════════════════════════ SEARCH
+function handleSearch(q) {
+  searchQuery = q.toLowerCase();
+  if (currentView === 'members') renderMembers(document.getElementById('content'));
+  if (currentView === 'leads') renderLeads(document.getElementById('content'));
+}
+
+// ═══════════════════════════════════════════════════════════ DASHBOARD
+async function renderDashboard(c) {
+  c.innerHTML = `<div class="loading"><div class="spinner"></div> Loading dashboard…</div>`;
+  try {
+    const stats = await apiFetch('/api/stats');
+    c.innerHTML = `
+      <div class="kpi-grid">
+        ${kpiCard('Active Members', stats.active_members ?? '-', 'Total active this month', '#0962ff', `<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>`)}
+        ${kpiCard('At Risk', stats.at_risk ?? '-', 'Need follow-up', '#ef4444', `<path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>`)}
+        ${kpiCard('New Leads', stats.new_leads ?? '-', 'In pipeline', '#16a34a', `<path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>`)}
+        ${kpiCard('Total Members', stats.total_members ?? allMembers.length, 'In database', '#7c3aed', `<path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>`)}
+      </div>
+      <div class="dashboard-grid">
+        <div class="card" style="padding:20px">
+          <div class="section-title">Recent Members</div>
+          ${renderRecentMembers()}
+        </div>
+        <div class="card" style="padding:20px">
+          <div class="section-title">Coach Breakdown</div>
+          ${renderCoachBreakdown()}
+        </div>
+      </div>
+    `;
+  } catch(e) {
+    c.innerHTML = `<div class="empty-state"><p>Could not load dashboard: ${e.message}</p></div>`;
+  }
+}
+
+function kpiCard(label, value, sub, color, iconPath) {
+  return `<div class="card kpi-card">
+    <div class="kpi-icon" style="background:${color}18; color:${color}">
+      <svg viewBox="0 0 24 24" style="stroke:${color}">${iconPath}</svg>
+    </div>
+    <div class="kpi-value" style="color:${color}">${value}</div>
+    <div class="kpi-label">${label}</div>
+    <div class="kpi-sub">${sub}</div>
+  </div>`;
+}
+
+function renderRecentMembers() {
+  const recent = [...allMembers].slice(0, 6);
+  if (!recent.length) return `<div class="empty-state"><p>No members loaded yet</p></div>`;
+  return recent.map(m => `
+    <div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border);cursor:pointer" onclick="openMemberPanel(${m.id})">
+      <div style="width:32px;height:32px;border-radius:8px;background:${getCoachColor(m.coach_email)};display:flex;align-items:center;justify-content:center;color:#fff;font-size:12px;font-weight:700;flex-shrink:0">${(m.name||'?')[0].toUpperCase()}</div>
+      <div style="flex:1">
+        <div style="font-weight:600;font-size:13px">${m.name || 'Unknown'}</div>
+        <div style="font-size:11px;color:var(--text-muted)">${m.email || ''}</div>
+      </div>
+      <div>${statusBadge(m.status)}</div>
+    </div>`).join('');
+}
+
+function renderCoachBreakdown() {
+  const coaches = {};
+  allMembers.forEach(m => {
+    const c = m.coach_name || 'Unassigned';
+    coaches[c] = (coaches[c] || 0) + 1;
+  });
+  if (!Object.keys(coaches).length) return `<div class="empty-state"><p>No data yet</p></div>`;
+  const total = allMembers.length || 1;
+  return Object.entries(coaches).sort((a,b)=>b[1]-a[1]).map(([name, count]) => {
+    const pct = Math.round(count/total*100);
+    const color = getCoachColorByName(name);
+    return `<div style="margin-bottom:14px">
+      <div style="display:flex;justify-content:space-between;margin-bottom:5px">
+        <span style="font-size:13px;font-weight:600">${name}</span>
+        <span style="font-size:12px;color:var(--text-muted)">${count} members</span>
+      </div>
+      <div style="height:6px;background:var(--border);border-radius:20px;overflow:hidden">
+        <div style="height:100%;background:${color};width:${pct}%;border-radius:20px;transition:width 0.5s ease"></div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ═══════════════════════════════════════════════════════════ MEMBERS
+async function loadMembers() {
+  try {
+    const data = await apiFetch('/api/members');
+    allMembers = data.members || data || [];
+  } catch(e) { console.warn('Members load failed:', e.message); }
+}
+
+function renderMembers(c) {
+  const filtered = allMembers.filter(m => {
+    if (!searchQuery) return true;
+    return (m.name||'').toLowerCase().includes(searchQuery) ||
+           (m.email||'').toLowerCase().includes(searchQuery) ||
+           (m.phone||'').toLowerCase().includes(searchQuery);
+  });
+
+  c.innerHTML = `
+    <div class="filter-bar">
+      <select class="filter-select" id="status-filter" onchange="renderMembers(document.getElementById('content'))">
+        <option value="">All Statuses</option>
+        <option value="active">Active</option>
+        <option value="at_risk">At Risk</option>
+        <option value="new">New</option>
+        <option value="paused">Paused</option>
+      </select>
+      <select class="filter-select" id="coach-filter" onchange="renderMembers(document.getElementById('content'))">
+        <option value="">All Coaches</option>
+        <option value="xuan">Xuan</option>
+        <option value="linda">Linda</option>
+        <option value="alvin">Alvin</option>
+        <option value="andrew">Andrew</option>
+      </select>
+      <div class="view-toggle">
+        <button class="view-btn ${memberView==='list'?'active':''}" onclick="setMemberView('list')">
+          <svg viewBox="0 0 24 24"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+          List
+        </button>
+        <button class="view-btn ${memberView==='kanban'?'active':''}" onclick="setMemberView('kanban')">
+          <svg viewBox="0 0 24 24"><rect x="3" y="3" width="5" height="18" rx="1"/><rect x="10" y="3" width="5" height="12" rx="1"/><rect x="17" y="3" width="5" height="15" rx="1"/></svg>
+          Board
+        </button>
+      </div>
+      ${canEdit() ? `<button class="add-btn" onclick="openNewMemberPanel()"><svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Add Member</button>` : ''}
+    </div>
+    <div class="stats-mini">
+      <div class="stat-chip"><strong>${allMembers.length}</strong> total</div>
+      <div class="stat-chip"><strong>${allMembers.filter(m=>m.status==='active').length}</strong> active</div>
+      <div class="stat-chip"><strong>${allMembers.filter(m=>m.status==='at_risk').length}</strong> at risk</div>
+      <div class="stat-chip"><strong>${allMembers.filter(m=>m.status==='new').length}</strong> new</div>
+    </div>
+  `;
+
+  const sf = document.getElementById('status-filter').value;
+  const cf = document.getElementById('coach-filter').value;
+  let display = filtered;
+  if (sf) display = display.filter(m => m.status === sf);
+  if (cf) display = display.filter(m => (m.coach_name||'').toLowerCase() === cf);
+
+  if (memberView === 'list') {
+    const wrap = document.createElement('div');
+    wrap.className = 'card';
+    wrap.innerHTML = renderMemberTable(display);
+    c.appendChild(wrap);
+  } else {
+    const wrap = document.createElement('div');
+    wrap.className = 'kanban-board';
+    wrap.innerHTML = renderMemberKanban(display);
+    c.appendChild(wrap);
+  }
+}
+
+function setMemberView(v) { memberView = v; renderMembers(document.getElementById('content')); }
+
+function renderMemberTable(members) {
+  if (!members.length) return `<div class="empty-state"><svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg><p>No members found</p></div>`;
+  return `<table class="data-table">
+    <thead><tr>
+      <th>Member</th><th>Status</th><th>Coach</th><th>Joined</th><th>Goals</th>
+    </tr></thead>
+    <tbody>${members.map(m => `
+      <tr onclick="openMemberPanel(${m.id})">
+        <td>
+          <div class="member-name">${m.name || '—'}</div>
+          <div class="member-email">${m.email || ''}</div>
+        </td>
+        <td>${statusBadge(m.status)}</td>
+        <td>
+          <span class="coach-dot" style="background:${getCoachColorByName(m.coach_name)}"></span>
+          <span style="font-size:13px">${m.coach_name || 'Unassigned'}</span>
+        </td>
+        <td style="color:var(--text-secondary);font-size:12px">${fmtDate(m.created_at)}</td>
+        <td style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--text-secondary);font-size:12px">${m.goals || '—'}</td>
+      </tr>`).join('')}
+    </tbody>
+  </table>`;
+}
+
+function renderMemberKanban(members) {
+  const cols = [
+    { key: 'new', label: 'New', color: '#0962ff' },
+    { key: 'active', label: 'Active', color: '#16a34a' },
+    { key: 'at_risk', label: 'At Risk', color: '#ef4444' },
+    { key: 'paused', label: 'Paused', color: '#9ba3b2' },
+  ];
+  return cols.map(col => {
+    const items = members.filter(m => m.status === col.key);
+    return `<div class="kanban-col">
+      <div class="kanban-col-header">
+        <div class="kanban-col-title" style="color:${col.color}">${col.label}</div>
+        <div class="kanban-count">${items.length}</div>
+      </div>
+      <div class="kanban-cards">
+        ${items.length ? items.map(m => `
+          <div class="kanban-card" onclick="openMemberPanel(${m.id})">
+            <div class="kanban-card-name">${m.name || '—'}</div>
+            <div class="kanban-card-meta">${m.email || ''}</div>
+            <div class="kanban-card-footer">
+              <div style="display:flex;align-items:center">
+                <span class="coach-dot" style="background:${getCoachColorByName(m.coach_name)}"></span>
+                <span style="font-size:11px;color:var(--text-secondary)">${m.coach_name || 'None'}</span>
+              </div>
+              <span style="font-size:10px;color:var(--text-muted)">${fmtDate(m.created_at)}</span>
+            </div>
+          </div>`).join('') : `<div style="padding:10px;text-align:center;color:var(--text-muted);font-size:12px">Empty</div>`}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ═══════════════════════════════════════════════════════════ MEMBER PANEL
+function openMemberPanel(id) {
+  const m = allMembers.find(x => x.id === id);
+  if (!m) return;
+  const panel = document.getElementById('side-panel');
+  document.getElementById('panel-title').textContent = m.name || 'Edit Member';
+  document.getElementById('panel-body').innerHTML = buildMemberForm(m);
+  panel.classList.add('open');
+  if (canEdit()) attachAutoSave('member', id);
+}
+
+function openNewMemberPanel() {
+  const panel = document.getElementById('side-panel');
+  document.getElementById('panel-title').textContent = 'Add Member';
+  document.getElementById('panel-body').innerHTML = buildMemberForm(null);
+  panel.classList.add('open');
+}
+
+function buildMemberForm(m) {
+  const ro = !canEdit();
+  const v = (val) => val || '';
+  return `
+    <div class="panel-field">
+      <label>Full Name</label>
+      <input type="text" data-field="name" value="${v(m?.name)}" ${ro ? 'readonly' : ''} placeholder="Member name">
+    </div>
+    <div class="panel-field">
+      <label>Email</label>
+      <input type="email" data-field="email" value="${v(m?.email)}" ${ro ? 'readonly' : ''} placeholder="email@example.com">
+    </div>
+    <div class="panel-field">
+      <label>Phone</label>
+      <input type="tel" data-field="phone" value="${v(m?.phone)}" ${ro ? 'readonly' : ''} placeholder="+1 416 000 0000">
+    </div>
+    <div class="panel-field">
+      <label>Status</label>
+      <select data-field="status" ${ro ? 'disabled' : ''}>
+        <option value="new" ${m?.status==='new'?'selected':''}>New</option>
+        <option value="active" ${m?.status==='active'?'selected':''}>Active</option>
+        <option value="at_risk" ${m?.status==='at_risk'?'selected':''}>At Risk</option>
+        <option value="paused" ${m?.status==='paused'?'selected':''}>Paused</option>
+      </select>
+    </div>
+    <div class="panel-field">
+      <label>Assigned Coach</label>
+      <select data-field="coach_name" ${ro ? 'disabled' : ''}>
+        <option value="" ${!m?.coach_name?'selected':''}>Unassigned</option>
+        <option value="Xuan" ${m?.coach_name==='Xuan'?'selected':''}>Xuan</option>
+        <option value="Linda" ${m?.coach_name==='Linda'?'selected':''}>Linda</option>
+        <option value="Alvin" ${m?.coach_name==='Alvin'?'selected':''}>Alvin</option>
+        <option value="Andrew" ${m?.coach_name==='Andrew'?'selected':''}>Andrew</option>
+      </select>
+    </div>
+    <div class="panel-section">Goals & Notes</div>
+    <div class="panel-field">
+      <label>Member Goals</label>
+      <textarea data-field="goals" ${ro ? 'readonly' : ''} placeholder="What are their goals?">${v(m?.goals)}</textarea>
+    </div>
+    <div class="panel-field">
+      <label>Internal Notes</label>
+      <textarea data-field="notes" ${ro ? 'readonly' : ''} placeholder="Coach notes, follow-up reminders…">${v(m?.notes)}</textarea>
+    </div>
+    ${m ? `
+    <div class="panel-section">Info</div>
+    <div class="panel-field">
+      <label>Momence ID</label>
+      <input type="text" value="${v(m?.momence_id)}" readonly>
+    </div>
+    <div class="panel-field">
+      <label>Added</label>
+      <input type="text" value="${fmtDate(m?.created_at)}" readonly>
+    </div>` : ''}
+    <div class="auto-save-indicator" id="save-indicator"></div>
+    ${!ro && m ? '' : ''}
+    ${!ro && !m ? `<button class="btn btn-primary" onclick="createMember()" style="width:100%;margin-top:8px">Add Member</button>` : ''}
+  `;
+}
+
+function attachAutoSave(type, id) {
+  const panel = document.getElementById('panel-body');
+  const inputs = panel.querySelectorAll('[data-field]');
+  inputs.forEach(input => {
+    input.addEventListener('input', () => {
+      clearTimeout(saveTimers[`${type}-${id}`]);
+      setIndicator('saving', '● Saving…');
+      saveTimers[`${type}-${id}`] = setTimeout(() => patchRecord(type, id), 900);
+    });
+    input.addEventListener('change', () => {
+      clearTimeout(saveTimers[`${type}-${id}`]);
+      patchRecord(type, id);
+    });
+  });
+}
+
+async function patchRecord(type, id) {
+  const panel = document.getElementById('panel-body');
+  const inputs = panel.querySelectorAll('[data-field]');
+  const body = {};
+  inputs.forEach(el => { body[el.dataset.field] = el.value; });
+  try {
+    const endpoint = type === 'member' ? `/api/members/${id}` : `/api/leads/${id}`;
+    await apiFetch(endpoint, { method: 'PATCH', body: JSON.stringify(body) });
+    // Update local state
+    if (type === 'member') {
+      const idx = allMembers.findIndex(m => m.id === id);
+      if (idx !== -1) allMembers[idx] = { ...allMembers[idx], ...body };
+    } else {
+      const idx = allLeads.findIndex(l => l.id === id);
+      if (idx !== -1) allLeads[idx] = { ...allLeads[idx], ...body };
+    }
+    setIndicator('saved', '✓ Saved');
+    setTimeout(() => setIndicator('', ''), 2000);
+  } catch(e) {
+    setIndicator('', '');
+    toast('Save failed: ' + e.message, 'error');
+  }
+}
+
+function setIndicator(cls, text) {
+  const el = document.getElementById('save-indicator');
+  if (el) { el.className = `auto-save-indicator ${cls}`; el.textContent = text; }
+}
+
+async function createMember() {
+  const panel = document.getElementById('panel-body');
+  const inputs = panel.querySelectorAll('[data-field]');
+  const body = {};
+  inputs.forEach(el => { body[el.dataset.field] = el.value; });
+  try {
+    const data = await apiFetch('/api/members', { method: 'POST', body: JSON.stringify(body) });
+    allMembers.unshift(data.member || data);
+    closePanel();
+    renderView(currentView);
+    toast('Member added', 'success');
+  } catch(e) { toast('Error: ' + e.message, 'error'); }
+}
+
+function closePanel() {
+  document.getElementById('side-panel').classList.remove('open');
+}
+
+// ═══════════════════════════════════════════════════════════ LEADS
+async function loadLeads() {
+  try {
+    const data = await apiFetch('/api/leads');
+    allLeads = data.leads || data || [];
+  } catch(e) { console.warn('Leads load failed:', e.message); }
+}
+
+function renderLeads(c) {
+  const filtered = allLeads.filter(l => {
+    if (!searchQuery) return true;
+    return (l.name||'').toLowerCase().includes(searchQuery) ||
+           (l.email||'').toLowerCase().includes(searchQuery);
+  });
+
+  const cols = [
+    { key: 'new', label: 'New Inquiry' },
+    { key: 'contacted', label: 'Contacted' },
+    { key: 'consultation_booked', label: 'Consult Booked' },
+    { key: 'consultation_done', label: 'Consult Done' },
+    { key: 'joined', label: 'Joined ✓' },
+    { key: 'lost', label: 'Lost' },
+  ];
+
+  c.innerHTML = `
+    <div class="filter-bar">
+      <div style="font-size:13px;color:var(--text-secondary);font-weight:500">${filtered.length} leads total</div>
+      ${canEdit() ? `<button class="add-btn" onclick="openNewLeadPanel()"><svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Add Lead</button>` : ''}
+    </div>
+    <div class="kanban-board leads-kanban">
+      ${cols.map(col => {
+        const items = filtered.filter(l => l.stage === col.key || (!l.stage && col.key === 'new'));
+        return `<div class="kanban-col">
+          <div class="kanban-col-header">
+            <div class="kanban-col-title">${col.label}</div>
+            <div class="kanban-count">${items.length}</div>
+          </div>
+          <div class="kanban-cards">
+            ${items.length ? items.map(l => `
+              <div class="kanban-card" onclick="openLeadPanel(${l.id})">
+                <div class="kanban-card-name">${l.name || '—'}</div>
+                <div class="kanban-card-meta">${l.email || l.phone || ''}</div>
+                <div class="kanban-card-footer">
+                  <span style="font-size:10px;color:var(--text-muted)">${fmtDate(l.created_at)}</span>
+                  <span class="coach-dot" style="background:${getCoachColorByName(l.assigned_to)}"></span>
+                </div>
+              </div>`).join('') : `<div style="padding:10px;text-align:center;color:var(--text-muted);font-size:12px">Empty</div>`}
+          </div>
+        </div>`;
+      }).join('')}
+    </div>
+  `;
+}
+
+function openLeadPanel(id) {
+  const l = allLeads.find(x => x.id === id);
+  if (!l) return;
+  document.getElementById('panel-title').textContent = l.name || 'Edit Lead';
+  document.getElementById('panel-body').innerHTML = buildLeadForm(l);
+  document.getElementById('side-panel').classList.add('open');
+  if (canEdit()) attachAutoSave('lead', id);
+}
+
+function openNewLeadPanel() {
+  document.getElementById('panel-title').textContent = 'Add Lead';
+  document.getElementById('panel-body').innerHTML = buildLeadForm(null);
+  document.getElementById('side-panel').classList.add('open');
+}
+
+function buildLeadForm(l) {
+  const ro = !canEdit();
+  const v = (val) => val || '';
+  const stages = ['new','contacted','consultation_booked','consultation_done','joined','lost'];
+  const stageLabels = { new:'New Inquiry', contacted:'Contacted', consultation_booked:'Consult Booked', consultation_done:'Consult Done', joined:'Joined', lost:'Lost' };
+  return `
+    <div class="panel-field">
+      <label>Full Name</label>
+      <input type="text" data-field="name" value="${v(l?.name)}" ${ro?'readonly':''} placeholder="Lead name">
+    </div>
+    <div class="panel-field">
+      <label>Email</label>
+      <input type="email" data-field="email" value="${v(l?.email)}" ${ro?'readonly':''} placeholder="email@example.com">
+    </div>
+    <div class="panel-field">
+      <label>Phone</label>
+      <input type="tel" data-field="phone" value="${v(l?.phone)}" ${ro?'readonly':''} placeholder="+1 416 000 0000">
+    </div>
+    <div class="panel-field">
+      <label>Stage</label>
+      <select data-field="stage" ${ro?'disabled':''}>
+        ${stages.map(s => `<option value="${s}" ${l?.stage===s?'selected':''}>${stageLabels[s]}</option>`).join('')}
+      </select>
+    </div>
+    <div class="panel-field">
+      <label>Assigned To</label>
+      <select data-field="assigned_to" ${ro?'disabled':''}>
+        <option value="" ${!l?.assigned_to?'selected':''}>Unassigned</option>
+        <option value="Xuan" ${l?.assigned_to==='Xuan'?'selected':''}>Xuan</option>
+        <option value="Linda" ${l?.assigned_to==='Linda'?'selected':''}>Linda</option>
+        <option value="Alvin" ${l?.assigned_to==='Alvin'?'selected':''}>Alvin</option>
+        <option value="Andrew" ${l?.assigned_to==='Andrew'?'selected':''}>Andrew</option>
+      </select>
+    </div>
+    <div class="panel-section">Notes</div>
+    <div class="panel-field">
+      <label>Notes / Context</label>
+      <textarea data-field="notes" ${ro?'readonly':''} placeholder="How did they hear about us? What are they looking for?">${v(l?.notes)}</textarea>
+    </div>
+    <div class="auto-save-indicator" id="save-indicator"></div>
+    ${!ro && !l ? `
+      <button class="btn btn-primary" onclick="createLead()" style="width:100%;margin-top:8px">Add Lead</button>` : ''}
+    ${!ro && l ? `
+      <div style="margin-top:20px;padding-top:20px;border-top:1px solid var(--border)">
+        <button class="btn btn-ghost" onclick="deleteLead(${l.id})" style="color:var(--danger);width:100%">Delete Lead</button>
+      </div>` : ''}
+  `;
+}
+
+async function createLead() {
+  const panel = document.getElementById('panel-body');
+  const inputs = panel.querySelectorAll('[data-field]');
+  const body = {};
+  inputs.forEach(el => { body[el.dataset.field] = el.value; });
+  try {
+    const data = await apiFetch('/api/leads', { method: 'POST', body: JSON.stringify(body) });
+    allLeads.unshift(data.lead || data);
+    closePanel();
+    renderView(currentView);
+    toast('Lead added', 'success');
+  } catch(e) { toast('Error: ' + e.message, 'error'); }
+}
+
+async function deleteLead(id) {
+  if (!confirm('Delete this lead? This cannot be undone.')) return;
+  try {
+    await apiFetch(`/api/leads/${id}`, { method: 'DELETE' });
+    allLeads = allLeads.filter(l => l.id !== id);
+    closePanel();
+    renderView(currentView);
+    toast('Lead deleted', 'success');
+  } catch(e) { toast('Error: ' + e.message, 'error'); }
+}
+
+// ═══════════════════════════════════════════════════════════ ACTIVITY
+async function renderActivity(c) {
+  c.innerHTML = `<div class="loading"><div class="spinner"></div> Loading activity…</div>`;
+  try {
+    const data = await apiFetch('/api/activity');
+    const logs = data.logs || data || [];
+    c.innerHTML = `<div class="card"><div class="activity-list">${
+      logs.length ? logs.map(log => `
+        <div class="activity-item">
+          <div class="activity-avatar" style="background:${getCoachColorByName(log.user_name)}">${(log.user_name||'?')[0].toUpperCase()}</div>
+          <div class="activity-body">
+            <div class="activity-text"><strong>${log.user_name||'Unknown'}</strong> ${log.action} <strong>${log.target_name||log.target_id||'record'}</strong></div>
+            <div class="activity-time">${fmtDateTime(log.created_at)}</div>
+          </div>
+        </div>`).join('') : `<div class="empty-state"><svg viewBox="0 0 24 24"><path d="M12 8v4l3 3"/><circle cx="12" cy="12" r="9"/></svg><p>No activity yet</p></div>`
+    }</div></div>`;
+  } catch(e) {
+    c.innerHTML = `<div class="empty-state"><p>Could not load activity: ${e.message}</p></div>`;
+  }
+}
+
+// ═══════════════════════════════════════════════════════════ SYNC
+async function triggerSync() {
+  const btn = document.getElementById('sync-btn');
+  btn.classList.add('spinning');
+  btn.querySelector('span') && (btn.querySelector('span').textContent = 'Syncing…');
+  try {
+    const res = await fetch(`${API}/api/sync/members`, {
+      method: 'POST',
+      headers: { 'x-sync-secret': 'andwell-sync-2026', 'Content-Type': 'application/json' }
+    });
+    const data = await res.json();
+    await loadMembers();
+    toast(`Sync complete — ${data.synced || 0} members updated`, 'success');
+    if (currentView === 'members') renderView('members');
+    if (currentView === 'dashboard') renderView('dashboard');
+  } catch(e) {
+    toast('Sync failed: ' + e.message, 'error');
+  } finally {
+    btn.classList.remove('spinning');
+  }
+}
+
+// ═══════════════════════════════════════════════════════════ HELPERS
+function canEdit() { return currentUser && currentUser.role !== 'readonly'; }
+
+function statusBadge(status) {
+  const map = { active: ['badge-active','Active'], at_risk: ['badge-atrisk','At Risk'], new: ['badge-new','New'], paused: ['badge-paused','Paused'] };
+  const [cls, label] = map[status] || ['badge-paused', status || 'Unknown'];
+  return `<span class="badge ${cls}">${label}</span>`;
+}
+
+function getCoachColor(email) {
+  if (!email) return '#9ba3b2';
+  if (email.includes('xuan')) return COACH_COLORS.xuan;
+  if (email.includes('linda')) return COACH_COLORS.linda;
+  if (email.includes('alvin') || email.includes('al.yeung')) return COACH_COLORS.alvin;
+  if (email.includes('andrew') || email.includes('jennings')) return COACH_COLORS.andrew;
+  return '#9ba3b2';
+}
+
+function getCoachColorByName(name) {
+  if (!name) return '#9ba3b2';
+  const n = name.toLowerCase();
+  if (n.includes('xuan')) return COACH_COLORS.xuan;
+  if (n.includes('linda')) return COACH_COLORS.linda;
+  if (n.includes('alvin')) return COACH_COLORS.alvin;
+  if (n.includes('andrew')) return COACH_COLORS.andrew;
+  return '#9ba3b2';
+}
+
+function fmtDate(d) {
+  if (!d) return '—';
+  try { return new Date(d).toLocaleDateString('en-CA', { month: 'short', day: 'numeric', year: 'numeric' }); }
+  catch { return d; }
+}
+function fmtDateTime(d) {
+  if (!d) return '—';
+  try { return new Date(d).toLocaleString('en-CA', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }); }
+  catch { return d; }
+}
+
+function toast(msg, type = 'success') {
+  const div = document.createElement('div');
+  div.className = `toast ${type}`;
+  div.textContent = msg;
+  document.getElementById('toast-container').appendChild(div);
+  setTimeout(() => div.remove(), 3500);
+}
+
+// Enter on login
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('login-password').addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
+  document.getElementById('login-email').addEventListener('keydown', e => { if (e.key === 'Enter') document.getElementById('login-password').focus(); });
+  tryAutoLogin();
+});
+</script>
+</body>
+</html>
