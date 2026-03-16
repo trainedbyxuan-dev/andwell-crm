@@ -499,7 +499,9 @@ function updateCounts() {
 
 function needsContact(m) {
   const d = daysSince(m.last_visit);
-  return d !== null && d > 14;
+  // members with no visit data or 14+ days absent need contact
+  if (d === null) return true;
+  return d > 14;
 }
 function daysSince(d) {
   if (!d) return null;
@@ -558,7 +560,7 @@ async function renderDashboard(c) {
   });
   const recent = [...members].slice(0,8);
   const recentHtml = recent.map(m => `
-    <div class="recent-row" onclick="openDetail('member','${m.id}')">
+    <div class="recent-row" data-type="member" data-id="${m.id}" onclick="handleCardClick(this)">
       <div class="av" style="background:${coachColor(m.coach)};width:26px;height:26px;font-size:10px">${initials(m.name)}</div>
       <div style="flex:1;min-width:0">
         <div class="card-name" style="font-size:12.5px">${esc(m.name||'—')}</div>
@@ -709,7 +711,7 @@ function memberCard(m) {
   const ds = daysSince(m.last_visit);
   const attCls = ds===null?'':ds<=7?'att-good':ds<=21?'att-warn':'att-bad';
   const attLbl = ds===null?'—':ds===0?'Today':ds===1?'1d ago':`${ds}d ago`;
-  return `<div class="card" onclick="openDetail('member','${m.id}')">
+  return `<div class="card" data-type="member" data-id="${m.id}" onclick="handleCardClick(this)">
     <div class="card-top">
       <div class="av" style="background:${coachColor(m.coach)}">${initials(m.name)}</div>
       <div class="card-info">
@@ -730,7 +732,7 @@ function memberCard(m) {
 }
 
 function leadCard(l) {
-  return `<div class="card" onclick="openDetail('lead','${l.id}')">
+  return `<div class="card" data-type="lead" data-id="${l.id}" onclick="handleCardClick(this)">
     <div class="card-top">
       <div class="av" style="background:${coachColor(l.assigned_to||l.coach)}">${initials(l.name)}</div>
       <div class="card-info">
@@ -752,7 +754,7 @@ function renderTable(c, arr, type) {
     : [{k:'name',l:'Name'},{k:'stage',l:'Stage'},{k:'assigned_to',l:'Assigned'},{k:'created_at',l:'Added'}];
   const thHtml = headers.map(h => `<th onclick="toggleSort('${h.k}')">${h.l}${sortKey===h.k?(sortDir===1?' ↑':' ↓'):''}</th>`).join('');
   const rowHtml = arr.map(m => {
-    if (type === 'member') return `<tr onclick="openDetail('member','${m.id}')">
+    if (type === 'member') return `<tr data-type="member" data-id="${m.id}" onclick="handleCardClick(this)">
       <td><div class="td-n">${esc(m.name||'—')}</div><div class="td-s">${esc(m.email||'')}</div></td>
       <td>${statusPill(m.status)}</td>
       <td>${needsBadge(m.needs)}</td>
@@ -760,7 +762,7 @@ function renderTable(c, arr, type) {
       <td style="color:var(--tx3)">${fmtDate(m.last_visit)}</td>
       <td style="max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--tx2)">${esc(m.goals||'—')}</td>
     </tr>`;
-    return `<tr onclick="openDetail('lead','${m.id}')">
+    return `<tr data-type="lead" data-id="${m.id}" onclick="handleCardClick(this)">
       <td><div class="td-n">${esc(m.name||'—')}</div><div class="td-s">${esc(m.email||'')}</div></td>
       <td>${statusPill(m.stage||m.status)}</td>
       <td><span class="coach-dot" style="background:${coachColor(m.assigned_to||m.coach)}"></span>${esc(m.assigned_to||m.coach||'—')}</td>
@@ -836,6 +838,37 @@ function openDetail(type, id) {
       });
     });
   }
+}
+
+
+function handleCardClick(el) {
+  const type = el.dataset.type;
+  const id = el.dataset.id;
+  openDetail(type, id);
+}
+
+function openNewMemberOnboarding(m) {
+  editingType = 'member';
+  editingId = m.id;
+  const panel = document.getElementById('detailOverlay');
+  document.getElementById('detailTitle').textContent = '👋 New Member: ' + (m.name||'Unknown');
+  document.getElementById('detailMeta').textContent = 'Just joined — fill in their details below';
+  document.getElementById('detailSaveInd').textContent = '';
+  document.getElementById('detailBody').innerHTML = `
+    <div style="background:var(--brand-l);border:1px solid var(--brand-m);border-radius:7px;padding:12px 14px;margin-bottom:16px;font-size:12px;color:var(--brand)">
+      ✨ <strong>${esc(m.name||'This member')}</strong> just joined. Assign them to a coach and set their goals before closing.
+    </div>
+    ${buildMemberForm(m, false)}
+  `;
+  panel.classList.remove('hidden');
+  document.getElementById('detailBody').querySelectorAll('[data-field]').forEach(el => {
+    el.addEventListener('change', () => autoSave('member', m.id));
+    el.addEventListener('input', () => {
+      clearTimeout(saveTimers['member-'+m.id]);
+      setInd('saving','● Saving…');
+      saveTimers['member-'+m.id] = setTimeout(() => autoSave('member', m.id), 900);
+    });
+  });
 }
 
 function closeDetail() {
@@ -1006,14 +1039,30 @@ function clearFilters() { activeFilters = {}; closeFilter(); }
 async function triggerSync() {
   const btn = document.getElementById('syncBtn');
   btn.textContent = '↻ Syncing…'; btn.disabled = true;
+  const prevIds = new Set(members.map(m => String(m.id)));
   try {
     const res = await fetch(`${API}/api/sync/members`, {
       method:'POST', headers:{'Content-Type':'application/json','x-sync-secret':'andwell-sync-2026'}
     });
     const data = await res.json();
     await loadMembers();
-    toast(`Sync complete — ${data.synced||0} members updated`, 'success');
+    // Find truly new members (no coach assigned = needs onboarding)
+    const newUnassigned = members.filter(m => !prevIds.has(String(m.id)) && !m.coach);
+    toast(`Sync complete — ${data.synced||0} members updated${newUnassigned.length?' | '+newUnassigned.length+' new to assign':''}`, 'success');
     renderMain();
+    // If there are new unassigned members, show onboarding for the first one
+    if (newUnassigned.length > 0) {
+      setTimeout(() => {
+        if (confirm(`${newUnassigned.length} new member${newUnassigned.length>1?'s':''} joined since last sync. Open their profiles to assign coaches and goals?`)) {
+          let i = 0;
+          function openNext() {
+            if (i < newUnassigned.length) openNewMemberOnboarding(newUnassigned[i++]);
+          }
+          const origClose = window._onDetailClose;
+          openNext();
+        }
+      }, 500);
+    }
   } catch(e) { toast('Sync failed: '+e.message,'error'); }
   finally { btn.textContent = '↺ Sync Momence'; btn.disabled = false; }
 }
