@@ -688,7 +688,7 @@ function renderRecentMembers() {
 function renderCoachBreakdown() {
   const coaches = {};
   allMembers.forEach(m => {
-    const c = m.coach_name || 'Unassigned';
+    const c = m.coach || 'Unassigned';
     coaches[c] = (coaches[c] || 0) + 1;
   });
   if (!Object.keys(coaches).length) return `<div class="empty-state"><p>No data yet</p></div>`;
@@ -764,7 +764,7 @@ function renderMembers(c) {
   const cf = document.getElementById('coach-filter').value;
   let display = filtered;
   if (sf) display = display.filter(m => m.status === sf);
-  if (cf) display = display.filter(m => (m.coach_name||'').toLowerCase() === cf);
+  if (cf) display = display.filter(m => (m.coach||'').toLowerCase() === cf);
 
   if (memberView === 'list') {
     const wrap = document.createElement('div');
@@ -795,8 +795,8 @@ function renderMemberTable(members) {
         </td>
         <td>${statusBadge(m.status)}</td>
         <td>
-          <span class="coach-dot" style="background:${getCoachColorByName(m.coach_name)}"></span>
-          <span style="font-size:13px">${m.coach_name || 'Unassigned'}</span>
+          <span class="coach-dot" style="background:${getCoachColorByName(m.coach)}"></span>
+          <span style="font-size:13px">${m.coach || 'Unassigned'}</span>
         </td>
         <td style="color:var(--text-secondary);font-size:12px">${fmtDate(m.created_at)}</td>
         <td style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--text-secondary);font-size:12px">${m.goals || '—'}</td>
@@ -826,8 +826,8 @@ function renderMemberKanban(members) {
             <div class="kanban-card-meta">${m.email || ''}</div>
             <div class="kanban-card-footer">
               <div style="display:flex;align-items:center">
-                <span class="coach-dot" style="background:${getCoachColorByName(m.coach_name)}"></span>
-                <span style="font-size:11px;color:var(--text-secondary)">${m.coach_name || 'None'}</span>
+                <span class="coach-dot" style="background:${getCoachColorByName(m.coach)}"></span>
+                <span style="font-size:11px;color:var(--text-secondary)">${m.coach || 'None'}</span>
               </div>
               <span style="font-size:10px;color:var(--text-muted)">${fmtDate(m.created_at)}</span>
             </div>
@@ -882,12 +882,12 @@ function buildMemberForm(m) {
     </div>
     <div class="panel-field">
       <label>Assigned Coach</label>
-      <select data-field="coach_name" ${ro ? 'disabled' : ''}>
-        <option value="" ${!m?.coach_name?'selected':''}>Unassigned</option>
-        <option value="Xuan" ${m?.coach_name==='Xuan'?'selected':''}>Xuan</option>
-        <option value="Linda" ${m?.coach_name==='Linda'?'selected':''}>Linda</option>
-        <option value="Alvin" ${m?.coach_name==='Alvin'?'selected':''}>Alvin</option>
-        <option value="Andrew" ${m?.coach_name==='Andrew'?'selected':''}>Andrew</option>
+      <select data-field="coach" ${ro ? 'disabled' : ''}>
+        <option value="" ${!m?.coach?'selected':''}>Unassigned</option>
+        <option value="Xuan" ${m?.coach==='Xuan'?'selected':''}>Xuan</option>
+        <option value="Linda" ${m?.coach==='Linda'?'selected':''}>Linda</option>
+        <option value="Alvin" ${m?.coach==='Alvin'?'selected':''}>Alvin</option>
+        <option value="Andrew" ${m?.coach==='Andrew'?'selected':''}>Andrew</option>
       </select>
     </div>
     <div class="panel-section">Goals & Notes</div>
