@@ -184,6 +184,14 @@ cron.schedule('0 12 * * *',async()=>{
   await sendDailyReachout();
 });
 
+
+app.post('/api/slack/test',auth,async(req,res)=>{
+  try{
+    await sendDailyReachout();
+    res.json({ok:true,message:'Slack reach-out triggered'});
+  }catch(e){res.status(500).json({error:e.message});}
+});
+
 app.get('*',(req,res)=>res.sendFile(path.join(__dirname,'public','index.html')));
 
 app.listen(PORT,()=>{
