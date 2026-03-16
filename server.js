@@ -192,6 +192,109 @@ app.post('/api/slack/test',auth,async(req,res)=>{
   }catch(e){res.status(500).json({error:e.message});}
 });
 
+
+// ══════════════════════════════════════════════
+// MOMENCE AUTO-SYNC
+// ══════════════════════════════════════════════
+async function syncFromMomence() {
+  const CLIENT_ID     = process.env.MOMENCE_CLIENT_ID;
+  const CLIENT_SECRET = process.env.MOMENCE_CLIENT_SECRET;
+  const USERNAME      = process.env.MOMENCE_USERNAME;
+  const PASSWORD      = process.env.MOMENCE_PASSWORD;
+  const MAPI          = 'https://api.momence.com/api/v2';
+  if (!CLIENT_ID || !USERNAME) { console.log('Momence env vars not set, skipping sync'); return; }
+
+  // Auth
+  console.log('Momence sync: authenticating...');
+  const authBody = new URLSearchParams({ grant_type:'password', username:USERNAME, password:PASSWORD, client_id:CLIENT_ID, client_secret:CLIENT_SECRET });
+  const authRes = await fetch(`${MAPI}/auth/token`, { method:'POST', headers:{'Content-Type':'application/x-www-form-urlencoded'}, body:authBody.toString(), signal:AbortSignal.timeout(15000) });
+  const authData = await authRes.json();
+  const token = authData.access_token;
+  if (!token) throw new Error('Momence auth failed: ' + JSON.stringify(authData));
+  console.log('Momence sync: authenticated');
+
+  // Fetch all members
+  const allMembers = [];
+  let page = 0;
+  const pageSize = 100;
+  while (true) {
+    const res = await fetch(`${MAPI}/host/members?page=${page}&pageSize=${pageSize}`, { headers:{ Authorization:`Bearer ${token}`, 'Content-Type':'application/json' }, signal:AbortSignal.timeout(20000) });
+    const body = await res.json();
+    const items = Array.isArray(body) ? body : (body.data || body.items || body.members || []);
+    if (!items.length) break;
+    allMembers.push(...items);
+    console.log(`Momence sync: fetched ${allMembers.length} members...`);
+    if (items.length < pageSize) break;
+    page++;
+    await new Promise(r => setTimeout(r, 200));
+  }
+  console.log(`Momence sync: ${allMembers.length} total members fetched`);
+
+  // Map and upsert — preserve coach/goals/notes/needs already set in DB
+  const client = await pool.connect();
+  let upserted = 0;
+  try {
+    await client.query('BEGIN');
+    for (const m of allMembers) {
+      const firstName = m.firstName || m.first_name || '';
+      const lastName  = m.lastName  || m.last_name  || '';
+      const name = `${firstName} ${lastName}`.trim() || m.email || 'Unknown';
+      const lastSeen = m.lastSeen ? m.lastSeen.slice(0,10) : null;
+      const firstSeen = m.firstSeen ? m.firstSeen.slice(0,10) : null;
+      const visitsObj = m.visits || {};
+      const totalVisits = visitsObj.totalVisits ?? visitsObj.total ?? 0;
+      const daysSince = lastSeen ? Math.floor((Date.now() - new Date(lastSeen)) / 86400000) : 999;
+      const status = daysSince >= 21 ? 'At-Risk' : 'Active';
+      const flagged = daysSince >= 21;
+      const momenceId = `momence_${m.id}`;
+
+      // Membership from tags as fallback
+      let membership = 'Unknown';
+      if (m.customerTags?.length > 0) membership = m.customerTags.map(t => t.label||t.name||t).join(', ');
+
+      // Upsert — ON CONFLICT preserves coach, goals, notes, needs (manually set fields)
+      await client.query(`
+        INSERT INTO members (id, name, email, phone, status, membership, last_visit, total_visits, flagged, join_date)
+        VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)
+        ON CONFLICT (id) DO UPDATE SET
+          name = EXCLUDED.name,
+          email = EXCLUDED.email,
+          phone = EXCLUDED.phone,
+          status = EXCLUDED.status,
+          membership = EXCLUDED.membership,
+          last_visit = EXCLUDED.last_visit,
+          total_visits = EXCLUDED.total_visits,
+          flagged = EXCLUDED.flagged,
+          updated_at = NOW()
+      `, [momenceId, name, m.email||'', m.phoneNumber||m.phone||'', status, membership, lastSeen, totalVisits, flagged, firstSeen]);
+      upserted++;
+    }
+    await client.query('COMMIT');
+    console.log(`Momence sync: upserted ${upserted} members`);
+  } catch(e) {
+    await client.query('ROLLBACK');
+    throw e;
+  } finally {
+    client.release();
+  }
+  return upserted;
+}
+
+// Schedule: daily at 6am EST (11:00 UTC)
+cron.schedule('0 11 * * *', async () => {
+  console.log('Running scheduled Momence sync...');
+  try { await syncFromMomence(); console.log('Scheduled sync complete'); }
+  catch(e) { console.error('Scheduled sync failed:', e.message); }
+});
+
+// Manual trigger endpoint
+app.post('/api/sync/momence', auth, async (req, res) => {
+  try {
+    const count = await syncFromMomence();
+    res.json({ ok: true, synced: count });
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
 app.get('*',(req,res)=>res.sendFile(path.join(__dirname,'public','index.html')));
 
 app.listen(PORT,()=>{
