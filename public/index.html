@@ -1068,7 +1068,7 @@ async function triggerSync() {
 }
 
 // ═══════════════════════════════════════════════ HELPERS
-function esc(s) { return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 function initials(name) { return (name||'?').split(' ').map(w=>w[0]||'').join('').toUpperCase().slice(0,2)||'?'; }
 function coachColor(name) {
   if (!name) return '#9ba3b2';
