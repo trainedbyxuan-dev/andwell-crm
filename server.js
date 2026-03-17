@@ -397,6 +397,25 @@ app.delete('/api/outreach/:memberId/contact', auth, async(req,res)=>{
   }catch(e){res.status(500).json({error:e.message});}
 });
 
+// POST /api/outreach/:memberId/contact/manual — log contact with a specific date
+app.post('/api/outreach/:memberId/contact/manual', auth, async(req,res)=>{
+  const{date}=req.body;
+  if(!date) return res.status(400).json({error:'date required'});
+  try{
+    // Delete any existing log for this member on this date first (avoid duplicates)
+    await pool.query(
+      `DELETE FROM contact_log WHERE member_id=$1 AND contacted_at::date=$2`,
+      [req.params.memberId, date]
+    );
+    const{rows}=await pool.query(
+      `INSERT INTO contact_log (member_id, logged_by, contacted_at) VALUES ($1,$2,$3) RETURNING *`,
+      [req.params.memberId, req.user.name, date]
+    );
+    await logActivity(req.user.name,'Manually logged contact on '+date,'member',req.params.memberId,'',null);
+    res.json(rows[0]);
+  }catch(e){res.status(500).json({error:e.message});}
+});
+
 // GET /api/outreach/today — all member IDs contacted today (for UI state)
 app.get('/api/outreach/today', auth, async(req,res)=>{
   try{

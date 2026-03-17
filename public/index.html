@@ -1197,6 +1197,15 @@ async function handleOutreachDrop(e, targetCol) {
   if (!dragOutreachId) return;
   if (targetCol === 'col-today' || targetCol === 'col-week') {
     await logContact(dragOutreachId);
+  } else if (targetCol === 'col-to') {
+    // Drag back to To Contact = undo contact
+    const contactedToday = contactedTodaySet.has(String(dragOutreachId));
+    if (contactedToday) {
+      await apiFetch(`/api/outreach/${dragOutreachId}/contact`, {method:'DELETE'});
+      contactedTodaySet.delete(String(dragOutreachId));
+      await loadOutreach();
+      renderMain();
+    }
   }
   dragOutreachId = null;
 }
@@ -1263,6 +1272,31 @@ function closeDetail() {
 function setInd(cls, text) {
   const el = document.getElementById('detailSaveInd');
   if (el) { el.className = `save-ind ${cls}`; el.textContent = text; }
+}
+
+async function manualLogContact(memberId) {
+  const input = document.getElementById(`manualContactDate-${memberId}`);
+  const date = input ? input.value : '';
+  if (!date) { toast('Pick a date first', 'warn'); return; }
+  try {
+    await apiFetch(`/api/outreach/${memberId}/contact/manual`, {method:'POST', body: JSON.stringify({date})});
+    await loadOutreach();
+    renderMain();
+    // Re-open detail to refresh the date field
+    openDetail('member', memberId);
+    toast('Contact logged for ' + date, 'success');
+  } catch(e) { toast('Failed: '+e.message, 'error'); }
+}
+
+async function manualDeleteContact(memberId) {
+  try {
+    await apiFetch(`/api/outreach/${memberId}/contact`, {method:'DELETE'});
+    contactedTodaySet.delete(String(memberId));
+    await loadOutreach();
+    renderMain();
+    openDetail('member', memberId);
+    toast('Contact cleared', 'warn');
+  } catch(e) { toast('Failed: '+e.message, 'error'); }
 }
 
 async function clearFollowUp(memberId) {
@@ -1340,6 +1374,17 @@ function buildMemberForm(m, ro) {
     </div>
     <div class="fg"><label>Goals</label><textarea class="fta" data-field="goals" ${ro?'readonly':''}>${v(m.goals)}</textarea></div>
     <div class="fg"><label>Internal Notes</label><textarea class="fta" data-field="notes" ${ro?'readonly':''}>${v(m.notes)}</textarea></div>
+    <div class="sec-hd">Outreach</div>
+    <div class="frow" style="align-items:flex-end">
+      <div class="fg">
+        <label>Last Contacted <span style="font-weight:400;color:var(--tx3)">(manual override)</span></label>
+        <input class="fi" type="date" id="manualContactDate-${m.id}" value="${(() => { const e = outreachMembers.find(o=>String(o.id)===String(m.id)); return e&&e.last_contacted_at?e.last_contacted_at.slice(0,10):''; })()}" ${ro?'disabled':''}>
+      </div>
+      <div class="fg" style="display:flex;gap:6px;align-items:flex-end;padding-bottom:2px">
+        ${!ro ? `<button class="btn btn-brand btn-sm" onclick="manualLogContact('${m.id}')">Set contacted</button>
+        <button class="btn btn-ghost btn-sm" onclick="manualDeleteContact('${m.id}')">Clear</button>` : ''}
+      </div>
+    </div>
     <div class="sec-hd">Info</div>
     <div class="d-grid">
       <div class="di"><label>Last Visit</label><span>${fmtDate(m.last_visit)}</span></div>
