@@ -418,6 +418,7 @@ const AV_COLORS = ['#0962ff','#16a34a','#7c3aed','#d97706','#0891b2','#dc2626'];
 // ═══════════════════════════════════════════════ STATE
 let token = null, currentUser = null;
 let members = [], leads = [], outreachMembers = [], outreachStats = [];
+let contactedTodaySet = new Set(); // member IDs contacted today, for all members not just outreach
 let currentView = 'dashboard';
 let currentLayout = 'kanban';
 let currentFilter = 'all';
@@ -543,12 +544,18 @@ async function loadLeads() {
 
 async function loadOutreach() {
   try {
-    const [members, stats] = await Promise.all([
+    const [om, stats] = await Promise.all([
       apiFetch('/api/outreach'),
       apiFetch('/api/outreach/stats')
     ]);
-    outreachMembers = Array.isArray(members) ? members : [];
+    outreachMembers = Array.isArray(om) ? om : [];
     outreachStats = Array.isArray(stats) ? stats : [];
+    // Build set of member IDs contacted today (from outreach list)
+    contactedTodaySet = new Set(
+      outreachMembers
+        .filter(m => m.last_contacted_at && daysSinceDate(m.last_contacted_at) === 0)
+        .map(m => String(m.id))
+    );
     const nc = outreachMembers.filter(m => !m.last_contacted_at || daysSinceDate(m.last_contacted_at) > 7).length;
     document.getElementById('ct-outreach').textContent = nc;
     updateOutreachCounter();
@@ -597,32 +604,36 @@ function toggleCounterDetail() {
 }
 
 async function logContact(memberId) {
-  const outreachEntry = outreachMembers.find(o => String(o.id)===String(memberId));
-  const contactedToday = outreachEntry && daysSinceDate(outreachEntry.last_contacted_at) === 0;
+  const contactedToday = contactedTodaySet.has(String(memberId));
   try {
     if (contactedToday) {
       await apiFetch(`/api/outreach/${memberId}/contact`, {method:'DELETE'});
+      contactedTodaySet.delete(String(memberId));
     } else {
       await apiFetch(`/api/outreach/${memberId}/contact`, {method:'POST'});
+      contactedTodaySet.add(String(memberId));
     }
+    renderMain();
     await loadOutreach();
     renderMain();
   } catch(e) { alert('Failed: ' + e.message); }
 }
 
 async function logContactFromCard(memberId) {
-  const outreachEntry = outreachMembers.find(o => String(o.id)===String(memberId));
-  const contactedToday = outreachEntry && daysSinceDate(outreachEntry.last_contacted_at) === 0;
+  const contactedToday = contactedTodaySet.has(String(memberId));
   try {
     if (contactedToday) {
       await apiFetch(`/api/outreach/${memberId}/contact`, {method:'DELETE'});
+      contactedTodaySet.delete(String(memberId));
       toast('Contact undone', 'warn');
     } else {
       await apiFetch(`/api/outreach/${memberId}/contact`, {method:'POST'});
+      contactedTodaySet.add(String(memberId));
       toast('Contact logged ✓', 'success');
     }
-    await loadOutreach();
-    renderMain();
+    renderMain(); // instant UI update
+    await loadOutreach(); // sync with server
+    renderMain(); // re-render with fresh data
   } catch(e) { toast('Failed: ' + e.message, 'error'); }
 }
 
@@ -936,10 +947,10 @@ function memberCard(m) {
   const ds = daysSince(m.last_visit);
   const attCls = ds===null?'':ds<=7?'att-good':ds<=21?'att-warn':'att-bad';
   const attLbl = ds===null?'—':ds===0?'Today':ds===1?'1d ago':`${ds}d ago`;
-  // Check if contacted today from outreachMembers
+  // Check contact state from contactedTodaySet and outreachMembers
+  const contactedToday = contactedTodaySet.has(String(m.id));
   const outreachEntry = outreachMembers.find(o => String(o.id)===String(m.id));
-  const contactedToday = outreachEntry && daysSinceDate(outreachEntry.last_contacted_at) === 0;
-  const contactedThisWeek = outreachEntry && !contactedToday && daysSinceDate(outreachEntry.last_contacted_at) <= 7;
+  const contactedThisWeek = !contactedToday && outreachEntry && daysSinceDate(outreachEntry.last_contacted_at) <= 7;
   const contactBtnStyle = contactedToday
     ? 'background:var(--grn-b);color:var(--grn);border-color:var(--grn)'
     : contactedThisWeek
