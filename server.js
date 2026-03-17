@@ -53,37 +53,25 @@ app.get('/api/members',auth,async(req,res)=>{
 });
 
 app.patch('/api/members/:id',auth,async(req,res)=>{
-  const allowed=['name','email','phone','status','membership','needs','coach','goals','habits','notes','flagged','contacted','timeline','follow_up_date'];
-  const dateFields=['follow_up_date'];
-  const jsonFields=['timeline'];
+  const allowed=['name','email','phone','status','membership','needs','coach','goals','notes','follow_up_date'];
   const updates=[],values=[];let i=1;
   for(const key of allowed){
     if(req.body[key]!==undefined){
       updates.push(key+'=$'+i++);
       let val=req.body[key];
-      if(dateFields.includes(key)&&(val===''||val===null)) val=null;
-      else if(jsonFields.includes(key)){
-        if(val===''||val===null||val===undefined) val=null;
-        else if(typeof val==='string'){
-          try{ JSON.parse(val); }catch(e){ val=null; }
-        } else { val=JSON.stringify(val); }
-      } else if(typeof val==='object'&&val!==null) val=JSON.stringify(val);
+      if(key==='follow_up_date'&&(val===''||val===null)) val=null;
       values.push(val);
     }
   }
   if(!updates.length) return res.status(400).json({error:'No valid fields'});
   updates.push('updated_at=NOW()');values.push(req.params.id);
   try{
-    console.log('PATCH members body keys:',Object.keys(req.body));
-    console.log('PATCH members updates:',updates);
-    console.log('PATCH members values:',JSON.stringify(values));
     const{rows}=await pool.query('UPDATE members SET '+updates.join(',')+ ' WHERE id=$'+i+' RETURNING *',values);
     if(!rows.length) return res.status(404).json({error:'Not found'});
     await logActivity(req.user.name,'Updated '+Object.keys(req.body).filter(k=>allowed.includes(k)).join(', '),'member',rows[0].id,rows[0].name,null);
     res.json(rows[0]);
   }catch(e){
     console.error('PATCH members ERROR:',e.message);
-    console.error('PATCH members values were:',JSON.stringify(values));
     res.status(500).json({error:e.message});
   }
 });
