@@ -1105,30 +1105,11 @@ function clearFilters() { activeFilters = {}; closeFilter(); }
 async function triggerSync() {
   const btn = document.getElementById('syncBtn');
   btn.textContent = '↻ Syncing…'; btn.disabled = true;
-  const prevIds = new Set(members.map(m => String(m.id)));
   try {
-    const res = await fetch(`${API}/api/sync/members`, {
-      method:'POST', headers:{'Content-Type':'application/json','x-sync-secret':'andwell-sync-2026'}
-    });
-    const data = await res.json();
+    const data = await apiFetch('/api/sync/momence', {method:'POST'});
     await loadMembers();
-    // Find truly new members (no coach assigned = needs onboarding)
-    const newUnassigned = members.filter(m => !prevIds.has(String(m.id)) && !m.coach);
-    toast(`Sync complete — ${data.synced||0} members updated${newUnassigned.length?' | '+newUnassigned.length+' new to assign':''}`, 'success');
+    toast(`Sync complete — ${data.synced||0} members updated`, 'success');
     renderMain();
-    // If there are new unassigned members, show onboarding for the first one
-    if (newUnassigned.length > 0) {
-      setTimeout(() => {
-        if (confirm(`${newUnassigned.length} new member${newUnassigned.length>1?'s':''} joined since last sync. Open their profiles to assign coaches and goals?`)) {
-          let i = 0;
-          function openNext() {
-            if (i < newUnassigned.length) openNewMemberOnboarding(newUnassigned[i++]);
-          }
-          const origClose = window._onDetailClose;
-          openNext();
-        }
-      }, 500);
-    }
   } catch(e) { toast('Sync failed: '+e.message,'error'); }
   finally { btn.textContent = '↺ Sync Momence'; btn.disabled = false; }
 }
