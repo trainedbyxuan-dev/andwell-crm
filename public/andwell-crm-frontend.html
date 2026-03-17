@@ -334,22 +334,15 @@ td{padding:9px 13px;vertical-align:middle}
         <button id="lb-table" onclick="setLayout('table',this)">≡ List</button>
       </div>
       <div class="tool-sep"></div>
-      <span style="font-size:10.5px;color:var(--tx3);font-weight:600;white-space:nowrap">Group by:</span>
-      <div class="tool-seg" id="groupBySeg">
-        <button id="gb-status" class="on" onclick="setGroupBy('status',this)">Status</button>
-        <button id="gb-visit" onclick="setGroupBy('visit',this)">Last Visit</button>
-        <button id="gb-needs" onclick="setGroupBy('needs',this)">Needs</button>
-        <button id="gb-coach" onclick="setGroupBy('coach',this)">Coach</button>
-      </div>
-      <div class="tool-sep"></div>
       <div id="activeFiltersRow" style="display:flex;gap:5px;flex-wrap:wrap;align-items:center"></div>
       <button class="filter-chip" onclick="openFilter()">⊕ Filter</button>
       <div class="tool-sep"></div>
       <select class="sort-btn" id="sortSel" onchange="renderMain()">
-        <option value="name">Sort: Name ↑</option>
+        <option value="name">Sort: Name</option>
+        <option value="status">Sort: Status</option>
+        <option value="coach">Sort: Coach</option>
         <option value="last_visit">Sort: Last Visit</option>
         <option value="needs">Sort: Needs</option>
-        <option value="coach">Sort: Coach</option>
       </select>
     </div>
     <div class="stats hidden" id="statsRow"></div>
@@ -368,10 +361,9 @@ const AV_COLORS = ['#0962ff','#16a34a','#7c3aed','#d97706','#0891b2','#dc2626'];
 let token = null, currentUser = null;
 let members = [], leads = [];
 let currentView = 'dashboard';
-let currentLayout = 'kanban';
-let currentFilter = 'all';
-let groupBy = 'status'; // status | visit | needs | coach
-let activeFilters = {};
+let currentLayout = 'kanban'; // for members/leads
+let currentFilter = 'all'; // sidebar filter
+let activeFilters = {}; // {coach:[], needs:[], status:[]}
 let sortKey = 'name', sortDir = 1;
 let saveTimers = {};
 let editingId = null, editingType = null;
@@ -628,10 +620,10 @@ function getFilteredMembers() {
   if (activeFilters.status?.length) arr = arr.filter(m => activeFilters.status.some(s => (m.status||'').toLowerCase().includes(s.toLowerCase())));
   // sort
   arr.sort((a,b) => {
-    if (sortKey==='last_visit') return new Date(b.last_visit||0) - new Date(a.last_visit||0);
-    if (sortKey==='needs') return needsOrder(a.needs) - needsOrder(b.needs);
-    if (sortKey==='coach') return (a.coach||'').localeCompare(b.coach||'');
-    return (a.name||'').localeCompare(b.name||'');
+    let av = a[sortKey]||'', bv = b[sortKey]||'';
+    if (sortKey === 'needs') { av = needsOrder(a.needs); bv = needsOrder(b.needs); return (av-bv)*sortDir; }
+    if (sortKey === 'last_visit') return (new Date(av||0) - new Date(bv||0)) * sortDir;
+    return String(av).localeCompare(String(bv)) * sortDir;
   });
   return arr;
 }
@@ -690,71 +682,13 @@ function removeFilter(key, val) {
   renderMain();
 }
 
-function setGroupBy(g, btn) {
-  groupBy = g;
-  document.querySelectorAll('#groupBySeg button').forEach(b => b.classList.remove('on'));
-  if (btn) btn.classList.add('on');
-  renderMain();
-}
-
 // ─── KANBAN ───────────────────────────────────────
-function getKanbanCols(arr, type) {
-  if (type === 'lead') {
-    return [
-      {key:'New Inquiry', color:'#0962ff', match: m => !m.stage || m.stage==='New Inquiry'},
-      {key:'Contacted', color:'#7c3aed', match: m => m.stage==='Contacted'},
-      {key:'Consult Booked', color:'#16a34a', match: m => m.stage==='Consult Booked'},
-      {key:'Consult Done', color:'#0891b2', match: m => m.stage==='Consult Done'},
-      {key:'Joined', color:'#16a34a', match: m => m.stage==='Joined'},
-      {key:'Lost', color:'#dc2626', match: m => m.stage==='Lost'},
-    ];
-  }
-  // Member kanban — dynamic based on groupBy
-  if (groupBy === 'visit') {
-    return [
-      {key:'0–5 days', color:'#16a34a', match: m => { const d=daysSince(m.last_visit); return d!==null&&d<=5; }},
-      {key:'6–10 days', color:'#0891b2', match: m => { const d=daysSince(m.last_visit); return d!==null&&d>=6&&d<=10; }},
-      {key:'11–15 days', color:'#d97706', match: m => { const d=daysSince(m.last_visit); return d!==null&&d>=11&&d<=15; }},
-      {key:'16–20 days', color:'#dc2626', match: m => { const d=daysSince(m.last_visit); return d!==null&&d>=16&&d<=20; }},
-      {key:'20+ days', color:'#7c3aed', match: m => { const d=daysSince(m.last_visit); return d===null||d>20; }},
-    ];
-  }
-  if (groupBy === 'needs') {
-    return [
-      {key:'High', color:'#dc2626', match: m => (m.needs||'').includes('High')},
-      {key:'Med', color:'#d97706', match: m => (m.needs||'').includes('Med')},
-      {key:'Low', color:'#16a34a', match: m => (m.needs||'').includes('Low')},
-      {key:'Unset', color:'#9ba3b2', match: m => !m.needs},
-    ];
-  }
-  if (groupBy === 'coach') {
-    const cols = COACHES.map(c => ({key:c, color:COACH_COLORS[c], match: m => m.coach===c}));
-    cols.push({key:'Unassigned', color:'#9ba3b2', match: m => !m.coach});
-    return cols;
-  }
-  // Default: status
-  return [
-    {key:'Active', color:'#16a34a', match: m => (m.status||'').toLowerCase()==='active'},
-    {key:'At-Risk', color:'#d97706', match: m => (m.status||'').toLowerCase().includes('risk')},
-    {key:'New Member', color:'#0891b2', match: m => (m.status||'').toLowerCase().includes('new')||(m.status||'')===''},
-    {key:'Paused', color:'#9ba3b2', match: m => (m.status||'').toLowerCase()==='paused'},
-  ];
-}
-
 function renderKanban(c, arr, type) {
-  const cols = getKanbanCols(arr, type);
-  // Sort within each column
-  const sorted = [...arr].sort((a,b) => {
-    if (sortKey==='last_visit') {
-      const av = a.last_visit||'', bv = b.last_visit||'';
-      return (new Date(bv||0) - new Date(av||0)); // most recent first
-    }
-    if (sortKey==='needs') return (needsOrder(a.needs)-needsOrder(b.needs));
-    if (sortKey==='coach') return (a.coach||'').localeCompare(b.coach||'');
-    return (a.name||'').localeCompare(b.name||'');
-  });
+  const cols = type === 'member'
+    ? [{key:'New Member',color:'#0891b2'},{key:'Active',color:'#16a34a'},{key:'At-Risk',color:'#d97706'},{key:'Paused',color:'#dc2626'}]
+    : [{key:'New Inquiry',color:'#0962ff'},{key:'Contacted',color:'#7c3aed'},{key:'Consult Booked',color:'#16a34a'},{key:'Consult Done',color:'#0891b2'},{key:'Joined',color:'#16a34a'},{key:'Lost',color:'#dc2626'}];
   c.innerHTML = `<div class="kb-wrap"><div class="kb-board">${cols.map(col => {
-    const items = sorted.filter(col.match);
+    const items = arr.filter(m => statusMatch(m.status||m.stage, col.key));
     return `<div class="kb-col">
       <div class="col-hd"><div class="col-hd-left"><div class="col-dot" style="background:${col.color}"></div>${esc(col.key)}</div><div class="col-ct">${items.length}</div></div>
       <div class="col-body" style="border-top-color:${col.color}">${items.length ? items.map(m => type==='member'?memberCard(m):leadCard(m)).join('') : '<div style="text-align:center;color:var(--tx3);padding:12px;font-size:11px">Empty</div>'}</div>
