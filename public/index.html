@@ -604,6 +604,15 @@ async function logContact(memberId) {
   } catch(e) { alert('Failed to log contact: ' + e.message); }
 }
 
+async function logContactFromCard(memberId) {
+  try {
+    await apiFetch(`/api/outreach/${memberId}/contact`, {method:'POST'});
+    await loadOutreach();
+    renderMain();
+    toast('Contact logged ✓', 'success');
+  } catch(e) { toast('Failed to log contact: ' + e.message, 'error'); }
+}
+
 async function quickSnooze(memberId, days) {
   const d = new Date();
   d.setDate(d.getDate() + days);
@@ -914,6 +923,16 @@ function memberCard(m) {
   const ds = daysSince(m.last_visit);
   const attCls = ds===null?'':ds<=7?'att-good':ds<=21?'att-warn':'att-bad';
   const attLbl = ds===null?'—':ds===0?'Today':ds===1?'1d ago':`${ds}d ago`;
+  // Check if contacted today from outreachMembers
+  const outreachEntry = outreachMembers.find(o => String(o.id)===String(m.id));
+  const contactedToday = outreachEntry && daysSinceDate(outreachEntry.last_contacted_at) === 0;
+  const contactedThisWeek = outreachEntry && !contactedToday && daysSinceDate(outreachEntry.last_contacted_at) <= 7;
+  const contactBtnStyle = contactedToday
+    ? 'background:var(--grn-b);color:var(--grn);border-color:var(--grn)'
+    : contactedThisWeek
+    ? 'background:var(--tel-b);color:var(--tel);border-color:var(--tel)'
+    : 'background:var(--sur2);color:var(--tx3);border-color:var(--bdr)';
+  const contactBtnLabel = contactedToday ? '✓ Today' : contactedThisWeek ? '✓ This week' : '📞';
   return `<div class="card" data-type="member" data-id="${m.id}" onclick="handleCardClick(this)">
     <div class="card-top">
       <div class="av" style="background:${coachColor(m.coach)}">${initials(m.name)}</div>
@@ -930,6 +949,7 @@ function memberCard(m) {
     <div class="card-foot">
       <span class="coach-lbl"><span class="coach-dot" style="background:${coachColor(m.coach)}"></span>${esc(m.coach||'—')}</span>
       <span class="${attCls}">${attLbl}</span>
+      <button onclick="event.stopPropagation();logContactFromCard('${m.id}')" style="margin-left:auto;padding:2px 8px;border-radius:5px;font-size:10px;font-weight:700;cursor:pointer;border:1px solid;font-family:inherit;transition:all .12s;${contactBtnStyle}">${contactBtnLabel}</button>
     </div>
   </div>`;
 }
