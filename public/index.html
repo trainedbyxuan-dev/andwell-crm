@@ -88,8 +88,13 @@ body{font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;background:var(--bg
 .content{flex:1;overflow:auto}
 
 /* OUTREACH KANBAN */
-.outreach-wrap{padding:14px 18px 80px;display:flex;flex-direction:column;gap:16px}
-.outreach-board{display:flex;gap:11px;min-width:max-content}
+.outreach-wrap{padding:0 18px 80px;display:flex;flex-direction:column;gap:0}
+.outreach-coach-tabs{display:flex;gap:6px;padding:10px 0 12px;flex-wrap:wrap}
+.outreach-coach-tab{padding:5px 14px;border-radius:20px;font-size:12px;font-weight:600;cursor:pointer;border:1.5px solid var(--bdr);background:var(--sur);color:var(--tx2);transition:all .12s;display:flex;align-items:center;gap:6px}
+.outreach-coach-tab:hover{border-color:var(--brand);color:var(--brand)}
+.outreach-coach-tab.active{background:var(--brand);color:#fff;border-color:var(--brand)}
+.outreach-coach-tab .tab-ct{font-size:10px;font-weight:700;opacity:.8}
+.outreach-board{display:flex;gap:11px;min-width:max-content;padding-bottom:20px}
 .outreach-col{width:280px;flex-shrink:0}
 .outreach-col .col-body{border-top-color:transparent}
 .outreach-col.col-to .col-body{border-top-color:var(--red)}
@@ -996,14 +1001,39 @@ async function renderActivity(c) {
 }
 
 // ═══════════════════════════════════════════════ OUTREACH
+let activeOutreachCoach = null;
+
 function renderOutreach(c) {
   const q = document.getElementById('searchInput').value.toLowerCase();
   let data = outreachMembers;
   if (q) data = data.filter(m => m.name && m.name.toLowerCase().includes(q));
 
+  // Get unique coaches from data
+  const coaches = [...new Set(data.map(m => m.coach).filter(Boolean))].sort();
+  if (!activeOutreachCoach || !coaches.includes(activeOutreachCoach)) {
+    activeOutreachCoach = coaches[0] || null;
+  }
+
+  // Build coach tabs
+  const tabsHtml = coaches.map(coach => {
+    const coachData = data.filter(m => m.coach === coach);
+    const toContactCount = coachData.filter(m => daysSinceDate(m.last_contacted_at) > 7).length;
+    const colorVar = `--${coach.toLowerCase()}`;
+    const isActive = coach === activeOutreachCoach;
+    const dotColor = isActive ? '#fff' : `var(${colorVar}, var(--brand))`;
+    return `<div class="outreach-coach-tab ${isActive ? 'active' : ''}" onclick="setOutreachCoach('${coach}')">
+      <span style="width:8px;height:8px;border-radius:50%;background:${dotColor};display:inline-block;flex-shrink:0"></span>
+      ${coach}
+      ${toContactCount > 0 ? `<span class="tab-ct">${toContactCount}</span>` : ''}
+    </div>`;
+  }).join('');
+
+  // Filter to active coach
+  const coachData = activeOutreachCoach ? data.filter(m => m.coach === activeOutreachCoach) : [];
+
   // Bucket into columns
   const toContact = [], today = [], thisWeek = [];
-  data.forEach(m => {
+  coachData.forEach(m => {
     const ds = daysSinceDate(m.last_contacted_at);
     if (ds === 0) today.push(m);
     else if (ds <= 7) thisWeek.push(m);
@@ -1014,45 +1044,62 @@ function renderOutreach(c) {
     const cards = items.length
       ? items.map(m => outreachCard(m, colClass)).join('')
       : `<div class="outreach-empty">${emptyMsg}</div>`;
-    return `
-      <div class="outreach-col ${colClass}">
-        <div class="col-hd">
-          <div class="col-hd-left"><span class="col-dot" style="background:${dot}"></span>${label}</div>
-          <span class="col-ct">${items.length}</span>
-        </div>
-        <div class="col-body" id="drop-${colClass}"
-          ondragover="event.preventDefault()"
-          ondrop="handleOutreachDrop(event,'${colClass}')">
-          ${cards}
-        </div>
-      </div>`;
+    return `<div class="outreach-col ${colClass}">
+      <div class="col-hd">
+        <div class="col-hd-left"><span class="col-dot" style="background:${dot}"></span>${label}</div>
+        <span class="col-ct">${items.length}</span>
+      </div>
+      <div class="col-body"
+        ondragover="event.preventDefault()"
+        ondrop="handleOutreachDrop(event,'${colClass}')">
+        ${cards}
+      </div>
+    </div>`;
   };
 
+  const emptyState = coaches.length === 0
+    ? `<div style="padding:40px;color:var(--tx3);text-align:center">No members need contact right now 🎉</div>`
+    : '';
+
   c.innerHTML = `<div class="outreach-wrap">
-    <div class="outreach-board">
+    <div class="outreach-coach-tabs">${tabsHtml}</div>
+    ${emptyState}
+    ${coaches.length > 0 ? `<div class="outreach-board">
       ${colHtml('To Contact','var(--red)','col-to', toContact, '🎉 All caught up!')}
-      ${colHtml('Contacted Today','var(--grn)','col-today', today, 'No contacts today yet')}
+      ${colHtml('Contacted Today','var(--grn)','col-today', today, 'None yet today')}
       ${colHtml('Contacted This Week','var(--tel)','col-week', thisWeek, 'None this week')}
-    </div>
+    </div>` : ''}
   </div>`;
+}
+
+function setOutreachCoach(coach) {
+  activeOutreachCoach = coach;
+  renderMain();
 }
 
 function outreachCard(m, colClass) {
   const ds = m.days_since || '?';
   const isContacted = colClass !== 'col-to';
   const badgeClass = colClass === 'col-to' ? 'oc-days' : colClass === 'col-today' ? 'oc-contacted-today' : 'oc-contacted-week';
-  const badgeLabel = colClass === 'col-to' ? `${ds}d absent` : colClass === 'col-today' ? 'Contacted today' : `Contacted ${daysSinceDate(m.last_contacted_at)}d ago`;
-  const btn = !isContacted ? `<button class="oc-btn" onclick="event.stopPropagation();logContact('${m.id}')">✓ Mark Contacted</button>` : '';
+  const badgeLabel = colClass === 'col-to'
+    ? `${ds}d absent`
+    : colClass === 'col-today'
+    ? 'Contacted today'
+    : `Contacted ${daysSinceDate(m.last_contacted_at)}d ago`;
+  const btn = !isContacted
+    ? `<div style="margin-top:8px"><button class="oc-btn" onclick="event.stopPropagation();logContact('${m.id}')">✓ Mark Contacted</button></div>`
+    : '';
+  const needsColor = m.needs === 'High' ? 'var(--red)' : m.needs === 'Med' ? 'var(--org)' : 'var(--grn)';
   return `<div class="oc-card" draggable="true"
     ondragstart="handleOutreachDragStart(event,'${m.id}')"
     onclick="openDetail('member','${m.id}')">
     <div class="oc-name">${m.name}</div>
     <div class="oc-meta">
       <span>${m.membership || '—'}</span>
-      ${m.needs ? `<span style="color:${m.needs==='High'?'var(--red)':m.needs==='Med'?'var(--org)':'var(--grn)'}">⬡ ${m.needs}</span>` : ''}
+      ${m.needs ? `<span style="color:${needsColor}">⬡ ${m.needs}</span>` : ''}
     </div>
     <span class="oc-badge ${badgeClass}">${badgeLabel}</span>
-    ${btn ? '<div style="margin-top:8px">'+btn+'</div>' : ''}
+    ${btn}
   </div>`;
 }
 
@@ -1064,7 +1111,6 @@ function handleOutreachDragStart(e, memberId) {
 async function handleOutreachDrop(e, targetCol) {
   e.preventDefault();
   if (!dragOutreachId) return;
-  // Only logging contact makes sense (moving right = contacted)
   if (targetCol === 'col-today' || targetCol === 'col-week') {
     await logContact(dragOutreachId);
   }

@@ -295,6 +295,76 @@ app.post('/api/sync/momence', auth, async (req, res) => {
   } catch(e) { res.status(500).json({ error: e.message }); }
 });
 
+// ══════════════════════════════════════════════
+// OUTREACH / CONTACT LOG
+// ══════════════════════════════════════════════
+
+// Ensure contact_log table exists on startup
+async function ensureContactLog(){
+  try{
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS contact_log (
+        id SERIAL PRIMARY KEY,
+        member_id VARCHAR(50) REFERENCES members(id) ON DELETE CASCADE,
+        logged_by VARCHAR(100) NOT NULL,
+        contacted_at TIMESTAMPTZ DEFAULT NOW()
+      )`);
+    await pool.query(`CREATE INDEX IF NOT EXISTS idx_contact_log_member ON contact_log(member_id)`);
+    await pool.query(`CREATE INDEX IF NOT EXISTS idx_contact_log_user_date ON contact_log(logged_by, contacted_at)`);
+    console.log('contact_log table ready');
+  }catch(e){console.error('contact_log init error:',e.message);}
+}
+ensureContactLog();
+
+// GET /api/outreach — all members 14+ days absent, with last_contacted_at
+app.get('/api/outreach', auth, async(req,res)=>{
+  try{
+    const{rows}=await pool.query(`
+      SELECT m.id, m.name, m.coach, m.last_visit, m.needs, m.membership, m.status,
+        EXTRACT(DAY FROM NOW()-m.last_visit::timestamptz)::int AS days_since,
+        cl.contacted_at AS last_contacted_at,
+        cl.logged_by AS last_contacted_by
+      FROM members m
+      LEFT JOIN LATERAL (
+        SELECT contacted_at, logged_by FROM contact_log
+        WHERE member_id = m.id
+        ORDER BY contacted_at DESC LIMIT 1
+      ) cl ON true
+      WHERE (m.last_visit IS NULL OR m.last_visit < NOW() - INTERVAL '14 days')
+        AND LOWER(COALESCE(m.status,'')) NOT IN ('paused','frozen','pause','freeze')
+        AND m.coach IS NOT NULL AND m.coach != ''
+      ORDER BY m.coach ASC, days_since DESC NULLS LAST
+    `);
+    res.json(rows);
+  }catch(e){res.status(500).json({error:e.message});}
+});
+
+// POST /api/outreach/:memberId/contact — log a contact for the current user
+app.post('/api/outreach/:memberId/contact', auth, async(req,res)=>{
+  try{
+    const{rows}=await pool.query(
+      `INSERT INTO contact_log (member_id, logged_by) VALUES ($1,$2) RETURNING *`,
+      [req.params.memberId, req.user.name]
+    );
+    await logActivity(req.user.name,'Logged outreach contact','member',req.params.memberId,'',null);
+    res.json(rows[0]);
+  }catch(e){res.status(500).json({error:e.message});}
+});
+
+// GET /api/outreach/stats — today's contact count per coach
+app.get('/api/outreach/stats', auth, async(req,res)=>{
+  try{
+    const{rows}=await pool.query(`
+      SELECT logged_by, COUNT(*)::int AS count
+      FROM contact_log
+      WHERE contacted_at >= NOW()::date
+      GROUP BY logged_by
+      ORDER BY count DESC
+    `);
+    res.json(rows);
+  }catch(e){res.status(500).json({error:e.message});}
+});
+
 app.get('*',(req,res)=>res.sendFile(path.join(__dirname,'public','index.html')));
 
 app.listen(PORT,()=>{
