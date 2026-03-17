@@ -54,11 +54,15 @@ app.get('/api/members',auth,async(req,res)=>{
 
 app.patch('/api/members/:id',auth,async(req,res)=>{
   const allowed=['status','membership','needs','coach','goals','habits','notes','flagged','contacted','timeline','follow_up_date'];
+  const dateFields=['follow_up_date','consult_date'];
   const updates=[],values=[];let i=1;
   for(const key of allowed){
     if(req.body[key]!==undefined){
       updates.push(key+'=$'+i++);
-      values.push(typeof req.body[key]==='object'?JSON.stringify(req.body[key]):req.body[key]);
+      let val=req.body[key];
+      if(dateFields.includes(key)&&val==='') val=null;
+      else if(typeof val==='object') val=JSON.stringify(val);
+      values.push(val);
     }
   }
   if(!updates.length) return res.status(400).json({error:'No valid fields'});
