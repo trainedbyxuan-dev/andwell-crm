@@ -397,7 +397,15 @@ app.delete('/api/outreach/:memberId/contact', auth, async(req,res)=>{
   }catch(e){res.status(500).json({error:e.message});}
 });
 
-// GET /api/outreach/stats — today's contact count per coach
+// GET /api/outreach/today — all member IDs contacted today (for UI state)
+app.get('/api/outreach/today', auth, async(req,res)=>{
+  try{
+    const{rows}=await pool.query(
+      `SELECT DISTINCT member_id FROM contact_log WHERE contacted_at >= NOW()::date`
+    );
+    res.json(rows.map(r=>r.member_id));
+  }catch(e){res.status(500).json({error:e.message});}
+});
 app.get('/api/outreach/stats', auth, async(req,res)=>{
   try{
     const{rows}=await pool.query(`

@@ -544,18 +544,14 @@ async function loadLeads() {
 
 async function loadOutreach() {
   try {
-    const [om, stats] = await Promise.all([
+    const [om, stats, todayIds] = await Promise.all([
       apiFetch('/api/outreach'),
-      apiFetch('/api/outreach/stats')
+      apiFetch('/api/outreach/stats'),
+      apiFetch('/api/outreach/today')
     ]);
     outreachMembers = Array.isArray(om) ? om : [];
     outreachStats = Array.isArray(stats) ? stats : [];
-    // Build set of member IDs contacted today (from outreach list)
-    contactedTodaySet = new Set(
-      outreachMembers
-        .filter(m => m.last_contacted_at && daysSinceDate(m.last_contacted_at) === 0)
-        .map(m => String(m.id))
-    );
+    contactedTodaySet = new Set(Array.isArray(todayIds) ? todayIds.map(String) : []);
     const nc = outreachMembers.filter(m => !m.last_contacted_at || daysSinceDate(m.last_contacted_at) > 7).length;
     document.getElementById('ct-outreach').textContent = nc;
     updateOutreachCounter();
