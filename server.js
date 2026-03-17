@@ -53,7 +53,7 @@ app.get('/api/members',auth,async(req,res)=>{
 });
 
 app.patch('/api/members/:id',auth,async(req,res)=>{
-  const allowed=['status','membership','needs','coach','goals','habits','notes','flagged','contacted','timeline'];
+  const allowed=['status','membership','needs','coach','goals','habits','notes','flagged','contacted','timeline','follow_up_date'];
   const updates=[],values=[];let i=1;
   for(const key of allowed){
     if(req.body[key]!==undefined){
@@ -162,7 +162,7 @@ async function logActivity(userName,action,entityType,entityId,entityName,detail
 async function sendDailyReachout(){
   if(!SLACK){console.log('No Slack webhook');return;}
   try{
-    const{rows}=await pool.query("SELECT name,coach,last_visit,needs,EXTRACT(DAY FROM NOW()-last_visit::timestamptz)::int AS days_since FROM members WHERE coach IS NOT NULL AND coach!='' AND (last_visit IS NULL OR last_visit < NOW() - INTERVAL '14 days') AND LOWER(COALESCE(status,'')) NOT IN ('paused','frozen','pause','freeze') ORDER BY coach,days_since DESC NULLS LAST");
+    const{rows}=await pool.query("SELECT name,coach,last_visit,needs,EXTRACT(DAY FROM NOW()-last_visit::timestamptz)::int AS days_since FROM members WHERE coach IS NOT NULL AND coach!='' AND (last_visit IS NULL OR last_visit < NOW() - INTERVAL '14 days') AND LOWER(COALESCE(status,'')) NOT IN ('paused','frozen','pause','freeze') AND (follow_up_date IS NULL OR follow_up_date <= CURRENT_DATE) ORDER BY coach,days_since DESC NULLS LAST");
     if(!rows.length) return;
     // Get yesterday's contact counts
     const{rows:contactRows}=await pool.query("SELECT logged_by, COUNT(*)::int AS count FROM contact_log WHERE contacted_at >= NOW()::date - INTERVAL '1 day' AND contacted_at < NOW()::date GROUP BY logged_by");
@@ -319,7 +319,9 @@ async function ensureContactLog(){
       )`);
     await pool.query(`CREATE INDEX IF NOT EXISTS idx_contact_log_member ON contact_log(member_id)`);
     await pool.query(`CREATE INDEX IF NOT EXISTS idx_contact_log_user_date ON contact_log(logged_by, contacted_at)`);
-    console.log('contact_log table ready');
+    // Add follow_up_date column if it doesn't exist
+    await pool.query(`ALTER TABLE members ADD COLUMN IF NOT EXISTS follow_up_date DATE`);
+    console.log('contact_log table and follow_up_date column ready');
   }catch(e){console.error('contact_log init error:',e.message);}
 }
 ensureContactLog();
@@ -329,6 +331,7 @@ app.get('/api/outreach', auth, async(req,res)=>{
   try{
     const{rows}=await pool.query(`
       SELECT m.id, m.name, m.coach, m.last_visit, m.needs, m.membership, m.status,
+        m.follow_up_date,
         EXTRACT(DAY FROM NOW()-m.last_visit::timestamptz)::int AS days_since,
         cl.contacted_at AS last_contacted_at,
         cl.logged_by AS last_contacted_by
@@ -341,6 +344,7 @@ app.get('/api/outreach', auth, async(req,res)=>{
       WHERE (m.last_visit IS NULL OR m.last_visit < NOW() - INTERVAL '14 days')
         AND LOWER(COALESCE(m.status,'')) NOT IN ('paused','frozen','pause','freeze')
         AND m.coach IS NOT NULL AND m.coach != ''
+        AND (m.follow_up_date IS NULL OR m.follow_up_date <= CURRENT_DATE)
       ORDER BY m.coach ASC, days_since DESC NULLS LAST
     `);
     res.json(rows);

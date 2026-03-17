@@ -604,6 +604,19 @@ async function logContact(memberId) {
   } catch(e) { alert('Failed to log contact: ' + e.message); }
 }
 
+async function quickSnooze(memberId, days) {
+  const d = new Date();
+  d.setDate(d.getDate() + days);
+  const dateStr = d.toISOString().slice(0, 10);
+  try {
+    await apiFetch(`/api/members/${memberId}`, {method:'PATCH', body: JSON.stringify({follow_up_date: dateStr})});
+    const idx = members.findIndex(m => String(m.id)===String(memberId));
+    if (idx !== -1) members[idx].follow_up_date = dateStr;
+    await loadOutreach();
+    renderMain();
+  } catch(e) { alert('Failed to snooze: ' + e.message); }
+}
+
 function updateCounts() {
   document.getElementById('ct-members').textContent = members.length;
   document.getElementById('ct-all').textContent = members.length;
@@ -1109,12 +1122,18 @@ function outreachCard(m, colClass) {
     : colClass === 'col-today'
     ? 'Contacted today'
     : `Contacted ${daysSinceDate(m.last_contacted_at)}d ago`;
-  const btn = !isContacted
-    ? `<div style="margin-top:8px"><button class="oc-btn" onclick="event.stopPropagation();logContact('${m.id}')">✓ Mark Contacted</button></div>`
-    : '';
   const needsColor = m.needs === 'High' ? 'var(--red)' : m.needs === 'Med' ? 'var(--org)' : 'var(--grn)';
   const coachColor = m.coach ? `var(--${m.coach.toLowerCase()}, var(--tx3))` : 'var(--tx3)';
   const showCoach = activeOutreachCoach === 'all' && m.coach;
+
+  // Quick snooze buttons (only on To Contact column)
+  const snoozeHtml = !isContacted ? `
+    <div style="display:flex;gap:4px;margin-top:6px;flex-wrap:wrap">
+      <button class="oc-btn" style="flex:2" onclick="event.stopPropagation();logContact('${m.id}')">✓ Contacted</button>
+      <button class="oc-btn" style="flex:1;background:var(--org-b);color:var(--org)" onclick="event.stopPropagation();quickSnooze('${m.id}',7)">+7d</button>
+      <button class="oc-btn" style="flex:1;background:var(--org-b);color:var(--org)" onclick="event.stopPropagation();quickSnooze('${m.id}',14)">+14d</button>
+    </div>` : '';
+
   return `<div class="oc-card" draggable="true"
     ondragstart="handleOutreachDragStart(event,'${m.id}')"
     onclick="openDetail('member','${m.id}')">
@@ -1124,7 +1143,7 @@ function outreachCard(m, colClass) {
       ${m.needs ? `<span style="color:${needsColor}">⬡ ${m.needs}</span>` : ''}
     </div>
     <span class="oc-badge ${badgeClass}">${badgeLabel}</span>
-    ${btn}
+    ${snoozeHtml}
   </div>`;
 }
 
@@ -1206,6 +1225,17 @@ function setInd(cls, text) {
   if (el) { el.className = `save-ind ${cls}`; el.textContent = text; }
 }
 
+async function clearFollowUp(memberId) {
+  try {
+    await apiFetch(`/api/members/${memberId}`, {method:'PATCH', body: JSON.stringify({follow_up_date: ''})});
+    const idx = members.findIndex(m => String(m.id)===String(memberId));
+    if (idx !== -1) members[idx].follow_up_date = null;
+    // Refresh the detail panel
+    openDetail('member', memberId);
+    toast('Follow-up date cleared', 'success');
+  } catch(e) { toast('Failed: '+e.message, 'error'); }
+}
+
 async function autoSave(type, id) {
   const body = {};
   document.getElementById('detailBody').querySelectorAll('[data-field]').forEach(el => { body[el.dataset.field] = el.value; });
@@ -1250,6 +1280,15 @@ function buildMemberForm(m, ro) {
       <option value="" ${!m.coach?'selected':''}>Unassigned</option>
       ${COACHES.map(c => `<option value="${c}" ${m.coach===c?'selected':''}>${c}</option>`).join('')}
     </select></div>
+    <div class="frow">
+      <div class="fg"><label>Follow-up Date <span style="font-weight:400;color:var(--tx3)">(snooze from outreach)</span></label>
+        <input class="fi" type="date" data-field="follow_up_date" value="${m.follow_up_date ? m.follow_up_date.slice(0,10) : ''}" ${dis}
+          style="${m.follow_up_date && new Date(m.follow_up_date) > new Date() ? 'border-color:var(--org);background:var(--org-b)' : ''}">
+      </div>
+      <div class="fg" style="display:flex;align-items:flex-end;padding-bottom:2px">
+        ${!ro ? `<button class="btn btn-ghost btn-sm" style="font-size:11px" onclick="clearFollowUp('${m.id}')">✕ Clear snooze</button>` : ''}
+      </div>
+    </div>
     <div class="fg"><label>Goals</label><textarea class="fta" data-field="goals" ${ro?'readonly':''}>${v(m.goals)}</textarea></div>
     <div class="fg"><label>Internal Notes</label><textarea class="fta" data-field="notes" ${ro?'readonly':''}>${v(m.notes)}</textarea></div>
     <div class="sec-hd">Info</div>
