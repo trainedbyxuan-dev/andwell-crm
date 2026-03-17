@@ -397,7 +397,7 @@ td{padding:9px 13px;vertical-align:middle}
       <div id="activeFiltersRow" style="display:flex;gap:5px;flex-wrap:wrap;align-items:center"></div>
       <button class="filter-chip" onclick="openFilter()">⊕ Filter</button>
       <div class="tool-sep"></div>
-      <select class="sort-btn" id="sortSel" onchange="renderMain()">
+      <select class="sort-btn" id="sortSel" onchange="sortKey=this.value;renderMain()">
         <option value="name">Sort: Name ↑</option>
         <option value="last_visit">Sort: Last Visit</option>
         <option value="last_contacted">Sort: Last Contacted</option>
