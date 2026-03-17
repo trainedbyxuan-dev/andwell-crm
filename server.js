@@ -55,13 +55,19 @@ app.get('/api/members',auth,async(req,res)=>{
 app.patch('/api/members/:id',auth,async(req,res)=>{
   const allowed=['status','membership','needs','coach','goals','habits','notes','flagged','contacted','timeline','follow_up_date'];
   const dateFields=['follow_up_date','consult_date'];
+  const jsonFields=['timeline'];
   const updates=[],values=[];let i=1;
   for(const key of allowed){
     if(req.body[key]!==undefined){
       updates.push(key+'=$'+i++);
       let val=req.body[key];
-      if(dateFields.includes(key)&&val==='') val=null;
-      else if(typeof val==='object') val=JSON.stringify(val);
+      if(dateFields.includes(key)&&(val===''||val===null)) val=null;
+      else if(jsonFields.includes(key)){
+        if(val===''||val===null||val===undefined) val=null;
+        else if(typeof val==='string'){
+          try{ JSON.parse(val); }catch(e){ val=JSON.stringify(val); }
+        } else { val=JSON.stringify(val); }
+      } else if(typeof val==='object'&&val!==null) val=JSON.stringify(val);
       values.push(val);
     }
   }
@@ -93,11 +99,21 @@ app.post('/api/leads',auth,async(req,res)=>{
 
 app.patch('/api/leads/:id',auth,async(req,res)=>{
   const allowed=['name','email','phone','status','source','coach','consult_date','notes','timeline'];
+  const dateFields=['consult_date'];
+  const jsonFields=['timeline'];
   const updates=[],values=[];let i=1;
   for(const key of allowed){
     if(req.body[key]!==undefined){
       updates.push(key+'=$'+i++);
-      values.push(typeof req.body[key]==='object'?JSON.stringify(req.body[key]):req.body[key]);
+      let val=req.body[key];
+      if(dateFields.includes(key)&&(val===''||val===null)) val=null;
+      else if(jsonFields.includes(key)){
+        if(val===''||val===null||val===undefined) val=null;
+        else if(typeof val==='string'){
+          try{ JSON.parse(val); }catch(e){ val=JSON.stringify(val); }
+        } else { val=JSON.stringify(val); }
+      } else if(typeof val==='object'&&val!==null) val=JSON.stringify(val);
+      values.push(val);
     }
   }
   if(!updates.length) return res.status(400).json({error:'No valid fields'});
