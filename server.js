@@ -220,7 +220,7 @@ async function syncFromMomence() {
   while (true) {
     const res = await fetch(`${MAPI}/host/members?page=${page}&pageSize=${pageSize}`, { headers:{ Authorization:`Bearer ${token}`, 'Content-Type':'application/json' }, signal:AbortSignal.timeout(20000) });
     const body = await res.json();
-    const items = Array.isArray(body) ? body : (body.data || body.items || body.members || []);
+    const items = Array.isArray(body) ? body : (body.payload || body.data || body.items || body.members || []);
     if (!items.length) break;
     allMembers.push(...items);
     console.log(`Momence sync: fetched ${allMembers.length} members...`);
