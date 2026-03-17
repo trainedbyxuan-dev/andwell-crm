@@ -53,8 +53,8 @@ app.get('/api/members',auth,async(req,res)=>{
 });
 
 app.patch('/api/members/:id',auth,async(req,res)=>{
-  const allowed=['status','membership','needs','coach','goals','habits','notes','flagged','contacted','timeline','follow_up_date'];
-  const dateFields=['follow_up_date','consult_date'];
+  const allowed=['name','email','phone','status','membership','needs','coach','goals','habits','notes','flagged','contacted','timeline','follow_up_date'];
+  const dateFields=['follow_up_date'];
   const jsonFields=['timeline'];
   const updates=[],values=[];let i=1;
   for(const key of allowed){
@@ -65,7 +65,7 @@ app.patch('/api/members/:id',auth,async(req,res)=>{
       else if(jsonFields.includes(key)){
         if(val===''||val===null||val===undefined) val=null;
         else if(typeof val==='string'){
-          try{ JSON.parse(val); }catch(e){ val=JSON.stringify(val); }
+          try{ JSON.parse(val); }catch(e){ val=null; }
         } else { val=JSON.stringify(val); }
       } else if(typeof val==='object'&&val!==null) val=JSON.stringify(val);
       values.push(val);

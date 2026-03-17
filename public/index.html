@@ -1238,7 +1238,18 @@ async function clearFollowUp(memberId) {
 
 async function autoSave(type, id) {
   const body = {};
-  document.getElementById('detailBody').querySelectorAll('[data-field]').forEach(el => { body[el.dataset.field] = el.value; });
+  const jsonFields = ['timeline'];
+  document.getElementById('detailBody').querySelectorAll('[data-field]').forEach(el => {
+    const field = el.dataset.field;
+    const val = el.value;
+    if (jsonFields.includes(field)) {
+      // Only send timeline if it's valid JSON or empty
+      if (!val || val.trim() === '') return; // skip empty timeline
+      try { JSON.parse(val); body[field] = val; } catch(e) { return; } // skip invalid JSON
+    } else {
+      body[field] = val;
+    }
+  });
   try {
     const endpoint = type === 'member' ? `/api/members/${id}` : `/api/leads/${id}`;
     await apiFetch(endpoint, {method:'PATCH', body: JSON.stringify(body)});
