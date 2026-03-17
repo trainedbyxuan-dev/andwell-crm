@@ -566,21 +566,28 @@ function updateOutreachCounter() {
   const myCount = myRow ? myRow.count : 0;
   const total = outreachStats.reduce((s,r) => s + r.count, 0);
   const el = document.getElementById('outreachCounter');
-  document.getElementById('ocMyCount').textContent = myCount;
-  // Show counter only on outreach view or always
+  // Show team total prominently, my count in label
+  document.getElementById('ocMyCount').textContent = total;
+  const label = document.querySelector('#outreachCounter .oc-label');
+  if (label) label.textContent = myCount > 0 ? `Team total · You: ${myCount}` : 'Team reach-outs today';
   el.style.display = 'flex';
   el.style.flexDirection = 'column';
-  // Update detail rows
+  // Update detail rows — show all coaches with 0 baseline + any with contacts
   const COACH_NAMES = ['Xuan','Linda','Alvin','Andrew'];
   let html = '';
-  outreachStats.forEach(r => {
-    const color = COACH_NAMES.includes(r.logged_by) ? `var(--${r.logged_by.toLowerCase()})` : 'var(--tx)';
-    html += `<div class="oc-row"><span class="oc-coach" style="color:${color}">${r.logged_by}</span><span class="oc-cnt">${r.count}</span></div>`;
+  COACH_NAMES.forEach(name => {
+    const row = outreachStats.find(r => r.logged_by === name);
+    const count = row ? row.count : 0;
+    const color = `var(--${name.toLowerCase()})`;
+    const isMe = name === myName;
+    html += `<div class="oc-row"><span class="oc-coach" style="color:${color}">${name}${isMe?' (you)':''}</span><span class="oc-cnt" style="${count===0?'color:var(--tx3)':'color:var(--brand)'}">${count}</span></div>`;
   });
-  if (total > 0) {
-    html += `<div class="oc-row oc-total-row"><span class="oc-coach">Team Total</span><span class="oc-cnt">${total}</span></div>`;
-  }
-  document.getElementById('ocDetailRows').innerHTML = html || '<div style="color:var(--tx3);font-size:11px">No reach-outs logged today</div>';
+  // Add any non-standard coaches who logged contacts
+  outreachStats.filter(r => !COACH_NAMES.includes(r.logged_by)).forEach(r => {
+    html += `<div class="oc-row"><span class="oc-coach">${r.logged_by}</span><span class="oc-cnt">${r.count}</span></div>`;
+  });
+  html += `<div class="oc-row oc-total-row"><span class="oc-coach">Team Total</span><span class="oc-cnt">${total}</span></div>`;
+  document.getElementById('ocDetailRows').innerHTML = html;
 }
 
 let counterDetailOpen = false;
@@ -1008,14 +1015,30 @@ function renderOutreach(c) {
   let data = outreachMembers;
   if (q) data = data.filter(m => m.name && m.name.toLowerCase().includes(q));
 
-  // Get unique coaches from data
-  const coaches = [...new Set(data.map(m => m.coach).filter(Boolean))].sort();
-  if (!activeOutreachCoach || !coaches.includes(activeOutreachCoach)) {
-    activeOutreachCoach = coaches[0] || null;
-  }
+  // Get unique coaches from data, sorted by known order
+  const knownOrder = ['Xuan','Linda','Alvin','Andrew'];
+  const coachesInData = [...new Set(data.map(m => m.coach).filter(Boolean))];
+  const coaches = knownOrder.filter(c => coachesInData.includes(c))
+    .concat(coachesInData.filter(c => !knownOrder.includes(c)).sort());
 
-  // Build coach tabs
-  const tabsHtml = coaches.map(coach => {
+  // Default to 'all' if no active coach set or coach no longer in data
+  if (activeOutreachCoach !== 'all' && activeOutreachCoach && !coaches.includes(activeOutreachCoach)) {
+    activeOutreachCoach = 'all';
+  }
+  if (!activeOutreachCoach) activeOutreachCoach = 'all';
+
+  // Total to-contact count for All tab
+  const totalToContact = data.filter(m => daysSinceDate(m.last_contacted_at) > 7).length;
+
+  // Build tabs: All first, then per coach
+  const allTabActive = activeOutreachCoach === 'all';
+  let tabsHtml = `<div class="outreach-coach-tab ${allTabActive ? 'active' : ''}" onclick="setOutreachCoach('all')">
+    <span style="width:8px;height:8px;border-radius:50%;background:${allTabActive?'#fff':'var(--tx3)'};display:inline-block;flex-shrink:0"></span>
+    All Coaches
+    ${totalToContact > 0 ? `<span class="tab-ct">${totalToContact}</span>` : ''}
+  </div>`;
+
+  tabsHtml += coaches.map(coach => {
     const coachData = data.filter(m => m.coach === coach);
     const toContactCount = coachData.filter(m => daysSinceDate(m.last_contacted_at) > 7).length;
     const colorVar = `--${coach.toLowerCase()}`;
@@ -1028,8 +1051,8 @@ function renderOutreach(c) {
     </div>`;
   }).join('');
 
-  // Filter to active coach
-  const coachData = activeOutreachCoach ? data.filter(m => m.coach === activeOutreachCoach) : [];
+  // Filter to active coach or show all
+  const coachData = activeOutreachCoach === 'all' ? data : data.filter(m => m.coach === activeOutreachCoach);
 
   // Bucket into columns
   const toContact = [], today = [], thisWeek = [];
@@ -1057,14 +1080,14 @@ function renderOutreach(c) {
     </div>`;
   };
 
-  const emptyState = coaches.length === 0
+  const emptyState = data.length === 0
     ? `<div style="padding:40px;color:var(--tx3);text-align:center">No members need contact right now 🎉</div>`
     : '';
 
   c.innerHTML = `<div class="outreach-wrap">
     <div class="outreach-coach-tabs">${tabsHtml}</div>
     ${emptyState}
-    ${coaches.length > 0 ? `<div class="outreach-board">
+    ${data.length > 0 ? `<div class="outreach-board">
       ${colHtml('To Contact','var(--red)','col-to', toContact, '🎉 All caught up!')}
       ${colHtml('Contacted Today','var(--grn)','col-today', today, 'None yet today')}
       ${colHtml('Contacted This Week','var(--tel)','col-week', thisWeek, 'None this week')}
@@ -1090,10 +1113,12 @@ function outreachCard(m, colClass) {
     ? `<div style="margin-top:8px"><button class="oc-btn" onclick="event.stopPropagation();logContact('${m.id}')">✓ Mark Contacted</button></div>`
     : '';
   const needsColor = m.needs === 'High' ? 'var(--red)' : m.needs === 'Med' ? 'var(--org)' : 'var(--grn)';
+  const coachColor = m.coach ? `var(--${m.coach.toLowerCase()}, var(--tx3))` : 'var(--tx3)';
+  const showCoach = activeOutreachCoach === 'all' && m.coach;
   return `<div class="oc-card" draggable="true"
     ondragstart="handleOutreachDragStart(event,'${m.id}')"
     onclick="openDetail('member','${m.id}')">
-    <div class="oc-name">${m.name}</div>
+    <div class="oc-name">${m.name}${showCoach ? `<span style="float:right;font-size:10px;font-weight:600;color:${coachColor}">${m.coach}</span>` : ''}</div>
     <div class="oc-meta">
       <span>${m.membership || '—'}</span>
       ${m.needs ? `<span style="color:${needsColor}">⬡ ${m.needs}</span>` : ''}
