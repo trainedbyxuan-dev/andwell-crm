@@ -74,11 +74,18 @@ app.patch('/api/members/:id',auth,async(req,res)=>{
   if(!updates.length) return res.status(400).json({error:'No valid fields'});
   updates.push('updated_at=NOW()');values.push(req.params.id);
   try{
+    console.log('PATCH members body keys:',Object.keys(req.body));
+    console.log('PATCH members updates:',updates);
+    console.log('PATCH members values:',JSON.stringify(values));
     const{rows}=await pool.query('UPDATE members SET '+updates.join(',')+ ' WHERE id=$'+i+' RETURNING *',values);
     if(!rows.length) return res.status(404).json({error:'Not found'});
     await logActivity(req.user.name,'Updated '+Object.keys(req.body).filter(k=>allowed.includes(k)).join(', '),'member',rows[0].id,rows[0].name,null);
     res.json(rows[0]);
-  }catch(e){res.status(500).json({error:e.message});}
+  }catch(e){
+    console.error('PATCH members ERROR:',e.message);
+    console.error('PATCH members values were:',JSON.stringify(values));
+    res.status(500).json({error:e.message});
+  }
 });
 
 app.get('/api/leads',auth,async(req,res)=>{
