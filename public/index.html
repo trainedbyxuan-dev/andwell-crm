@@ -597,20 +597,33 @@ function toggleCounterDetail() {
 }
 
 async function logContact(memberId) {
+  const outreachEntry = outreachMembers.find(o => String(o.id)===String(memberId));
+  const contactedToday = outreachEntry && daysSinceDate(outreachEntry.last_contacted_at) === 0;
   try {
-    await apiFetch(`/api/outreach/${memberId}/contact`, {method:'POST'});
+    if (contactedToday) {
+      await apiFetch(`/api/outreach/${memberId}/contact`, {method:'DELETE'});
+    } else {
+      await apiFetch(`/api/outreach/${memberId}/contact`, {method:'POST'});
+    }
     await loadOutreach();
     renderMain();
-  } catch(e) { alert('Failed to log contact: ' + e.message); }
+  } catch(e) { alert('Failed: ' + e.message); }
 }
 
 async function logContactFromCard(memberId) {
+  const outreachEntry = outreachMembers.find(o => String(o.id)===String(memberId));
+  const contactedToday = outreachEntry && daysSinceDate(outreachEntry.last_contacted_at) === 0;
   try {
-    await apiFetch(`/api/outreach/${memberId}/contact`, {method:'POST'});
+    if (contactedToday) {
+      await apiFetch(`/api/outreach/${memberId}/contact`, {method:'DELETE'});
+      toast('Contact undone', 'warn');
+    } else {
+      await apiFetch(`/api/outreach/${memberId}/contact`, {method:'POST'});
+      toast('Contact logged ✓', 'success');
+    }
     await loadOutreach();
     renderMain();
-    toast('Contact logged ✓', 'success');
-  } catch(e) { toast('Failed to log contact: ' + e.message, 'error'); }
+  } catch(e) { toast('Failed: ' + e.message, 'error'); }
 }
 
 async function quickSnooze(memberId, days) {

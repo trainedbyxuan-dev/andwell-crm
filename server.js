@@ -381,6 +381,22 @@ app.post('/api/outreach/:memberId/contact', auth, async(req,res)=>{
   }catch(e){res.status(500).json({error:e.message});}
 });
 
+// DELETE /api/outreach/:memberId/contact — undo today's most recent contact log
+app.delete('/api/outreach/:memberId/contact', auth, async(req,res)=>{
+  try{
+    const{rows}=await pool.query(
+      `DELETE FROM contact_log WHERE id = (
+        SELECT id FROM contact_log
+        WHERE member_id=$1 AND contacted_at >= NOW()::date
+        ORDER BY contacted_at DESC LIMIT 1
+      ) RETURNING *`,
+      [req.params.memberId]
+    );
+    if(rows.length) await logActivity(req.user.name,'Undid outreach contact','member',req.params.memberId,'',null);
+    res.json({ok:true,deleted:rows.length});
+  }catch(e){res.status(500).json({error:e.message});}
+});
+
 // GET /api/outreach/stats — today's contact count per coach
 app.get('/api/outreach/stats', auth, async(req,res)=>{
   try{
