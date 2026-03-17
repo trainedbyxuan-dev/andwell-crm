@@ -928,11 +928,15 @@ function renderKanban(c, arr, type) {
       return (new Date(bv||0) - new Date(av||0)); // most recent first
     }
     if (sortKey==='last_contacted') {
-      const ae = outreachMembers.find(o=>String(o.id)===String(a.id));
-      const be = outreachMembers.find(o=>String(o.id)===String(b.id));
-      const ad = ae?.last_contacted_at || '1970-01-01';
-      const bd = be?.last_contacted_at || '1970-01-01';
-      return new Date(bd) - new Date(ad); // most recently contacted first
+      // Build contact date from outreachMembers for absent members, contactedTodaySet for recent contacts
+      const getLastContacted = (m) => {
+        const oe = outreachMembers.find(o=>String(o.id)===String(m.id));
+        if (oe?.last_contacted_at) return new Date(oe.last_contacted_at);
+        if (contactedTodaySet.has(String(m.id))) return new Date(); // contacted today
+        return new Date(0); // never contacted = oldest = top
+      };
+      const ad = getLastContacted(a), bd = getLastContacted(b);
+      return ad - bd; // oldest/never contacted first (top), most recently contacted last (bottom)
     }
     if (sortKey==='needs') return (needsOrder(a.needs)-needsOrder(b.needs));
     if (sortKey==='coach') return (a.coach||'').localeCompare(b.coach||'');
