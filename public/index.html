@@ -658,13 +658,13 @@ function updateStatsRow(arr) {
   const atRisk = arr.filter(m => (m.status||'').toLowerCase().includes('risk')).length;
   const nc = arr.filter(m => needsContact(m)).length;
   sr.innerHTML = `
-    <div class="stat"><div><div class="stat-n">${arr.length}</div><div class="stat-l">Total</div></div></div>
-    <div class="stat"><div><div class="stat-n" style="color:var(--grn)">${active}</div><div class="stat-l">Active</div></div></div>
-    <div class="stat"><div><div class="stat-n" style="color:var(--red)">${atRisk}</div><div class="stat-l">At Risk</div></div></div>
-    <div class="stat"><div><div class="stat-n" style="color:var(--org)">${nc}</div><div class="stat-l">Needs Contact</div></div></div>
+    <div class="stat" onclick="navFilter('all')"><div><div class="stat-n">${arr.length}</div><div class="stat-l">Total</div></div></div>
+    <div class="stat" onclick="navFilter('status-Active')"><div><div class="stat-n" style="color:var(--grn)">${active}</div><div class="stat-l">Active</div></div></div>
+    <div class="stat" onclick="navFilter('status-At-Risk')"><div><div class="stat-n" style="color:var(--red)">${atRisk}</div><div class="stat-l">At Risk</div></div></div>
+    <div class="stat" onclick="navFilter('needscontact')"><div><div class="stat-n" style="color:var(--org)">${nc}</div><div class="stat-l">Needs Contact</div></div></div>
     ${COACHES.map(name => {
       const ct = arr.filter(m => m.coach === name).length;
-      return `<div class="stat"><div><div class="stat-n" style="color:${COACH_COLORS[name]}">${ct}</div><div class="stat-l">${name}</div></div></div>`;
+      return `<div class="stat" onclick="navFilter('coach-${name}')"><div><div class="stat-n" style="color:${COACH_COLORS[name]}">${ct}</div><div class="stat-l">${name}</div></div></div>`;
     }).join('')}
   `;
 }
