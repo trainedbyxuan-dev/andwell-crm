@@ -391,6 +391,7 @@ td{padding:9px 13px;vertical-align:middle}
         <button id="gb-visit" onclick="setGroupBy('visit',this)">Last Visit</button>
         <button id="gb-needs" onclick="setGroupBy('needs',this)">Needs</button>
         <button id="gb-coach" onclick="setGroupBy('coach',this)">Coach</button>
+        <button id="gb-membership" onclick="setGroupBy('membership',this)">Membership</button>
       </div>
       <div class="tool-sep"></div>
       <div id="activeFiltersRow" style="display:flex;gap:5px;flex-wrap:wrap;align-items:center"></div>
@@ -399,6 +400,7 @@ td{padding:9px 13px;vertical-align:middle}
       <select class="sort-btn" id="sortSel" onchange="renderMain()">
         <option value="name">Sort: Name ↑</option>
         <option value="last_visit">Sort: Last Visit</option>
+        <option value="last_contacted">Sort: Last Contacted</option>
         <option value="needs">Sort: Needs</option>
         <option value="coach">Sort: Coach</option>
       </select>
@@ -898,6 +900,16 @@ function getKanbanCols(arr, type) {
     cols.push({key:'Unassigned', color:'#9ba3b2', match: m => !m.coach});
     return cols;
   }
+  if (groupBy === 'membership') {
+    // Get unique membership values from the data, sorted
+    const types = [...new Set(arr.map(m => m.membership||'Unknown').filter(Boolean))].sort();
+    const colors = ['#0962ff','#16a34a','#7c3aed','#d97706','#0891b2','#dc2626','#9ba3b2'];
+    return types.map((t,i) => ({
+      key: t,
+      color: colors[i % colors.length],
+      match: m => (m.membership||'Unknown') === t
+    }));
+  }
   // Default: status
   return [
     {key:'Active', color:'#16a34a', match: m => (m.status||'').toLowerCase()==='active'},
@@ -914,6 +926,13 @@ function renderKanban(c, arr, type) {
     if (sortKey==='last_visit') {
       const av = a.last_visit||'', bv = b.last_visit||'';
       return (new Date(bv||0) - new Date(av||0)); // most recent first
+    }
+    if (sortKey==='last_contacted') {
+      const ae = outreachMembers.find(o=>String(o.id)===String(a.id));
+      const be = outreachMembers.find(o=>String(o.id)===String(b.id));
+      const ad = ae?.last_contacted_at || '1970-01-01';
+      const bd = be?.last_contacted_at || '1970-01-01';
+      return new Date(bd) - new Date(ad); // most recently contacted first
     }
     if (sortKey==='needs') return (needsOrder(a.needs)-needsOrder(b.needs));
     if (sortKey==='coach') return (a.coach||'').localeCompare(b.coach||'');
