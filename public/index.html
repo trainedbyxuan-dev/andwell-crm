@@ -1238,18 +1238,15 @@ async function clearFollowUp(memberId) {
 
 async function autoSave(type, id) {
   const body = {};
-  const jsonFields = ['timeline'];
+  const skipFields = ['timeline','flagged','contacted','habits']; // never send these from form
   document.getElementById('detailBody').querySelectorAll('[data-field]').forEach(el => {
     const field = el.dataset.field;
-    const val = el.value;
-    if (jsonFields.includes(field)) {
-      // Only send timeline if it's valid JSON or empty
-      if (!val || val.trim() === '') return; // skip empty timeline
-      try { JSON.parse(val); body[field] = val; } catch(e) { return; } // skip invalid JSON
-    } else {
-      body[field] = val;
-    }
+    if (skipFields.includes(field)) return;
+    body[field] = el.value;
   });
+  // Coerce empty date fields to null
+  if ('follow_up_date' in body && body.follow_up_date === '') body.follow_up_date = null;
+  if ('consult_date' in body && body.consult_date === '') body.consult_date = null;
   try {
     const endpoint = type === 'member' ? `/api/members/${id}` : `/api/leads/${id}`;
     await apiFetch(endpoint, {method:'PATCH', body: JSON.stringify(body)});
