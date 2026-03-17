@@ -1254,6 +1254,7 @@ async function autoSave(type, id) {
     else { const idx = leads.findIndex(l => String(l.id)===String(id)); if (idx!==-1) leads[idx] = {...leads[idx],...body}; }
     setInd('saved','✓ Saved');
     updateCounts();
+    renderMain();
     setTimeout(() => setInd('',''), 2000);
   } catch(e) { setInd('',''); toast('Save failed: '+e.message,'error'); }
 }
