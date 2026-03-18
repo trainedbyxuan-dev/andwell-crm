@@ -87,58 +87,8 @@ body{font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;background:var(--bg
 /* CONTENT */
 .content{flex:1;overflow:auto}
 
-/* OUTREACH KANBAN */
-.outreach-wrap{padding:0 18px 80px;display:flex;flex-direction:column;gap:0}
-.outreach-coach-tabs{display:flex;gap:6px;padding:10px 0 12px;flex-wrap:wrap}
-.outreach-coach-tab{padding:5px 14px;border-radius:20px;font-size:12px;font-weight:600;cursor:pointer;border:1.5px solid var(--bdr);background:var(--sur);color:var(--tx2);transition:all .12s;display:flex;align-items:center;gap:6px}
-.outreach-coach-tab:hover{border-color:var(--brand);color:var(--brand)}
-.outreach-coach-tab.active{background:var(--brand);color:#fff;border-color:var(--brand)}
-.outreach-coach-tab .tab-ct{font-size:10px;font-weight:700;opacity:.8}
-.outreach-board{display:flex;gap:11px;min-width:max-content;padding-bottom:20px}
-.outreach-col{width:280px;flex-shrink:0}
-.outreach-col .col-body{border-top-color:transparent}
-.outreach-col.col-to .col-body{border-top-color:var(--red)}
-.outreach-col.col-today .col-body{border-top-color:var(--grn)}
-.outreach-col.col-week .col-body{border-top-color:var(--tel)}
-.oc-card{background:var(--sur);border:1px solid var(--bdr);border-radius:7px;padding:10px 11px;cursor:pointer;transition:all .12s;user-select:none}
-.oc-card:hover{border-color:var(--brand);box-shadow:0 1px 6px rgba(9,98,255,.12)}
-.oc-card.dragging{opacity:.5}
-.oc-name{font-size:12.5px;font-weight:600;color:var(--tx);margin-bottom:4px}
-.oc-meta{font-size:11px;color:var(--tx3);display:flex;gap:8px;flex-wrap:wrap;margin-bottom:6px}
-.oc-badge{font-size:10px;font-weight:600;padding:2px 7px;border-radius:4px}
-.oc-days{background:var(--red-b);color:var(--red)}
-.oc-contacted-today{background:var(--grn-b);color:var(--grn)}
-.oc-contacted-week{background:var(--tel-b);color:var(--tel)}
-.oc-btn{width:100%;padding:5px 0;background:var(--brand-l);color:var(--brand);border:none;border-radius:5px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;transition:background .1s}
-.oc-btn:hover{background:var(--brand-m)}
-.outreach-empty{color:var(--tx3);font-size:12px;text-align:center;padding:20px 10px}
-
-/* OUTREACH COUNTER BUBBLE */
-#outreachCounter{
-  position:fixed;bottom:20px;right:20px;
-  background:var(--brand);color:#fff;
-  border-radius:12px;padding:10px 16px;
-  box-shadow:0 4px 16px rgba(9,98,255,.35);
-  font-size:12px;font-weight:600;
-  cursor:pointer;z-index:999;
-  transition:all .2s;min-width:140px;text-align:center;
-  display:none;
-}
-#outreachCounter:hover{background:var(--brand-h);transform:translateY(-1px)}
-#outreachCounter .oc-total{font-size:20px;font-weight:800;display:block;line-height:1.1}
-#outreachCounter .oc-label{font-size:10px;opacity:.8;letter-spacing:.04em;text-transform:uppercase}
-#outreachCounterDetail{
-  position:fixed;bottom:80px;right:20px;
-  background:var(--sur);border:1px solid var(--bdr);
-  border-radius:10px;padding:12px 16px;
-  box-shadow:0 4px 20px rgba(0,0,0,.12);
-  font-size:12px;z-index:999;min-width:180px;
-  display:none;
-}
-#outreachCounterDetail .oc-row{display:flex;justify-content:space-between;align-items:center;padding:3px 0;gap:16px}
-#outreachCounterDetail .oc-coach{font-weight:600;color:var(--tx)}
-#outreachCounterDetail .oc-cnt{font-weight:700;color:var(--brand)}
-#outreachCounterDetail .oc-total-row{border-top:1px solid var(--bdr);margin-top:6px;padding-top:6px;font-weight:700}
+/* KANBAN */
+.kb-wrap{padding:14px 18px 40px;min-width:max-content}
 .kb-board{display:flex;gap:11px}
 .kb-col{width:252px;flex-shrink:0}
 .col-hd{display:flex;align-items:center;justify-content:space-between;padding:8px 11px;border-radius:7px 7px 0 0;background:var(--sur);border:1px solid var(--bdr);border-bottom:none}
@@ -252,7 +202,7 @@ td{padding:9px 13px;vertical-align:middle}
 .recent-row:hover .card-name{color:var(--brand)}
 
 /* TOAST */
-.toast{position:fixed;bottom:100px;right:20px;background:var(--tx);color:#fff;padding:10px 16px;border-radius:8px;font-size:12.5px;font-weight:500;box-shadow:0 4px 16px rgba(0,0,0,.2);z-index:1000;animation:slideIn .2s ease}
+.toast{position:fixed;bottom:20px;right:20px;background:var(--tx);color:#fff;padding:10px 16px;border-radius:8px;font-size:12.5px;font-weight:500;box-shadow:0 4px 16px rgba(0,0,0,.2);z-index:999;animation:slideIn .2s ease}
 @keyframes slideIn{from{transform:translateX(20px);opacity:0}to{transform:translateX(0);opacity:1}}
 .toast.success{background:var(--grn)}
 .toast.error{background:var(--red)}
@@ -335,8 +285,8 @@ td{padding:9px 13px;vertical-align:middle}
       <div class="nav on" data-view="dashboard" onclick="switchView('dashboard',this)"><span class="nav-ic">◈</span>Dashboard</div>
       <div class="sb-label" style="margin-top:8px">Boards</div>
       <div class="nav" data-view="leads" onclick="switchView('leads',this)"><span class="nav-ic">🎯</span>Leads Pipeline<span class="nav-ct" id="ct-leads">0</span></div>
+      <div class="nav" data-view="trials" onclick="switchView('trials',this)"><span class="nav-ic">⚡</span>7 Day Trials<span class="nav-ct" id="ct-trials">0</span></div>
       <div class="nav" data-view="members" onclick="switchView('members',this)"><span class="nav-ic">⬡</span>Members Board<span class="nav-ct" id="ct-members">0</span></div>
-      <div class="nav" data-view="outreach" onclick="switchView('outreach',this)"><span class="nav-ic">📞</span>Outreach<span class="nav-ct hot" id="ct-outreach">0</span></div>
       <div class="sb-div"></div>
       <div class="sb-label">Members</div>
       <div class="nav" onclick="navFilter('all')"><span class="nav-ic">👥</span>All Members<span class="nav-ct" id="ct-all">0</span></div>
@@ -391,16 +341,14 @@ td{padding:9px 13px;vertical-align:middle}
         <button id="gb-visit" onclick="setGroupBy('visit',this)">Last Visit</button>
         <button id="gb-needs" onclick="setGroupBy('needs',this)">Needs</button>
         <button id="gb-coach" onclick="setGroupBy('coach',this)">Coach</button>
-        <button id="gb-membership" onclick="setGroupBy('membership',this)">Membership</button>
       </div>
       <div class="tool-sep"></div>
       <div id="activeFiltersRow" style="display:flex;gap:5px;flex-wrap:wrap;align-items:center"></div>
       <button class="filter-chip" onclick="openFilter()">⊕ Filter</button>
       <div class="tool-sep"></div>
-      <select class="sort-btn" id="sortSel" onchange="sortKey=this.value;renderMain()">
+      <select class="sort-btn" id="sortSel" onchange="renderMain()">
         <option value="name">Sort: Name ↑</option>
         <option value="last_visit">Sort: Last Visit</option>
-        <option value="last_contacted">Sort: Last Contacted</option>
         <option value="needs">Sort: Needs</option>
         <option value="coach">Sort: Coach</option>
       </select>
@@ -419,8 +367,7 @@ const AV_COLORS = ['#0962ff','#16a34a','#7c3aed','#d97706','#0891b2','#dc2626'];
 
 // ═══════════════════════════════════════════════ STATE
 let token = null, currentUser = null;
-let members = [], leads = [], outreachMembers = [], outreachStats = [];
-let contactedTodaySet = new Set(); // member IDs contacted today, for all members not just outreach
+let members = [], leads = [], trials = [];
 let currentView = 'dashboard';
 let currentLayout = 'kanban';
 let currentFilter = 'all';
@@ -487,7 +434,7 @@ async function enterApp() {
     document.getElementById('addBtn').classList.add('hidden');
   }
   if (currentUser.must_change_password) showChangePw(true);
-  await Promise.all([loadMembers(), loadLeads(), loadOutreach()]);
+  await Promise.all([loadMembers(), loadLeads(), loadTrials()]);
   switchView('dashboard', document.querySelector('[data-view=dashboard]'));
 }
 
@@ -544,110 +491,6 @@ async function loadLeads() {
   } catch(e) { console.warn('Leads load failed:', e.message); }
 }
 
-async function loadOutreach() {
-  try {
-    const [om, stats, todayIds] = await Promise.all([
-      apiFetch('/api/outreach'),
-      apiFetch('/api/outreach/stats'),
-      apiFetch('/api/outreach/today')
-    ]);
-    outreachMembers = Array.isArray(om) ? om : [];
-    outreachStats = Array.isArray(stats) ? stats : [];
-    contactedTodaySet = new Set(Array.isArray(todayIds) ? todayIds.map(String) : []);
-    const nc = outreachMembers.filter(m => !m.last_contacted_at || daysSinceDate(m.last_contacted_at) > 7).length;
-    document.getElementById('ct-outreach').textContent = nc;
-    updateOutreachCounter();
-  } catch(e) { console.warn('Outreach load failed:', e.message); }
-}
-
-function daysSinceDate(d) {
-  if (!d) return 999;
-  return Math.floor((Date.now() - new Date(d)) / 86400000);
-}
-
-function updateOutreachCounter() {
-  const myName = currentUser ? (currentUser.name || '') : '';
-  const myRow = outreachStats.find(r => r.logged_by === myName);
-  const myCount = myRow ? myRow.count : 0;
-  const total = outreachStats.reduce((s,r) => s + r.count, 0);
-  const el = document.getElementById('outreachCounter');
-  // Show team total prominently, my count in label
-  document.getElementById('ocMyCount').textContent = total;
-  const label = document.querySelector('#outreachCounter .oc-label');
-  if (label) label.textContent = myCount > 0 ? `Team total · You: ${myCount}` : 'Team reach-outs today';
-  el.style.display = 'flex';
-  el.style.flexDirection = 'column';
-  // Update detail rows — show all coaches with 0 baseline + any with contacts
-  const COACH_NAMES = ['Xuan','Linda','Alvin','Andrew'];
-  let html = '';
-  COACH_NAMES.forEach(name => {
-    const row = outreachStats.find(r => r.logged_by === name);
-    const count = row ? row.count : 0;
-    const color = `var(--${name.toLowerCase()})`;
-    const isMe = name === myName;
-    html += `<div class="oc-row"><span class="oc-coach" style="color:${color}">${name}${isMe?' (you)':''}</span><span class="oc-cnt" style="${count===0?'color:var(--tx3)':'color:var(--brand)'}">${count}</span></div>`;
-  });
-  // Add any non-standard coaches who logged contacts
-  outreachStats.filter(r => !COACH_NAMES.includes(r.logged_by)).forEach(r => {
-    html += `<div class="oc-row"><span class="oc-coach">${r.logged_by}</span><span class="oc-cnt">${r.count}</span></div>`;
-  });
-  html += `<div class="oc-row oc-total-row"><span class="oc-coach">Team Total</span><span class="oc-cnt">${total}</span></div>`;
-  document.getElementById('ocDetailRows').innerHTML = html;
-}
-
-let counterDetailOpen = false;
-function toggleCounterDetail() {
-  counterDetailOpen = !counterDetailOpen;
-  document.getElementById('outreachCounterDetail').style.display = counterDetailOpen ? 'block' : 'none';
-}
-
-async function logContact(memberId) {
-  const contactedToday = contactedTodaySet.has(String(memberId));
-  try {
-    if (contactedToday) {
-      await apiFetch(`/api/outreach/${memberId}/contact`, {method:'DELETE'});
-      contactedTodaySet.delete(String(memberId));
-    } else {
-      await apiFetch(`/api/outreach/${memberId}/contact`, {method:'POST'});
-      contactedTodaySet.add(String(memberId));
-    }
-    renderMain();
-    await loadOutreach();
-    renderMain();
-  } catch(e) { alert('Failed: ' + e.message); }
-}
-
-async function logContactFromCard(memberId) {
-  const contactedToday = contactedTodaySet.has(String(memberId));
-  try {
-    if (contactedToday) {
-      await apiFetch(`/api/outreach/${memberId}/contact`, {method:'DELETE'});
-      contactedTodaySet.delete(String(memberId));
-      toast('Contact undone', 'warn');
-    } else {
-      await apiFetch(`/api/outreach/${memberId}/contact`, {method:'POST'});
-      contactedTodaySet.add(String(memberId));
-      toast('Contact logged ✓', 'success');
-    }
-    renderMain(); // instant UI update
-    await loadOutreach(); // sync with server
-    renderMain(); // re-render with fresh data
-  } catch(e) { toast('Failed: ' + e.message, 'error'); }
-}
-
-async function quickSnooze(memberId, days) {
-  const d = new Date();
-  d.setDate(d.getDate() + days);
-  const dateStr = d.toISOString().slice(0, 10);
-  try {
-    await apiFetch(`/api/members/${memberId}`, {method:'PATCH', body: JSON.stringify({follow_up_date: dateStr})});
-    const idx = members.findIndex(m => String(m.id)===String(memberId));
-    if (idx !== -1) members[idx].follow_up_date = dateStr;
-    await loadOutreach();
-    renderMain();
-  } catch(e) { alert('Failed to snooze: ' + e.message); }
-}
-
 function updateCounts() {
   document.getElementById('ct-members').textContent = members.length;
   document.getElementById('ct-all').textContent = members.length;
@@ -681,20 +524,11 @@ function switchView(view, navEl) {
   currentView = view;
   document.querySelectorAll('.nav[data-view]').forEach(el => el.classList.remove('on'));
   if (navEl && navEl.dataset.view) navEl.classList.add('on');
-  const titles = {dashboard:'Dashboard', members:'Members Board', leads:'Leads Pipeline', activity:'Activity Log', outreach:'Outreach'};
+  const titles = {dashboard:'Dashboard', members:'Members Board', leads:'Leads Pipeline', trials:'7 Day Trials', activity:'Activity Log'};
   document.getElementById('viewTitle').textContent = titles[view] || view;
   const showToolbar = view === 'members' || view === 'leads';
   document.getElementById('mainToolbar').classList.toggle('hidden', !showToolbar);
   document.getElementById('statsRow').classList.toggle('hidden', !showToolbar);
-  // Show outreach counter bubble on outreach view or whenever stats exist
-  const counter = document.getElementById('outreachCounter');
-  if (counter) counter.style.display = (view === 'outreach' || outreachStats.length > 0) ? 'flex' : 'none';
-  // Close detail popup if leaving outreach view
-  if (view !== 'outreach' && counterDetailOpen) {
-    counterDetailOpen = false;
-    const detail = document.getElementById('outreachCounterDetail');
-    if (detail) detail.style.display = 'none';
-  }
   renderMain();
 }
 
@@ -716,8 +550,8 @@ function renderMain() {
   if (currentView === 'dashboard') renderDashboard(c);
   else if (currentView === 'members') renderMembers(c);
   else if (currentView === 'leads') renderLeads(c);
+  else if (currentView === 'trials') renderTrials(c);
   else if (currentView === 'activity') renderActivity(c);
-  else if (currentView === 'outreach') renderOutreach(c);
 }
 
 // ─── DASHBOARD ───────────────────────────────────
@@ -900,16 +734,6 @@ function getKanbanCols(arr, type) {
     cols.push({key:'Unassigned', color:'#9ba3b2', match: m => !m.coach});
     return cols;
   }
-  if (groupBy === 'membership') {
-    // Get unique membership values from the data, sorted
-    const types = [...new Set(arr.map(m => m.membership||'Unknown').filter(Boolean))].sort();
-    const colors = ['#0962ff','#16a34a','#7c3aed','#d97706','#0891b2','#dc2626','#9ba3b2'];
-    return types.map((t,i) => ({
-      key: t,
-      color: colors[i % colors.length],
-      match: m => (m.membership||'Unknown') === t
-    }));
-  }
   // Default: status
   return [
     {key:'Active', color:'#16a34a', match: m => (m.status||'').toLowerCase()==='active'},
@@ -926,17 +750,6 @@ function renderKanban(c, arr, type) {
     if (sortKey==='last_visit') {
       const av = a.last_visit||'', bv = b.last_visit||'';
       return (new Date(bv||0) - new Date(av||0)); // most recent first
-    }
-    if (sortKey==='last_contacted') {
-      // Build contact date from outreachMembers for absent members, contactedTodaySet for recent contacts
-      const getLastContacted = (m) => {
-        const oe = outreachMembers.find(o=>String(o.id)===String(m.id));
-        if (oe?.last_contacted_at) return new Date(oe.last_contacted_at);
-        if (contactedTodaySet.has(String(m.id))) return new Date(); // contacted today
-        return new Date(0); // never contacted = oldest = top
-      };
-      const ad = getLastContacted(a), bd = getLastContacted(b);
-      return ad - bd; // oldest/never contacted first (top), most recently contacted last (bottom)
     }
     if (sortKey==='needs') return (needsOrder(a.needs)-needsOrder(b.needs));
     if (sortKey==='coach') return (a.coach||'').localeCompare(b.coach||'');
@@ -966,16 +779,6 @@ function memberCard(m) {
   const ds = daysSince(m.last_visit);
   const attCls = ds===null?'':ds<=7?'att-good':ds<=21?'att-warn':'att-bad';
   const attLbl = ds===null?'—':ds===0?'Today':ds===1?'1d ago':`${ds}d ago`;
-  // Check contact state from contactedTodaySet and outreachMembers
-  const contactedToday = contactedTodaySet.has(String(m.id));
-  const outreachEntry = outreachMembers.find(o => String(o.id)===String(m.id));
-  const contactedThisWeek = !contactedToday && outreachEntry && daysSinceDate(outreachEntry.last_contacted_at) <= 7;
-  const contactBtnStyle = contactedToday
-    ? 'background:var(--grn-b);color:var(--grn);border-color:var(--grn)'
-    : contactedThisWeek
-    ? 'background:var(--tel-b);color:var(--tel);border-color:var(--tel)'
-    : 'background:var(--sur2);color:var(--tx3);border-color:var(--bdr)';
-  const contactBtnLabel = contactedToday ? '✓ Today' : contactedThisWeek ? '✓ Week' : `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>`;
   return `<div class="card" data-type="member" data-id="${m.id}" onclick="handleCardClick(this)">
     <div class="card-top">
       <div class="av" style="background:${coachColor(m.coach)}">${initials(m.name)}</div>
@@ -992,7 +795,6 @@ function memberCard(m) {
     <div class="card-foot">
       <span class="coach-lbl"><span class="coach-dot" style="background:${coachColor(m.coach)}"></span>${esc(m.coach||'—')}</span>
       <span class="${attCls}">${attLbl}</span>
-      <button onclick="event.stopPropagation();logContactFromCard('${m.id}')" style="margin-left:auto;padding:2px 8px;border-radius:5px;font-size:10px;font-weight:700;cursor:pointer;border:1px solid;font-family:inherit;transition:all .12s;${contactBtnStyle}">${contactBtnLabel}</button>
     </div>
   </div>`;
 }
@@ -1044,7 +846,74 @@ function toggleSort(key) {
   renderMain();
 }
 
-// ─── LEADS ───────────────────────────────────────
+async function loadTrials() {
+  try {
+    const data = await apiFetch('/api/trials');
+    trials = Array.isArray(data) ? data : [];
+    document.getElementById('ct-trials').textContent = trials.length;
+  } catch(e) { console.warn('Trials load failed:', e.message); }
+}
+
+// ─── TRIALS ──────────────────────────────────────
+function renderTrials(c) {
+  const q = (document.getElementById('searchInput')?.value||'').toLowerCase();
+  let arr = trials.filter(t => !q || (t.name||'').toLowerCase().includes(q)||(t.email||'').toLowerCase().includes(q));
+
+  const stages = [
+    {key:'Trial Purchased', color:'#0962ff'},
+    {key:'First Visit Done', color:'#0891b2'},
+    {key:'Mid-Trial Check-in', color:'#7c3aed'},
+    {key:'Trial Complete', color:'#d97706'},
+    {key:'Converted to Member', color:'#16a34a'},
+    {key:'Did Not Convert', color:'#dc2626'},
+  ];
+
+  const sr = document.getElementById('statsRow');
+  sr.innerHTML = `
+    <div class="stat"><div><div class="stat-n">${arr.length}</div><div class="stat-l">Total Trials</div></div></div>
+    ${stages.map(s => {
+      const ct = arr.filter(t => (t.stage||'Trial Purchased') === s.key).length;
+      return `<div class="stat"><div><div class="stat-n" style="color:${s.color}">${ct}</div><div class="stat-l">${s.key}</div></div></div>`;
+    }).join('')}
+  `;
+
+  const kanbanHtml = stages.map(s => {
+    const items = arr.filter(t => (t.stage||'Trial Purchased') === s.key);
+    return `<div class="kb-col">
+      <div class="col-hd">
+        <div class="col-hd-left"><div class="col-dot" style="background:${s.color}"></div>${s.key}</div>
+        <div class="col-ct">${items.length}</div>
+      </div>
+      <div class="col-body" style="border-top-color:${s.color}">
+        ${items.length ? items.map(t => trialCard(t)).join('') : '<div style="text-align:center;color:var(--tx3);padding:12px;font-size:11px">Empty</div>'}
+      </div>
+    </div>`;
+  }).join('');
+
+  c.innerHTML = `<div class="kb-wrap"><div class="kb-board">${kanbanHtml}</div></div>`;
+}
+
+function trialCard(t) {
+  const ds = daysSince(t.trial_start);
+  const daysIn = ds !== null ? ds : null;
+  return `<div class="card" data-type="trial" data-id="${t.id}" onclick="handleCardClick(this)">
+    <div class="card-top">
+      <div class="av" style="background:${coachColor(t.coach)}">${initials(t.name)}</div>
+      <div class="card-info">
+        <div class="card-name">${esc(t.name||'—')}</div>
+        <div class="card-sub">${esc(t.email||t.phone||'')}</div>
+      </div>
+    </div>
+    <div class="tags">
+      ${t.coach ? `<span class="tag t-goal">${esc(t.coach)}</span>` : ''}
+      ${daysIn !== null ? `<span class="tag t-mem">Day ${daysIn}</span>` : ''}
+    </div>
+    <div class="card-foot">
+      <span class="coach-lbl"><span class="coach-dot" style="background:${coachColor(t.coach)}"></span>${esc(t.coach||'Unassigned')}</span>
+      <span style="font-size:10px;color:var(--tx3)">${fmtDate(t.trial_start)}</span>
+    </div>
+  </div>`;
+}
 function renderLeads(c) {
   const q = (document.getElementById('searchInput')?.value||'').toLowerCase();
   let arr = leads.filter(l => !q || (l.name||'').toLowerCase().includes(q)||(l.email||'').toLowerCase().includes(q));
@@ -1083,166 +952,18 @@ async function renderActivity(c) {
   } catch(e) { c.innerHTML = `<div style="padding:30px;color:var(--red)">Error: ${e.message}</div>`; }
 }
 
-// ═══════════════════════════════════════════════ OUTREACH
-let activeOutreachCoach = null;
-
-function renderOutreach(c) {
-  const q = document.getElementById('searchInput').value.toLowerCase();
-  let data = outreachMembers;
-  if (q) data = data.filter(m => m.name && m.name.toLowerCase().includes(q));
-
-  // Get unique coaches from data, sorted by known order
-  const knownOrder = ['Xuan','Linda','Alvin','Andrew'];
-  const coachesInData = [...new Set(data.map(m => m.coach).filter(Boolean))];
-  const coaches = knownOrder.filter(c => coachesInData.includes(c))
-    .concat(coachesInData.filter(c => !knownOrder.includes(c)).sort());
-
-  // Default to 'all' if no active coach set or coach no longer in data
-  if (activeOutreachCoach !== 'all' && activeOutreachCoach && !coaches.includes(activeOutreachCoach)) {
-    activeOutreachCoach = 'all';
-  }
-  if (!activeOutreachCoach) activeOutreachCoach = 'all';
-
-  // Total to-contact count for All tab
-  const totalToContact = data.filter(m => daysSinceDate(m.last_contacted_at) > 7).length;
-
-  // Build tabs: All first, then per coach
-  const allTabActive = activeOutreachCoach === 'all';
-  let tabsHtml = `<div class="outreach-coach-tab ${allTabActive ? 'active' : ''}" onclick="setOutreachCoach('all')">
-    <span style="width:8px;height:8px;border-radius:50%;background:${allTabActive?'#fff':'var(--tx3)'};display:inline-block;flex-shrink:0"></span>
-    All Coaches
-    ${totalToContact > 0 ? `<span class="tab-ct">${totalToContact}</span>` : ''}
-  </div>`;
-
-  tabsHtml += coaches.map(coach => {
-    const coachData = data.filter(m => m.coach === coach);
-    const toContactCount = coachData.filter(m => daysSinceDate(m.last_contacted_at) > 7).length;
-    const colorVar = `--${coach.toLowerCase()}`;
-    const isActive = coach === activeOutreachCoach;
-    const dotColor = isActive ? '#fff' : `var(${colorVar}, var(--brand))`;
-    return `<div class="outreach-coach-tab ${isActive ? 'active' : ''}" onclick="setOutreachCoach('${coach}')">
-      <span style="width:8px;height:8px;border-radius:50%;background:${dotColor};display:inline-block;flex-shrink:0"></span>
-      ${coach}
-      ${toContactCount > 0 ? `<span class="tab-ct">${toContactCount}</span>` : ''}
-    </div>`;
-  }).join('');
-
-  // Filter to active coach or show all
-  const coachData = activeOutreachCoach === 'all' ? data : data.filter(m => m.coach === activeOutreachCoach);
-
-  // Bucket into columns
-  const toContact = [], today = [], thisWeek = [];
-  coachData.forEach(m => {
-    const ds = daysSinceDate(m.last_contacted_at);
-    if (ds === 0) today.push(m);
-    else if (ds <= 7) thisWeek.push(m);
-    else toContact.push(m);
-  });
-
-  const colHtml = (label, dot, colClass, items, emptyMsg) => {
-    const cards = items.length
-      ? items.map(m => outreachCard(m, colClass)).join('')
-      : `<div class="outreach-empty">${emptyMsg}</div>`;
-    return `<div class="outreach-col ${colClass}">
-      <div class="col-hd">
-        <div class="col-hd-left"><span class="col-dot" style="background:${dot}"></span>${label}</div>
-        <span class="col-ct">${items.length}</span>
-      </div>
-      <div class="col-body"
-        ondragover="event.preventDefault()"
-        ondrop="handleOutreachDrop(event,'${colClass}')">
-        ${cards}
-      </div>
-    </div>`;
-  };
-
-  const emptyState = data.length === 0
-    ? `<div style="padding:40px;color:var(--tx3);text-align:center">No members need contact right now 🎉</div>`
-    : '';
-
-  c.innerHTML = `<div class="outreach-wrap">
-    <div class="outreach-coach-tabs">${tabsHtml}</div>
-    ${emptyState}
-    ${data.length > 0 ? `<div class="outreach-board">
-      ${colHtml('To Contact','var(--red)','col-to', toContact, '🎉 All caught up!')}
-      ${colHtml('Contacted Today','var(--grn)','col-today', today, 'None yet today')}
-      ${colHtml('Contacted This Week','var(--tel)','col-week', thisWeek, 'None this week')}
-    </div>` : ''}
-  </div>`;
-}
-
-function setOutreachCoach(coach) {
-  activeOutreachCoach = coach;
-  renderMain();
-}
-
-function outreachCard(m, colClass) {
-  const ds = m.days_since || '?';
-  const isContacted = colClass !== 'col-to';
-  const badgeClass = colClass === 'col-to' ? 'oc-days' : colClass === 'col-today' ? 'oc-contacted-today' : 'oc-contacted-week';
-  const badgeLabel = colClass === 'col-to'
-    ? `${ds}d absent`
-    : colClass === 'col-today'
-    ? 'Contacted today'
-    : `Contacted ${daysSinceDate(m.last_contacted_at)}d ago`;
-  const needsColor = m.needs === 'High' ? 'var(--red)' : m.needs === 'Med' ? 'var(--org)' : 'var(--grn)';
-  const coachColor = m.coach ? `var(--${m.coach.toLowerCase()}, var(--tx3))` : 'var(--tx3)';
-  const showCoach = activeOutreachCoach === 'all' && m.coach;
-
-  // Quick snooze buttons (only on To Contact column)
-  const snoozeHtml = !isContacted ? `
-    <div style="display:flex;gap:4px;margin-top:6px;flex-wrap:wrap">
-      <button class="oc-btn" style="flex:2" onclick="event.stopPropagation();logContact('${m.id}')">✓ Contacted</button>
-      <button class="oc-btn" style="flex:1;background:var(--org-b);color:var(--org)" onclick="event.stopPropagation();quickSnooze('${m.id}',7)">+7d</button>
-      <button class="oc-btn" style="flex:1;background:var(--org-b);color:var(--org)" onclick="event.stopPropagation();quickSnooze('${m.id}',14)">+14d</button>
-    </div>` : '';
-
-  return `<div class="oc-card" draggable="true"
-    ondragstart="handleOutreachDragStart(event,'${m.id}')"
-    onclick="openDetail('member','${m.id}')">
-    <div class="oc-name">${m.name}${showCoach ? `<span style="float:right;font-size:10px;font-weight:600;color:${coachColor}">${m.coach}</span>` : ''}</div>
-    <div class="oc-meta">
-      <span>${m.membership || '—'}</span>
-      ${m.needs ? `<span style="color:${needsColor}">⬡ ${m.needs}</span>` : ''}
-    </div>
-    <span class="oc-badge ${badgeClass}">${badgeLabel}</span>
-    ${snoozeHtml}
-  </div>`;
-}
-
-let dragOutreachId = null;
-function handleOutreachDragStart(e, memberId) {
-  dragOutreachId = memberId;
-  e.dataTransfer.effectAllowed = 'move';
-}
-async function handleOutreachDrop(e, targetCol) {
-  e.preventDefault();
-  if (!dragOutreachId) return;
-  if (targetCol === 'col-today' || targetCol === 'col-week') {
-    await logContact(dragOutreachId);
-  } else if (targetCol === 'col-to') {
-    // Drag back to To Contact = undo contact
-    const contactedToday = contactedTodaySet.has(String(dragOutreachId));
-    if (contactedToday) {
-      await apiFetch(`/api/outreach/${dragOutreachId}/contact`, {method:'DELETE'});
-      contactedTodaySet.delete(String(dragOutreachId));
-      await loadOutreach();
-      renderMain();
-    }
-  }
-  dragOutreachId = null;
-}
-
 // ═══════════════════════════════════════════════ DETAIL / EDIT
 function openDetail(type, id) {
   editingType = type;
   editingId = id;
-  const item = type === 'member' ? members.find(m => String(m.id)===String(id)) : leads.find(l => String(l.id)===String(id));
+  const item = type === 'member' ? members.find(m => String(m.id)===String(id))
+    : type === 'lead' ? leads.find(l => String(l.id)===String(id))
+    : trials.find(t => String(t.id)===String(id));
   if (!item) return;
   const ro = currentUser?.role === 'readonly';
-  document.getElementById('detailTitle').textContent = item.name || (type === 'member' ? 'Member' : 'Lead');
+  document.getElementById('detailTitle').textContent = item.name || (type === 'trial' ? 'Trial Member' : type === 'member' ? 'Member' : 'Lead');
   document.getElementById('detailMeta').textContent = item.email || '';
-  document.getElementById('detailBody').innerHTML = type === 'member' ? buildMemberForm(item, ro) : buildLeadForm(item, ro);
+  document.getElementById('detailBody').innerHTML = type === 'member' ? buildMemberForm(item, ro) : type === 'lead' ? buildLeadForm(item, ro) : buildTrialForm(item, ro);
   document.getElementById('detailOverlay').classList.remove('hidden');
   if (!ro) {
     document.getElementById('detailBody').querySelectorAll('[data-field]').forEach(el => {
@@ -1297,61 +1018,17 @@ function setInd(cls, text) {
   if (el) { el.className = `save-ind ${cls}`; el.textContent = text; }
 }
 
-async function manualLogContact(memberId) {
-  const input = document.getElementById(`manualContactDate-${memberId}`);
-  const date = input ? input.value : '';
-  if (!date) { toast('Pick a date first', 'warn'); return; }
-  try {
-    await apiFetch(`/api/outreach/${memberId}/contact/manual`, {method:'POST', body: JSON.stringify({date})});
-    await loadOutreach();
-    renderMain();
-    // Re-open detail to refresh the date field
-    openDetail('member', memberId);
-    toast('Contact logged for ' + date, 'success');
-  } catch(e) { toast('Failed: '+e.message, 'error'); }
-}
-
-async function manualDeleteContact(memberId) {
-  try {
-    await apiFetch(`/api/outreach/${memberId}/contact`, {method:'DELETE'});
-    contactedTodaySet.delete(String(memberId));
-    await loadOutreach();
-    renderMain();
-    openDetail('member', memberId);
-    toast('Contact cleared', 'warn');
-  } catch(e) { toast('Failed: '+e.message, 'error'); }
-}
-
-async function clearFollowUp(memberId) {
-  try {
-    await apiFetch(`/api/members/${memberId}`, {method:'PATCH', body: JSON.stringify({follow_up_date: ''})});
-    const idx = members.findIndex(m => String(m.id)===String(memberId));
-    if (idx !== -1) members[idx].follow_up_date = null;
-    // Refresh the detail panel
-    openDetail('member', memberId);
-    toast('Follow-up date cleared', 'success');
-  } catch(e) { toast('Failed: '+e.message, 'error'); }
-}
-
 async function autoSave(type, id) {
   const body = {};
-  const skipFields = ['timeline','flagged','contacted','habits']; // never send these from form
-  document.getElementById('detailBody').querySelectorAll('[data-field]').forEach(el => {
-    const field = el.dataset.field;
-    if (skipFields.includes(field)) return;
-    body[field] = el.value;
-  });
-  // Coerce empty date fields to null
-  if ('follow_up_date' in body && body.follow_up_date === '') body.follow_up_date = null;
-  if ('consult_date' in body && body.consult_date === '') body.consult_date = null;
+  document.getElementById('detailBody').querySelectorAll('[data-field]').forEach(el => { body[el.dataset.field] = el.value; });
   try {
-    const endpoint = type === 'member' ? `/api/members/${id}` : `/api/leads/${id}`;
+    const endpoint = type === 'member' ? `/api/members/${id}` : type === 'lead' ? `/api/leads/${id}` : `/api/trials/${id}`;
     await apiFetch(endpoint, {method:'PATCH', body: JSON.stringify(body)});
     if (type === 'member') { const idx = members.findIndex(m => String(m.id)===String(id)); if (idx!==-1) members[idx] = {...members[idx],...body}; }
-    else { const idx = leads.findIndex(l => String(l.id)===String(id)); if (idx!==-1) leads[idx] = {...leads[idx],...body}; }
+    else if (type === 'lead') { const idx = leads.findIndex(l => String(l.id)===String(id)); if (idx!==-1) leads[idx] = {...leads[idx],...body}; }
+    else if (type === 'trial') { const idx = trials.findIndex(t => String(t.id)===String(id)); if (idx!==-1) trials[idx] = {...trials[idx],...body}; document.getElementById('ct-trials').textContent = trials.length; }
     setInd('saved','✓ Saved');
     updateCounts();
-    renderMain();
     setTimeout(() => setInd('',''), 2000);
   } catch(e) { setInd('',''); toast('Save failed: '+e.message,'error'); }
 }
@@ -1386,28 +1063,8 @@ function buildMemberForm(m, ro) {
       <option value="" ${!m.coach?'selected':''}>Unassigned</option>
       ${COACHES.map(c => `<option value="${c}" ${m.coach===c?'selected':''}>${c}</option>`).join('')}
     </select></div>
-    <div class="frow">
-      <div class="fg"><label>Follow-up Date <span style="font-weight:400;color:var(--tx3)">(snooze from outreach)</span></label>
-        <input class="fi" type="date" data-field="follow_up_date" value="${m.follow_up_date ? m.follow_up_date.slice(0,10) : ''}" ${dis}
-          style="${m.follow_up_date && new Date(m.follow_up_date) > new Date() ? 'border-color:var(--org);background:var(--org-b)' : ''}">
-      </div>
-      <div class="fg" style="display:flex;align-items:flex-end;padding-bottom:2px">
-        ${!ro ? `<button class="btn btn-ghost btn-sm" style="font-size:11px" onclick="clearFollowUp('${m.id}')">✕ Clear snooze</button>` : ''}
-      </div>
-    </div>
     <div class="fg"><label>Goals</label><textarea class="fta" data-field="goals" ${ro?'readonly':''}>${v(m.goals)}</textarea></div>
     <div class="fg"><label>Internal Notes</label><textarea class="fta" data-field="notes" ${ro?'readonly':''}>${v(m.notes)}</textarea></div>
-    <div class="sec-hd">Outreach</div>
-    <div class="frow" style="align-items:flex-end">
-      <div class="fg">
-        <label>Last Contacted <span style="font-weight:400;color:var(--tx3)">(manual override)</span></label>
-        <input class="fi" type="date" id="manualContactDate-${m.id}" value="${(() => { const e = outreachMembers.find(o=>String(o.id)===String(m.id)); return e&&e.last_contacted_at?e.last_contacted_at.slice(0,10):''; })()}" ${ro?'disabled':''}>
-      </div>
-      <div class="fg" style="display:flex;gap:6px;align-items:flex-end;padding-bottom:2px">
-        ${!ro ? `<button class="btn btn-brand btn-sm" onclick="manualLogContact('${m.id}')">Set contacted</button>
-        <button class="btn btn-ghost btn-sm" onclick="manualDeleteContact('${m.id}')">Clear</button>` : ''}
-      </div>
-    </div>
     <div class="sec-hd">Info</div>
     <div class="d-grid">
       <div class="di"><label>Last Visit</label><span>${fmtDate(m.last_visit)}</span></div>
@@ -1438,8 +1095,70 @@ function buildLeadForm(l, ro) {
     ${!ro ? `<div class="mfoot"><button class="btn btn-danger btn-sm" onclick="deleteLead('${l.id}')">Delete Lead</button></div>` : ''}`;
 }
 
+function buildTrialForm(t, ro) {
+  const v = x => esc(x||'');
+  const dis = ro ? 'disabled' : '';
+  const stages = ['Trial Purchased','First Visit Done','Mid-Trial Check-in','Trial Complete','Converted to Member','Did Not Convert'];
+  return `
+    <div class="frow">
+      <div class="fg"><label>Full Name</label><input class="fi" data-field="name" value="${v(t.name)}" ${ro?'readonly':''}></div>
+      <div class="fg"><label>Email</label><input class="fi" type="email" data-field="email" value="${v(t.email)}" ${ro?'readonly':''}></div>
+    </div>
+    <div class="frow">
+      <div class="fg"><label>Phone</label><input class="fi" type="tel" data-field="phone" value="${v(t.phone)}" ${ro?'readonly':''}></div>
+      <div class="fg"><label>Stage</label><select class="fs" data-field="stage" ${dis}>${stages.map(s=>`<option value="${s}" ${(t.stage||'Trial Purchased')===s?'selected':''}>${s}</option>`).join('')}</select></div>
+    </div>
+    <div class="frow">
+      <div class="fg"><label>Assigned Coach</label><select class="fs" data-field="coach" ${dis}>
+        <option value="" ${!t.coach?'selected':''}>Unassigned</option>
+        ${COACHES.map(c=>`<option value="${c}" ${t.coach===c?'selected':''}>${c}</option>`).join('')}
+      </select></div>
+      <div class="fg"><label>Membership Type</label><input class="fi" data-field="membership" value="${v(t.membership||'7 Day Trial')}" ${ro?'readonly':''}></div>
+    </div>
+    <div class="frow">
+      <div class="fg"><label>Trial Start</label><input class="fi" type="date" data-field="trial_start" value="${v(t.trial_start?.slice?.(0,10))}" ${ro?'readonly':''}></div>
+      <div class="fg"><label>First Visit Date</label><input class="fi" type="date" data-field="first_visit" value="${v(t.first_visit?.slice?.(0,10))}" ${ro?'readonly':''}></div>
+    </div>
+    <div class="fg"><label>Notes</label><textarea class="fta" data-field="notes" ${ro?'readonly':''}>${v(t.notes)}</textarea></div>
+    ${!ro && t.id ? `<div class="mfoot"><button class="btn btn-danger btn-sm" onclick="deleteTrial('${t.id}')">Remove from Trials</button></div>` : ''}
+  `;
+}
+
+async function deleteTrial(id) {
+  if (!confirm('Remove this trial member?')) return;
+  try {
+    await apiFetch(`/api/trials/${id}`, {method:'DELETE'});
+    trials = trials.filter(t => String(t.id)!==String(id));
+    document.getElementById('ct-trials').textContent = trials.length;
+    closeDetail(); renderMain(); toast('Trial removed','success');
+  } catch(e) { toast('Error: '+e.message,'error'); }
+}
+
+function openAddTrial() {
+  editingType = 'trial'; editingId = null;
+  document.getElementById('detailTitle').textContent = 'Add Trial Member';
+  document.getElementById('detailMeta').textContent = '';
+  document.getElementById('detailSaveInd').textContent = '';
+  document.getElementById('detailBody').innerHTML = `
+    ${buildTrialForm({}, false)}
+    <div class="mfoot"><button class="btn btn-brand" onclick="createTrial()">Add Trial Member</button></div>`;
+  document.getElementById('detailOverlay').classList.remove('hidden');
+}
+
+async function createTrial() {
+  const body = {};
+  document.getElementById('detailBody').querySelectorAll('[data-field]').forEach(el => { body[el.dataset.field] = el.value; });
+  try {
+    const data = await apiFetch('/api/trials', {method:'POST', body: JSON.stringify(body)});
+    trials.unshift(data);
+    document.getElementById('ct-trials').textContent = trials.length;
+    closeDetail(); renderMain(); toast('Trial member added','success');
+  } catch(e) { toast('Error: '+e.message,'error'); }
+}
+
 function openAdd() {
   if (currentView === 'leads') openAddLead();
+  else if (currentView === 'trials') openAddTrial();
   else openAddMember();
 }
 
@@ -1591,14 +1310,5 @@ document.addEventListener('DOMContentLoaded', () => {
   tryAutoLogin();
 });
 </script>
-  <!-- OUTREACH COUNTER -->
-  <div id="outreachCounter" onclick="toggleCounterDetail()">
-    <span class="oc-total" id="ocMyCount">0</span>
-    <span class="oc-label">My reach-outs today</span>
-  </div>
-  <div id="outreachCounterDetail" id="ocDetail">
-    <div id="ocDetailRows"></div>
-  </div>
-
 </body>
 </html>
