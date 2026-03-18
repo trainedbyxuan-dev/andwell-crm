@@ -532,27 +532,13 @@ app.patch('/api/trials/:id', auth, async (req, res) => {
   const allowed = ['name','email','phone','stage','coach','membership','notes','trial_start','trial_end','first_visit'];
   const updates = [], values = []; let i = 1;
   for(const key of allowed) {
-    if(req.body[key] !== undefined) { updates.push(key+'=(path.join(__dirname,'public','index.html')));
-
-app.listen(PORT,()=>{
-  console.log('Andwell CRM running on port',PORT);
-  console.log('DB:',process.env.DATABASE_URL?'connected':'NOT SET');
-  console.log('Slack:',SLACK?'configured':'not configured');
-});
-+i++); values.push(req.body[key]); }
+    if(req.body[key] !== undefined) { updates.push(key+'=$'+i++); values.push(req.body[key]); }
   }
   if(!updates.length) return res.status(400).json({error:'No valid fields'});
   updates.push('updated_at=NOW()'); values.push(req.params.id);
   try {
     const { rows } = await pool.query(
-      'UPDATE trials SET '+updates.join(',')+'  WHERE id=(path.join(__dirname,'public','index.html')));
-
-app.listen(PORT,()=>{
-  console.log('Andwell CRM running on port',PORT);
-  console.log('DB:',process.env.DATABASE_URL?'connected':'NOT SET');
-  console.log('Slack:',SLACK?'configured':'not configured');
-});
-+i+' RETURNING *', values
+      'UPDATE trials SET '+updates.join(',')+'  WHERE id=$'+i+' RETURNING *', values
     );
     if(!rows.length) return res.status(404).json({error:'Not found'});
     await logActivity(req.user.name, 'Updated trial', 'trial', rows[0].id, rows[0].name, null);
