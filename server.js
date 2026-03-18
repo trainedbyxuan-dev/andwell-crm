@@ -310,6 +310,31 @@ async function syncFromMomence() {
     }
     await client.query('COMMIT');
     console.log(`Momence sync: upserted ${upserted} members`);
+
+    // Auto-populate trials from members with trial membership
+    let trialCount = 0;
+    for (const m of allMembers) {
+      const tags = (m.customerTags||[]).map(t => (t.name||t.label||'').toLowerCase()).join(' ');
+      const isTrial = tags.includes('trial') || tags.includes('7 day') || tags.includes('7day');
+      if (!isTrial) continue;
+      const firstName = m.firstName || m.first_name || '';
+      const lastName = m.lastName || m.last_name || '';
+      const name = `${firstName} ${lastName}`.trim() || m.email || 'Unknown';
+      const momenceId = String(m.id);
+      // Only insert if not already in trials
+      const exists = await client.query('SELECT id FROM trials WHERE momence_id=$1', [momenceId]);
+      if (!exists.rows.length) {
+        const id = 'trial_' + momenceId;
+        await client.query(
+          `INSERT INTO trials (id,name,email,phone,stage,membership,momence_id,source)
+           VALUES ($1,$2,$3,$4,'Trial Purchased','7 Day Trial',$5,'momence')
+           ON CONFLICT (id) DO NOTHING`,
+          [id, name, m.email||'', m.phoneNumber||'', momenceId]
+        );
+        trialCount++;
+      }
+    }
+    if (trialCount > 0) console.log(`Momence sync: added ${trialCount} new trial members`);
   } catch(e) {
     await client.query('ROLLBACK');
     throw e;
@@ -449,6 +474,98 @@ app.get('/api/outreach/stats', auth, async(req,res)=>{
     `);
     res.json(rows);
   }catch(e){res.status(500).json({error:e.message});}
+});
+
+
+// ══════════════════════════════════════════════
+// TRIALS PIPELINE
+// ══════════════════════════════════════════════
+async function ensureTrialsTable() {
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS trials (
+      id TEXT PRIMARY KEY,
+      name TEXT NOT NULL,
+      email TEXT,
+      phone TEXT,
+      stage TEXT DEFAULT 'Trial Purchased',
+      coach TEXT,
+      membership TEXT,
+      first_visit DATE,
+      trial_start DATE,
+      trial_end DATE,
+      notes TEXT,
+      momence_id TEXT,
+      source TEXT DEFAULT 'manual',
+      created_at TIMESTAMPTZ DEFAULT NOW(),
+      updated_at TIMESTAMPTZ DEFAULT NOW()
+    )
+  `);
+  await pool.query(`CREATE INDEX IF NOT EXISTS idx_trials_stage ON trials(stage)`);
+  await pool.query(`CREATE INDEX IF NOT EXISTS idx_trials_momence ON trials(momence_id)`);
+}
+ensureTrialsTable().catch(e => console.error('Trials table error:', e.message));
+
+app.get('/api/trials', auth, async (req, res) => {
+  try {
+    const { rows } = await pool.query('SELECT * FROM trials ORDER BY created_at DESC');
+    res.json(rows);
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
+app.post('/api/trials', auth, async (req, res) => {
+  if(req.user.role==='readonly') return res.status(403).json({error:'Read only'});
+  const { name, email, phone, stage, coach, membership, notes, trial_start, trial_end } = req.body;
+  const id = 'trial_' + Date.now();
+  try {
+    const { rows } = await pool.query(
+      `INSERT INTO trials (id,name,email,phone,stage,coach,membership,notes,trial_start,trial_end)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10) RETURNING *`,
+      [id, name, email||'', phone||'', stage||'Trial Purchased', coach||'', membership||'7 Day Trial', notes||'', trial_start||null, trial_end||null]
+    );
+    await logActivity(req.user.name, 'Added trial', 'trial', rows[0].id, rows[0].name, null);
+    res.json(rows[0]);
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
+app.patch('/api/trials/:id', auth, async (req, res) => {
+  if(req.user.role==='readonly') return res.status(403).json({error:'Read only'});
+  const allowed = ['name','email','phone','stage','coach','membership','notes','trial_start','trial_end','first_visit'];
+  const updates = [], values = []; let i = 1;
+  for(const key of allowed) {
+    if(req.body[key] !== undefined) { updates.push(key+'=(path.join(__dirname,'public','index.html')));
+
+app.listen(PORT,()=>{
+  console.log('Andwell CRM running on port',PORT);
+  console.log('DB:',process.env.DATABASE_URL?'connected':'NOT SET');
+  console.log('Slack:',SLACK?'configured':'not configured');
+});
++i++); values.push(req.body[key]); }
+  }
+  if(!updates.length) return res.status(400).json({error:'No valid fields'});
+  updates.push('updated_at=NOW()'); values.push(req.params.id);
+  try {
+    const { rows } = await pool.query(
+      'UPDATE trials SET '+updates.join(',')+'  WHERE id=(path.join(__dirname,'public','index.html')));
+
+app.listen(PORT,()=>{
+  console.log('Andwell CRM running on port',PORT);
+  console.log('DB:',process.env.DATABASE_URL?'connected':'NOT SET');
+  console.log('Slack:',SLACK?'configured':'not configured');
+});
++i+' RETURNING *', values
+    );
+    if(!rows.length) return res.status(404).json({error:'Not found'});
+    await logActivity(req.user.name, 'Updated trial', 'trial', rows[0].id, rows[0].name, null);
+    res.json(rows[0]);
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
+app.delete('/api/trials/:id', auth, async (req, res) => {
+  if(req.user.role==='readonly') return res.status(403).json({error:'Read only'});
+  try {
+    await pool.query('DELETE FROM trials WHERE id=$1', [req.params.id]);
+    res.json({ ok: true });
+  } catch(e) { res.status(500).json({ error: e.message }); }
 });
 
 app.get('*',(req,res)=>res.sendFile(path.join(__dirname,'public','index.html')));
