@@ -180,7 +180,20 @@ async function logActivity(userName,action,entityType,entityId,entityName,detail
 async function sendDailyReachout(){
   if(!SLACK){console.log('No Slack webhook');return;}
   try{
-    const{rows}=await pool.query("SELECT name,coach,last_visit,needs,EXTRACT(DAY FROM NOW()-last_visit::timestamptz)::int AS days_since FROM members WHERE coach IS NOT NULL AND coach!='' AND (last_visit IS NULL OR last_visit < NOW() - INTERVAL '14 days') AND LOWER(COALESCE(status,'')) NOT IN ('paused','frozen','pause','freeze') AND (follow_up_date IS NULL OR follow_up_date <= CURRENT_DATE) ORDER BY coach,days_since DESC NULLS LAST");
+    const{rows}=await pool.query(`
+    SELECT m.name, m.coach, m.last_visit, m.needs,
+      EXTRACT(DAY FROM NOW()-m.last_visit::timestamptz)::int AS days_since
+    FROM members m
+    WHERE m.coach IS NOT NULL AND m.coach!=''
+      AND (m.last_visit IS NULL OR m.last_visit < NOW() - INTERVAL '14 days')
+      AND LOWER(COALESCE(m.status,'')) NOT IN ('paused','frozen','pause','freeze')
+      AND NOT EXISTS (
+        SELECT 1 FROM contact_log cl
+        WHERE cl.member_id = m.id
+          AND cl.contacted_at >= NOW() - INTERVAL '7 days'
+      )
+    ORDER BY m.coach, days_since DESC NULLS LAST
+  `);
     if(!rows.length) return;
     // Get yesterday's contact counts
     const{rows:contactRows}=await pool.query("SELECT logged_by, COUNT(*)::int AS count FROM contact_log WHERE contacted_at >= NOW()::date - INTERVAL '1 day' AND contacted_at < NOW()::date GROUP BY logged_by");
