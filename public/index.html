@@ -335,6 +335,7 @@ td{padding:9px 13px;vertical-align:middle}
       <div class="nav on" data-view="dashboard" onclick="switchView('dashboard',this)"><span class="nav-ic">◈</span>Dashboard</div>
       <div class="sb-label" style="margin-top:8px">Boards</div>
       <div class="nav" data-view="leads" onclick="switchView('leads',this)"><span class="nav-ic">🎯</span>Leads Pipeline<span class="nav-ct" id="ct-leads">0</span></div>
+      <div class="nav" data-view="queue" onclick="switchView('queue',this)"><span class="nav-ic">⚡</span>Daily Queue<span class="nav-ct hot" id="ct-queue">0</span></div>
       <div class="nav" data-view="members" onclick="switchView('members',this)"><span class="nav-ic">⬡</span>Members Board<span class="nav-ct" id="ct-members">0</span></div>
       <div class="nav" data-view="outreach" onclick="switchView('outreach',this)"><span class="nav-ic">📞</span>Outreach<span class="nav-ct hot" id="ct-outreach">0</span></div>
       <div class="sb-div"></div>
@@ -691,9 +692,9 @@ function switchView(view, navEl) {
   currentView = view;
   document.querySelectorAll('.nav[data-view]').forEach(el => el.classList.remove('on'));
   if (navEl && navEl.dataset.view) navEl.classList.add('on');
-  const titles = {dashboard:'Dashboard', members:'Members Board', leads:'Leads Pipeline', activity:'Activity Log', outreach:'Outreach'};
+  const titles = {dashboard:'Dashboard', members:'Members Board', leads:'Leads Pipeline', queue:'Daily Queue', activity:'Activity Log', outreach:'Outreach'};
   document.getElementById('viewTitle').textContent = titles[view] || view;
-  const showToolbar = view === 'members' || view === 'leads';
+  const showToolbar = view === 'members' || view === 'leads' || view === 'queue';
   document.getElementById('mainToolbar').classList.toggle('hidden', !showToolbar);
   document.getElementById('statsRow').classList.toggle('hidden', !showToolbar);
   // Show outreach counter bubble on outreach view or whenever stats exist
@@ -726,6 +727,7 @@ function renderMain() {
   if (currentView === 'dashboard') renderDashboard(c);
   else if (currentView === 'members') renderMembers(c);
   else if (currentView === 'leads') renderLeads(c);
+  else if (currentView === 'queue') renderQueue(c);
   else if (currentView === 'activity') renderActivity(c);
   else if (currentView === 'outreach') renderOutreach(c);
 }
@@ -1007,18 +1009,45 @@ function memberCard(m) {
   </div>`;
 }
 
+function touchChannelColor(action) {
+  if (!action) return '#888';
+  if (action.includes('Text)')) return '#534AB7';
+  if (action.includes('DM)')) return '#BA7517';
+  if (action.includes('Email)')) return '#185FA5';
+  if (action.includes('Call)')) return '#0F6E56';
+  return '#888780';
+}
+
+function leadDueStatus(l) {
+  if (!l.next_action_due || l.cadence_status !== 'active') return null;
+  const due = new Date(l.next_action_due);
+  const today = new Date(); today.setHours(0,0,0,0);
+  const diff = Math.floor((due - today) / 86400000);
+  if (diff < 0) return {label: `${Math.abs(diff)}d overdue`, color: 'var(--red)', bg: '#FCEBEB'};
+  if (diff === 0) return {label: 'Due today', color: '#854F0B', bg: '#FAEEDA'};
+  return null;
+}
+
 function leadCard(l) {
-  return `<div class="card" data-type="lead" data-id="${l.id}" onclick="handleCardClick(this)">
+  const due = leadDueStatus(l);
+  const borderLeft = due ? (due.color === 'var(--red)' ? '3px solid var(--red)' : '3px solid #EF9F27') : '';
+  const touchLabel = l.next_action ? l.next_action.replace(/^Send /, '') : '';
+  const chColor = touchChannelColor(l.next_action||'');
+  const touchNum = l.current_touch_number || 0;
+  const dueBadge = due ? `<span style="font-size:9px;font-weight:600;padding:1px 6px;border-radius:99px;background:${due.bg};color:${due.color};margin-left:4px">${due.label}</span>` : '';
+  const touchBadge = l.cadence_status === 'active' && touchNum < 18 ? `<span style="font-size:9px;font-weight:600;padding:1px 6px;border-radius:99px;background:#EEEDFE;color:#3C3489">T${touchNum+1}</span>` : '';
+  const convertedBadge = l.cadence_status === 'converted_exit' ? `<span style="font-size:9px;font-weight:600;padding:1px 6px;border-radius:99px;background:#EAF3DE;color:#27500A">Converted</span>` : '';
+  return `<div class="card" data-type="lead" data-id="${l.id}" onclick="handleCardClick(this)" style="${borderLeft ? 'border-left:'+borderLeft+';border-radius:6px' : ''}">
     <div class="card-top">
       <div class="av" style="background:${coachColor(l.assigned_to||l.coach)}">${initials(l.name)}</div>
       <div class="card-info">
-        <div class="card-name">${esc(l.name||'—')}</div>
-        <div class="card-sub">${esc(l.email||l.phone||'')}</div>
+        <div class="card-name">${esc(l.name||'—')} ${touchBadge}${convertedBadge}${dueBadge}</div>
+        <div class="card-sub" style="color:${chColor};font-size:10px;margin-top:2px">${touchLabel ? esc(touchLabel) : esc(l.email||l.phone||'')}</div>
       </div>
     </div>
-    <div class="card-foot">
+    <div class="card-foot" style="display:flex;align-items:center;justify-content:space-between;gap:4px">
       <span class="coach-lbl"><span class="coach-dot" style="background:${coachColor(l.assigned_to||l.coach)}"></span>${esc(l.assigned_to||l.coach||'—')}</span>
-      <span style="font-size:10px;color:var(--tx3)">${fmtDate(l.created_at)}</span>
+      ${l.cadence_status === 'active' && due ? `<button onclick="event.stopPropagation();completeTouchUI('${l.id}')" style="font-size:10px;padding:2px 8px;border-radius:5px;border:1px solid #1D9E75;background:#E1F5EE;color:#085041;cursor:pointer;font-family:inherit">✓ Done</button>` : `<span style="font-size:10px;color:var(--tx3)">${fmtDate(l.added)}</span>`}
     </div>
   </div>`;
 }
@@ -1431,6 +1460,21 @@ function buildLeadForm(l, ro) {
   const v = x => esc(x||'');
   const dis = ro ? 'disabled' : '';
   const stages = ['New Inquiry','Contacted','Consult Booked','Consult Done','Joined','Lost'];
+  const touchNum = (l.current_touch_number||0);
+  const cadenceSection = l.id ? `
+    <div class="sec-hd">Cadence</div>
+    <div class="d-grid">
+      <div class="di"><label>Next action</label><span style="font-size:11px">${v(l.next_action)||'—'}</span></div>
+      <div class="di"><label>Due</label><span>${l.next_action_due ? l.next_action_due.slice(0,10) : '—'}</span></div>
+      <div class="di"><label>Touch</label><span>${touchNum} / 18 completed</span></div>
+      <div class="di"><label>Status</label><span>${v(l.cadence_status)||'—'}</span></div>
+    </div>
+    ${!ro && l.cadence_status === 'active' ? `<div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap">
+      <button class="btn btn-brand btn-sm" onclick="completeTouchUI('${l.id}')">✓ Mark T${touchNum+1} complete</button>
+      <button class="btn btn-ghost btn-sm" onclick="convertLeadUI('${l.id}')">Convert lead</button>
+    </div>` : ''}
+    ${!ro && l.cadence_status === 'converted_exit' ? '' : ''}
+  ` : '';
   return `
     <div class="frow">
       <div class="fg"><label>Full Name</label><input class="fi" data-field="name" value="${v(l.name)}" ${ro?'readonly':''}></div>
@@ -1440,11 +1484,20 @@ function buildLeadForm(l, ro) {
       <div class="fg"><label>Phone</label><input class="fi" type="tel" data-field="phone" value="${v(l.phone)}" ${ro?'readonly':''}></div>
       <div class="fg"><label>Stage</label><select class="fs" data-field="stage" ${dis}>${stages.map(s=>`<option value="${s}" ${(l.stage||l.status)===s?'selected':''}>${s}</option>`).join('')}</select></div>
     </div>
+    <div class="fg"><label>Source</label><select class="fs" data-field="source" ${dis}>
+      <option value="" ${!l.source?'selected':''}>— select source —</option>
+      <option value="facebook_ad" ${l.source==='facebook_ad'?'selected':''}>Facebook Ad</option>
+      <option value="instagram_organic" ${l.source==='instagram_organic'?'selected':''}>Instagram Organic</option>
+      <option value="referral" ${l.source==='referral'?'selected':''}>Referral</option>
+      <option value="walk_in" ${l.source==='walk_in'?'selected':''}>Walk-in</option>
+      <option value="other" ${l.source==='other'?'selected':''}>Other</option>
+    </select></div>
     <div class="fg"><label>Assigned To</label><select class="fs" data-field="assigned_to" ${dis}>
       <option value="" ${!l.assigned_to?'selected':''}>Unassigned</option>
       ${COACHES.map(c=>`<option value="${c}" ${(l.assigned_to||l.coach)===c?'selected':''}>${c}</option>`).join('')}
     </select></div>
     <div class="fg"><label>Notes</label><textarea class="fta" data-field="notes" ${ro?'readonly':''}>${v(l.notes)}</textarea></div>
+    ${cadenceSection}
     ${!ro ? `<div class="mfoot"><button class="btn btn-danger btn-sm" onclick="deleteLead('${l.id}')">Delete Lead</button></div>` : ''}`;
 }
 
@@ -1494,6 +1547,55 @@ async function createLead() {
     leads.unshift(data.lead||data);
     closeDetail(); renderMain(); toast('Lead added','success');
   } catch(e) { toast('Error: '+e.message,'error'); }
+}
+
+async function completeTouchUI(id) {
+  try {
+    const data = await apiFetch(`/api/leads/${id}/touch`, {method:'POST', body:JSON.stringify({})});
+    const idx = leads.findIndex(l => String(l.id)===String(id));
+    if (idx !== -1) leads[idx] = {...leads[idx], ...data};
+    closeDetail(); renderMain(); toast('Touch marked complete ✓', 'success');
+  } catch(e) { toast('Error: '+e.message, 'error'); }
+}
+
+async function convertLeadUI(id) {
+  const types = ['trial_signup','consult_booked','membership','package'];
+  const labels = {'trial_signup':'Trial Signup','consult_booked':'Consult Booked','membership':'Membership','package':'Package'};
+  const choice = prompt('Convert lead as:\n1. trial_signup\n2. consult_booked\n3. membership\n4. package\n\nEnter type:');
+  if (!choice || !types.includes(choice)) { toast('Cancelled or invalid type', 'warn'); return; }
+  try {
+    const data = await apiFetch(`/api/leads/${id}/convert`, {method:'POST', body:JSON.stringify({conversion_type:choice})});
+    const idx = leads.findIndex(l => String(l.id)===String(id));
+    if (idx !== -1) leads[idx] = {...leads[idx], ...data};
+    closeDetail(); renderMain(); toast('Lead converted: '+labels[choice], 'success');
+  } catch(e) { toast('Error: '+e.message, 'error'); }
+}
+
+async function renderQueue(c) {
+  c.innerHTML = '<div style="padding:30px;color:var(--tx3);text-align:center">Loading queue…</div>';
+  try {
+    const queue = await apiFetch('/api/queue');
+    document.getElementById('ct-queue').textContent = queue.length;
+    if (!queue.length) {
+      c.innerHTML = '<div style="padding:40px;text-align:center;color:var(--tx3)"><div style="font-size:22px;margin-bottom:8px">✓</div><div style="font-size:13px">All caught up — no actions due today</div></div>';
+      return;
+    }
+    const rows = queue.map(l => {
+      const isOverdue = l.due_status === 'overdue';
+      const chColor = touchChannelColor(l.next_action||'');
+      const touchNum = (l.current_touch_number||0)+1;
+      const dueLabel = isOverdue ? `<span style="font-size:10px;font-weight:600;padding:1px 7px;border-radius:99px;background:#FCEBEB;color:var(--red)">${Math.abs(Math.floor((new Date(l.next_action_due)-new Date().setHours(0,0,0,0))/86400000))}d overdue</span>` : `<span style="font-size:10px;font-weight:600;padding:1px 7px;border-radius:99px;background:#FAEEDA;color:#854F0B">Due today</span>`;
+      return `<div style="display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid var(--bdr);background:${isOverdue?'color-mix(in srgb,#FCEBEB 30%,transparent)':'var(--bg)'}" data-type="lead" data-id="${l.id}" onclick="handleCardClick(this)" style="cursor:pointer">
+        <div class="av" style="background:${coachColor(l.assigned_to||l.coach)};flex-shrink:0;width:32px;height:32px;font-size:11px">${initials(l.name)}</div>
+        <div style="flex:1;min-width:0">
+          <div style="font-size:12px;font-weight:600;color:var(--tx1)">${esc(l.name||'—')} <span style="font-size:10px;font-weight:500;padding:1px 6px;border-radius:99px;background:#EEEDFE;color:#3C3489">T${touchNum}</span> ${dueLabel}</div>
+          <div style="font-size:11px;color:${chColor};margin-top:1px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc((l.next_action||'').replace(/^Send /,''))}</div>
+        </div>
+        <button onclick="event.stopPropagation();completeTouchUI('${l.id}')" style="font-size:11px;padding:4px 10px;border-radius:6px;border:1px solid #1D9E75;background:#E1F5EE;color:#085041;cursor:pointer;font-family:inherit;flex-shrink:0">✓ Done</button>
+      </div>`;
+    }).join('');
+    c.innerHTML = `<div style="border:1px solid var(--bdr);border-radius:8px;overflow:hidden;margin:12px 16px">${rows}</div>`;
+  } catch(e) { c.innerHTML = `<div style="padding:30px;color:var(--red)">Error: ${e.message}</div>`; }
 }
 
 async function deleteLead(id) {
