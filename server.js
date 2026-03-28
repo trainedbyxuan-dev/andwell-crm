@@ -85,19 +85,23 @@ app.get('/api/leads',auth,async(req,res)=>{
 });
 
 app.post('/api/leads',auth,async(req,res)=>{
-  const{name,email,phone,status,source,coach,consult_date,notes}=req.body;
+  if(req.user.role==='readonly') return res.status(403).json({error:'Read only'});
+  const{name,email,phone,status,source,coach,consult_date,notes,ad_campaign_name}=req.body;
   const id='lead_'+Date.now();
+  const captureDate=new Date().toISOString().split('T')[0];
+  const{next_action,next_action_due}=calcNextAction(captureDate,1);
   try{
-    const{rows}=await pool.query('INSERT INTO leads (id,name,email,phone,status,source,coach,consult_date,notes) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9) RETURNING *',
-      [id,name,email||'',phone||'',status||'New Lead',source||'',coach||'',consult_date||null,notes||'']);
+    const{rows}=await pool.query(
+      `INSERT INTO leads (id,name,email,phone,status,source,coach,consult_date,notes,lead_capture_date,cadence_status,contact_status,current_touch_number,next_action,next_action_due,ad_campaign_name) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16) RETURNING *`,
+      [id,name,email||'',phone||'',status||'New Inquiry',source||'',coach||'',consult_date||null,notes||'',captureDate,'active','never_contacted',0,next_action,next_action_due,ad_campaign_name||'']);
     await logActivity(req.user.name,'Added lead','lead',rows[0].id,rows[0].name,null);
     res.json(rows[0]);
   }catch(e){res.status(500).json({error:e.message});}
 });
 
 app.patch('/api/leads/:id',auth,async(req,res)=>{
-  const allowed=['name','email','phone','status','source','coach','consult_date','notes','timeline'];
-  const dateFields=['consult_date'];
+  const allowed=['name','email','phone','status','source','coach','consult_date','notes','timeline','cadence_status','contact_status','next_action','next_action_due','current_touch_number','ad_campaign_name','lead_capture_date'];
+  const dateFields=['consult_date','next_action_due','lead_capture_date'];
   const jsonFields=['timeline'];
   const updates=[],values=[];let i=1;
   for(const key of allowed){
@@ -127,6 +131,116 @@ app.patch('/api/leads/:id',auth,async(req,res)=>{
 app.delete('/api/leads/:id',auth,async(req,res)=>{
   try{await pool.query('DELETE FROM leads WHERE id=$1',[req.params.id]);res.json({ok:true});}
   catch(e){res.status(500).json({error:e.message});}
+});
+
+
+// ══════════════════════════════════════════════
+// LEADS CADENCE — schema + endpoints
+// ══════════════════════════════════════════════
+async function ensureLeadsCadence(){
+  try{
+    await pool.query(`ALTER TABLE leads ADD COLUMN IF NOT EXISTS lead_capture_date DATE`);
+    await pool.query(`ALTER TABLE leads ADD COLUMN IF NOT EXISTS cadence_status TEXT DEFAULT 'active'`);
+    await pool.query(`ALTER TABLE leads ADD COLUMN IF NOT EXISTS contact_status TEXT DEFAULT 'never_contacted'`);
+    await pool.query(`ALTER TABLE leads ADD COLUMN IF NOT EXISTS current_touch_number INTEGER DEFAULT 0`);
+    await pool.query(`ALTER TABLE leads ADD COLUMN IF NOT EXISTS next_action TEXT DEFAULT ''`);
+    await pool.query(`ALTER TABLE leads ADD COLUMN IF NOT EXISTS next_action_due DATE`);
+    await pool.query(`ALTER TABLE leads ADD COLUMN IF NOT EXISTS ad_campaign_name TEXT DEFAULT ''`);
+    await pool.query(`ALTER TABLE leads ADD COLUMN IF NOT EXISTS touch_at_conversion INTEGER`);
+    await pool.query(`CREATE INDEX IF NOT EXISTS idx_leads_next_due ON leads(next_action_due) WHERE cadence_status='active'`);
+    await pool.query(`CREATE INDEX IF NOT EXISTS idx_leads_cadence ON leads(cadence_status)`);
+    console.log('Leads cadence columns ready');
+  }catch(e){console.error('ensureLeadsCadence error:',e.message);}
+}
+ensureLeadsCadence();
+
+const TOUCH_OFFSETS=[0,0,1,2,2,3,4,5,5,6,7,8,9,9,10,11,12,14];
+const TOUCH_LABELS=[
+  'Send T1 — Opening question (Text)',
+  'Send T2 — IG mirror (DM)',
+  'Send T3 — Welcome email (Email)',
+  'Send T4 — Remove friction (Text)',
+  'Send T5 — First call attempt (Call)',
+  'Send T6 — Social proof (Email)',
+  'Send T7 — Curiosity hook (Text)',
+  'Send T8 — Share content (DM)',
+  'Send T9 — Free tip (Email)',
+  'Send T10 — Check-in question (Text)',
+  'Send T11 — Call attempt 2 (Call)',
+  'Send T12 — Consult offer (Email)',
+  'Send T13 — LBO offer (Text)',
+  'Send T14 — DM mirror of LBO (DM)',
+  'Send T15 — Objection handling (Email)',
+  'Send T16 — Last objection check (Text)',
+  'Send T17 — Final call (Call)',
+  'Send T18 — Close the loop (Text)'
+];
+
+function calcNextAction(captureDate,touchNumber){
+  if(touchNumber>18) return{next_action:'Cadence complete — move to nurture',next_action_due:null};
+  const idx=touchNumber-1;
+  const offset=TOUCH_OFFSETS[idx];
+  const due=new Date(captureDate);
+  due.setDate(due.getDate()+offset);
+  return{next_action:TOUCH_LABELS[idx],next_action_due:due.toISOString().split('T')[0]};
+}
+
+app.post('/api/leads/:id/touch',auth,async(req,res)=>{
+  if(req.user.role==='readonly') return res.status(403).json({error:'Read only'});
+  try{
+    const{rows}=await pool.query('SELECT * FROM leads WHERE id=$1',[req.params.id]);
+    if(!rows.length) return res.status(404).json({error:'Not found'});
+    const lead=rows[0];
+    const completedTouch=(lead.current_touch_number||0)+1;
+    const nextTouch=completedTouch+1;
+    const captureDate=lead.lead_capture_date||new Date().toISOString().split('T')[0];
+    const{next_action,next_action_due}=calcNextAction(captureDate,nextTouch);
+    const cadenceStatus=completedTouch>=18?'completed':(lead.cadence_status||'active');
+    const{rows:updated}=await pool.query(
+      `UPDATE leads SET current_touch_number=$1,next_action=$2,next_action_due=$3,cadence_status=$4,contact_status=CASE WHEN contact_status='never_contacted' THEN 'no_reply' ELSE contact_status END,updated_at=NOW() WHERE id=$5 RETURNING *`,
+      [completedTouch,next_action,next_action_due,cadenceStatus,req.params.id]
+    );
+    const touchNote={touch:completedTouch,action:TOUCH_LABELS[completedTouch-1],sent_at:new Date().toISOString(),by:req.user.name};
+    const existingTimeline=Array.isArray(lead.timeline)?lead.timeline:[];
+    await pool.query(`UPDATE leads SET timeline=$1 WHERE id=$2`,[JSON.stringify([...existingTimeline,touchNote]),req.params.id]);
+    await logActivity(req.user.name,'Completed touch '+completedTouch,'lead',lead.id,lead.name,null);
+    res.json(updated[0]);
+  }catch(e){res.status(500).json({error:e.message});}
+});
+
+app.post('/api/leads/:id/convert',auth,async(req,res)=>{
+  if(req.user.role==='readonly') return res.status(403).json({error:'Read only'});
+  const{conversion_type}=req.body;
+  const allowed=['trial_signup','consult_booked','membership','package'];
+  if(!allowed.includes(conversion_type)) return res.status(400).json({error:'Invalid conversion_type'});
+  try{
+    const{rows:lead}=await pool.query('SELECT * FROM leads WHERE id=$1',[req.params.id]);
+    if(!lead.length) return res.status(404).json({error:'Not found'});
+    const newStatus=conversion_type==='trial_signup'?'Trial Signup':conversion_type==='consult_booked'?'Consult Booked':'Joined';
+    const{rows}=await pool.query(
+      `UPDATE leads SET cadence_status='converted_exit',contact_status='converted',touch_at_conversion=$1,status=$2,next_action='Converted — cadence complete',next_action_due=NULL,updated_at=NOW() WHERE id=$3 RETURNING *`,
+      [lead[0].current_touch_number,newStatus,req.params.id]
+    );
+    await logActivity(req.user.name,'Converted lead: '+conversion_type,'lead',req.params.id,lead[0].name,null);
+    res.json(rows[0]);
+  }catch(e){res.status(500).json({error:e.message});}
+});
+
+app.get('/api/queue',auth,async(req,res)=>{
+  try{
+    const{rows}=await pool.query(`
+      SELECT *,
+        CASE WHEN next_action_due < CURRENT_DATE THEN 'overdue'
+             WHEN next_action_due = CURRENT_DATE THEN 'due_today'
+             ELSE 'upcoming' END AS due_status
+      FROM leads
+      WHERE cadence_status='active' AND next_action_due<=CURRENT_DATE
+      ORDER BY
+        CASE WHEN next_action_due < CURRENT_DATE THEN 0 ELSE 1 END ASC,
+        next_action_due ASC, added ASC
+    `);
+    res.json(rows);
+  }catch(e){res.status(500).json({error:e.message});}
 });
 
 app.post('/api/sync/members',async(req,res)=>{
