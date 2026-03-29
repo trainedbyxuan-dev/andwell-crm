@@ -268,6 +268,117 @@ app.get('/api/cadence-stats', auth, async (req, res) => {
   } catch(e) { res.status(500).json({ error: e.message }); }
 });
 
+
+// ══════════════════════════════════════════════
+// FACEBOOK LEAD ADS WEBHOOK
+// ══════════════════════════════════════════════
+
+// GET /api/webhooks/facebook — Meta webhook verification handshake
+app.get('/api/webhooks/facebook', (req, res) => {
+  const VERIFY_TOKEN = process.env.FB_VERIFY_TOKEN || 'andwell-fb-verify-2026';
+  const mode = req.query['hub.mode'];
+  const token = req.query['hub.verify_token'];
+  const challenge = req.query['hub.challenge'];
+  if (mode === 'subscribe' && token === VERIFY_TOKEN) {
+    console.log('Facebook webhook verified');
+    return res.status(200).send(challenge);
+  }
+  res.sendStatus(403);
+});
+
+// POST /api/webhooks/facebook — receive new lead ad submissions
+app.post('/api/webhooks/facebook', async (req, res) => {
+  res.sendStatus(200); // acknowledge immediately — Meta requires fast response
+  try {
+    const body = req.body;
+    if (body.object !== 'page') return;
+    for (const entry of (body.entry || [])) {
+      for (const change of (entry.changes || [])) {
+        if (change.field !== 'leadgen') continue;
+        const leadgenId = change.value?.leadgen_id;
+        const adId = change.value?.ad_id;
+        const campaignName = change.value?.ad_name || change.value?.campaign_name || '';
+        if (!leadgenId) continue;
+
+        // Fetch lead details from Meta Graph API
+        const FB_ACCESS_TOKEN = process.env.FB_PAGE_ACCESS_TOKEN;
+        if (!FB_ACCESS_TOKEN) {
+          console.error('FB_PAGE_ACCESS_TOKEN not set — cannot fetch lead details');
+          continue;
+        }
+        const fbRes = await fetch(
+          `https://graph.facebook.com/v19.0/${leadgenId}?access_token=${FB_ACCESS_TOKEN}`
+        );
+        if (!fbRes.ok) {
+          console.error('Failed to fetch Facebook lead:', leadgenId, await fbRes.text());
+          continue;
+        }
+        const fbLead = await fbRes.json();
+
+        // Parse field_data array into an object
+        const fields = {};
+        for (const f of (fbLead.field_data || [])) {
+          fields[f.name] = Array.isArray(f.values) ? f.values[0] : f.values;
+        }
+
+        const name = fields['full_name'] || fields['first_name']
+          ? `${fields['first_name']||''} ${fields['last_name']||''}`.trim()
+          : fields['full_name'] || 'Unknown';
+        const email = fields['email'] || '';
+        const phone = fields['phone_number'] || fields['phone'] || '';
+
+        // Create lead using same logic as POST /api/leads
+        const id = 'lead_' + Date.now() + '_fb';
+        const captureDate = new Date().toISOString().split('T')[0];
+        const TOUCH_OFFSETS = [0,0,1,2,2,3,4,5,5,6,7,8,9,9,10,11,12,14];
+        const TOUCH_LABELS = [
+          'Send T1 — Opening question (Text)',
+          'Send T2 — IG mirror (DM)',
+          'Send T3 — Welcome email (Email)',
+          'Send T4 — Remove friction (Text)',
+          'Send T5 — First call attempt (Call)',
+          'Send T6 — Social proof (Email)',
+          'Send T7 — Curiosity hook (Text)',
+          'Send T8 — Share content (DM)',
+          'Send T9 — Free tip (Email)',
+          'Send T10 — Check-in question (Text)',
+          'Send T11 — Call attempt 2 (Call)',
+          'Send T12 — Consult offer (Email)',
+          'Send T13 — LBO offer (Text)',
+          'Send T14 — DM mirror of LBO (DM)',
+          'Send T15 — Objection handling (Email)',
+          'Send T16 — Last objection check (Text)',
+          'Send T17 — Final call (Call)',
+          'Send T18 — Close the loop (Text)'
+        ];
+        const nextActionDue = captureDate; // T1 due same day
+        const { rows } = await pool.query(
+          `INSERT INTO leads
+            (id,name,email,phone,status,source,coach,notes,
+             lead_capture_date,cadence_status,contact_status,current_touch_number,
+             next_action,next_action_due,ad_campaign_name)
+           VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15)
+           ON CONFLICT (id) DO NOTHING
+           RETURNING *`,
+          [id, name, email, phone, 'New Inquiry', 'facebook_ad', '', '',
+           captureDate, 'active', 'never_contacted', 0,
+           TOUCH_LABELS[0], nextActionDue, campaignName]
+        );
+        if (rows.length) {
+          await pool.query(
+            `INSERT INTO activity_log (user_name, action, entity_type, entity_id, entity_name)
+             VALUES ($1,$2,$3,$4,$5)`,
+            ['Facebook', 'Facebook lead received', 'lead', rows[0].id, name]
+          ).catch(() => {}); // non-fatal if activity_log schema differs
+          console.log('Facebook lead created:', name, email, rows[0].id);
+        }
+      }
+    }
+  } catch(e) {
+    console.error('Facebook webhook processing error:', e.message);
+  }
+});
+
 app.post('/api/sync/members',async(req,res)=>{
   if(req.headers['x-sync-secret']!==(process.env.SYNC_SECRET||'andwell-sync-2026'))
     return res.status(401).json({error:'Unauthorized'});

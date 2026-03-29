@@ -335,9 +335,9 @@ td{padding:9px 13px;vertical-align:middle}
       <div class="nav on" data-view="dashboard" onclick="switchView('dashboard',this)"><span class="nav-ic">◈</span>Dashboard</div>
       <div class="sb-label" style="margin-top:8px">Boards</div>
       <div class="nav" data-view="leads" onclick="switchView('leads',this)"><span class="nav-ic">🎯</span>Leads Pipeline<span class="nav-ct" id="ct-leads">0</span></div>
-      <div class="nav" data-view="queue" onclick="switchView('queue',this)"><span class="nav-ic">⚡</span>Daily Queue<span class="nav-ct hot" id="ct-queue">0</span></div>
+      <div class="nav" data-view="queue" onclick="switchView('queue',this)"><span class="nav-ic">⚡</span>New Lead Follow Ups<span class="nav-ct hot" id="ct-queue">0</span></div>
       <div class="nav" data-view="members" onclick="switchView('members',this)"><span class="nav-ic">⬡</span>Members Board<span class="nav-ct" id="ct-members">0</span></div>
-      <div class="nav" data-view="outreach" onclick="switchView('outreach',this)"><span class="nav-ic">📞</span>Outreach<span class="nav-ct hot" id="ct-outreach">0</span></div>
+      <div class="nav" data-view="outreach" onclick="switchView('outreach',this)"><span class="nav-ic">🔁</span>Retention<span class="nav-ct hot" id="ct-outreach">0</span></div>
       <div class="sb-div"></div>
       <div class="sb-label">Members</div>
       <div class="nav" onclick="navFilter('all')"><span class="nav-ic">👥</span>All Members<span class="nav-ct" id="ct-all">0</span></div>
@@ -692,7 +692,7 @@ function switchView(view, navEl) {
   currentView = view;
   document.querySelectorAll('.nav[data-view]').forEach(el => el.classList.remove('on'));
   if (navEl && navEl.dataset.view) navEl.classList.add('on');
-  const titles = {dashboard:'Dashboard', members:'Members Board', leads:'Leads Pipeline', queue:'Daily Queue', activity:'Activity Log', outreach:'Outreach'};
+  const titles = {dashboard:'Dashboard', members:'Members Board', leads:'Leads Pipeline', queue:'New Lead Follow Ups', activity:'Activity Log', outreach:'Retention'};
   document.getElementById('viewTitle').textContent = titles[view] || view;
   const showToolbar = view === 'members' || view === 'leads' || view === 'queue';
   document.getElementById('mainToolbar').classList.toggle('hidden', !showToolbar);
