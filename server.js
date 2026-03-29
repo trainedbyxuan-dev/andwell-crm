@@ -243,6 +243,31 @@ app.get('/api/queue',auth,async(req,res)=>{
   }catch(e){res.status(500).json({error:e.message});}
 });
 
+
+// ══════════════════════════════════════════════
+// CADENCE STATS
+// ══════════════════════════════════════════════
+app.get('/api/cadence-stats', auth, async (req, res) => {
+  try {
+    const { rows } = await pool.query(`
+      SELECT
+        COUNT(*) FILTER (WHERE cadence_status = 'active')::int AS active_in_cadence,
+        COUNT(*) FILTER (WHERE cadence_status = 'active' AND next_action_due <= CURRENT_DATE)::int AS due_today,
+        COUNT(*) FILTER (WHERE cadence_status = 'active' AND next_action_due < CURRENT_DATE)::int AS overdue,
+        COUNT(*) FILTER (WHERE cadence_status = 'converted_exit' AND updated_at >= NOW() - INTERVAL '30 days')::int AS converted_30d,
+        COUNT(*) FILTER (WHERE added >= NOW() - INTERVAL '30 days')::int AS new_30d,
+        COUNT(*) FILTER (WHERE contact_status IN ('in_conversation','converted'))::int AS contacted,
+        COUNT(*) FILTER (WHERE cadence_status != 'unsubscribed')::int AS total_active_leads
+      FROM leads
+    `);
+    const r = rows[0];
+    const contactRate = r.total_active_leads > 0
+      ? Math.round((r.contacted / r.total_active_leads) * 100)
+      : 0;
+    res.json({ ...r, contact_rate: contactRate });
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
 app.post('/api/sync/members',async(req,res)=>{
   if(req.headers['x-sync-secret']!==(process.env.SYNC_SECRET||'andwell-sync-2026'))
     return res.status(401).json({error:'Unauthorized'});

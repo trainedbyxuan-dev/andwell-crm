@@ -757,6 +757,14 @@ async function renderDashboard(c) {
       ${needsBadge(m.needs)}
       ${statusPill(m.status)}
     </div>`).join('');
+
+  // Fetch cadence stats async — render shell first then fill in
+  let cs = { active_in_cadence:0, due_today:0, overdue:0, converted_30d:0, new_30d:0, contact_rate:0 };
+  try { cs = await apiFetch('/api/cadence-stats'); } catch(e) {}
+
+  const cadenceColor = cs.overdue > 0 ? 'var(--red)' : cs.due_today > 0 ? 'var(--org)' : 'var(--grn)';
+  const cadenceLabel = cs.overdue > 0 ? `${cs.overdue} overdue` : cs.due_today > 0 ? `${cs.due_today} due today` : 'All caught up';
+
   c.innerHTML = `
     <div class="dash-kpi">
       <div class="kpi" onclick="navFilter('all')">
@@ -780,6 +788,33 @@ async function renderDashboard(c) {
         <div class="kpi-sub">14+ days absent</div>
       </div>
     </div>
+
+    <div style="padding:0 0 2px;margin-bottom:0">
+      <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--tx3);padding:14px 2px 8px">Lead Cadence</div>
+      <div class="dash-kpi" style="margin-bottom:0">
+        <div class="kpi" onclick="switchView('queue',document.querySelector('[data-view=queue]'))">
+          <div class="kpi-val" style="color:${cadenceColor}">${cs.due_today + cs.overdue}</div>
+          <div class="kpi-lbl">Actions due</div>
+          <div class="kpi-sub" style="color:${cadenceColor}">${cadenceLabel}</div>
+        </div>
+        <div class="kpi" onclick="switchView('leads',document.querySelector('[data-view=leads]'))">
+          <div class="kpi-val" style="color:var(--brand)">${cs.active_in_cadence}</div>
+          <div class="kpi-lbl">Active in cadence</div>
+          <div class="kpi-sub">Facebook leads</div>
+        </div>
+        <div class="kpi">
+          <div class="kpi-val" style="color:var(--grn)">${cs.converted_30d}</div>
+          <div class="kpi-lbl">Converted</div>
+          <div class="kpi-sub">Last 30 days</div>
+        </div>
+        <div class="kpi">
+          <div class="kpi-val" style="color:var(--tel,#0891b2)">${cs.contact_rate}%</div>
+          <div class="kpi-lbl">Contact rate</div>
+          <div class="kpi-sub">Replied / total</div>
+        </div>
+      </div>
+    </div>
+
     <div class="dash-grid">
       <div class="dash-card">
         <div class="dash-card-title">Coach Breakdown</div>
