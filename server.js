@@ -565,7 +565,7 @@ async function syncFromMomence() {
     let trialCount = 0;
     for (const m of allMembers) {
       const tags = (m.customerTags||[]).map(t => (t.name||t.label||'').toLowerCase()).join(' ');
-      const isTrial = tags.includes('trial') || tags.includes('7 day') || tags.includes('7day');
+      const isTrial = tags.includes('first week trial') || tags.includes('trial') || tags.includes('7 day') || tags.includes('7day');
       if (!isTrial) continue;
       const firstName = m.firstName || m.first_name || '';
       const lastName = m.lastName || m.last_name || '';
@@ -577,7 +577,7 @@ async function syncFromMomence() {
         const id = 'trial_' + momenceId;
         await client.query(
           `INSERT INTO trials (id,name,email,phone,stage,membership,momence_id,source)
-           VALUES ($1,$2,$3,$4,'Trial Purchased','7 Day Trial',$5,'momence')
+           VALUES ($1,$2,$3,$4,'First Class Booked','7 Day Trial',$5,'momence')
            ON CONFLICT (id) DO NOTHING`,
           [id, name, m.email||'', m.phoneNumber||'', momenceId]
         );
