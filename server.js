@@ -565,7 +565,7 @@ async function syncFromMomence() {
     let trialCount = 0;
     for (const m of allMembers) {
       const tags = (m.customerTags||[]).map(t => (t.name||t.label||'').toLowerCase()).join(' ');
-      console.log(`TAGS for ${name}:`, tags); const isTrial = tags.includes('first week trial') || tags.includes('trial') || tags.includes('7 day') || tags.includes('7day');
+      const isTrial = tags.includes('first week trial') || tags.includes('trial') || tags.includes('7 day') || tags.includes('7day');
       if (!isTrial) continue;
       const firstName = m.firstName || m.first_name || '';
       const lastName = m.lastName || m.last_name || '';
