@@ -699,7 +699,7 @@ function switchView(view, navEl) {
   document.getElementById('statsRow').classList.toggle('hidden', !showToolbar);
   // Show outreach counter bubble on outreach view or whenever stats exist
   const counter = document.getElementById('outreachCounter');
-  if (counter) counter.style.display = (outreachStats.length > 0) ? 'flex' : 'none';
+  if (counter) counter.style.display = 'flex';
   // Close detail popup if leaving outreach view
   if (view !== 'outreach' && counterDetailOpen) {
     counterDetailOpen = false;
