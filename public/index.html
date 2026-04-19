@@ -1775,7 +1775,7 @@ function buildTrialForm(t, ro) {
       <div class="fg"><label>Trial Start</label><input class="fi" type="date" data-field="trial_start" value="${v(t.trial_start)}" ${ro?'readonly':''}></div>
       <div class="fg"><label>Trial End</label><input class="fi" type="date" data-field="trial_end" value="${v(t.trial_end)}" ${ro?'readonly':''}></div>
     </div>
-    <div class="fg"><label>Stage</label><select class="fs" data-field="stage" ${ro?'disabled':''}>
+    <div class="fg"><label>Stage</label><select class="fs" data-field="status" ${ro?'disabled':''}>
       ${['First Class Booked','First Class Show','Second Class Show','Price Presented','Converted'].map(s=>`<option ${t.stage===s?'selected':''}>${s}</option>`).join('')}
     </select></div>
     <div class="fg"><label>Notes</label><textarea class="fta" data-field="notes" ${ro?'readonly':''}>${v(t.notes)}</textarea></div>
@@ -1859,7 +1859,7 @@ function buildMemberForm(m, ro) {
 function buildLeadForm(l, ro) {
   const v = x => esc(x||'');
   const dis = ro ? 'disabled' : '';
-  const stages = ['New Inquiry','Contacted','Consult Booked','Consult Done','Joined','Lost'];
+  const stages = ['New Inquiry','Contacted','Lost','Consult Booked','Consult Confirmation','Consult Show','Consult No Show','Consult Follow Up','Consult Follow Up 2','Consult Follow Up 3'];
   const touchNum = (l.current_touch_number||0);
   const cadenceSection = l.id ? `
     <div class="sec-hd">Cadence</div>
@@ -1882,7 +1882,7 @@ function buildLeadForm(l, ro) {
     </div>
     <div class="frow">
       <div class="fg"><label>Phone</label><input class="fi" type="tel" data-field="phone" value="${v(l.phone)}" ${ro?'readonly':''}></div>
-      <div class="fg"><label>Stage</label><select class="fs" data-field="stage" ${dis}>${stages.map(s=>`<option value="${s}" ${(l.stage||l.status)===s?'selected':''}>${s}</option>`).join('')}</select></div>
+      <div class="fg"><label>Stage</label><select class="fs" data-field="stage" ${dis}>${stages.map(s=>`<option value="${s}" ${(l.status||l.stage||'New Inquiry')===s?'selected':''}>${s}</option>`).join('')}</select></div>
     </div>
     <div class="fg"><label>Source</label><select class="fs" data-field="source" ${dis}>
       <option value="" ${!l.source?'selected':''}>— select source —</option>
