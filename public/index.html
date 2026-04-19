@@ -1060,7 +1060,7 @@ function renderKanban(c, arr, type) {
     const items = sorted.filter(col.match);
     return `<div class="kb-col">
       <div class="col-hd"><div class="col-hd-left"><div class="col-dot" style="background:${col.color}"></div>${esc(col.key)}</div><div class="col-ct">${items.length}</div></div>
-      <div class="col-body" style="border-top-color:${col.color}" ondragover="event.preventDefault();this.style.outline='2px solid var(--brand)'" ondragleave="this.style.outline=''" ondrop="this.style.outline='';handleKanbanDrop(event,'${type}','${col.key.replace(/'/g,String.fromCharCode(39))}')">${items.length ? items.map(m => '<div draggable=\"true\" ondragstart=\"event.dataTransfer.setData(\\'id\\',\\'' + m.id + '\\');event.dataTransfer.setData(\\'type\\',\\'${type}\\');this.style.opacity=\\'.5\\'\" ondragend=\"this.style.opacity=\'1\'\">'+(type==='member'?memberCard(m):type==='trial'?trialCard(m):type==='consultation'?consultCard(m):type==='newmember'?newMemberCard(m):leadCard(m))+'</div>').join('') : '<div style="text-align:center;color:var(--tx3);padding:12px;font-size:11px">Empty</div>'}</div>
+      <div class="col-body" style="border-top-color:${col.color}" data-colkey="${col.key}">${items.length ? items.map(m => '<div data-id="'+m.id+'" data-type="'+type+'">'+(type==='member'?memberCard(m):type==='trial'?trialCard(m):type==='consultation'?consultCard(m):type==='newmember'?newMemberCard(m):leadCard(m))+'</div>').join('') : '<div style="text-align:center;color:var(--tx3);padding:12px;font-size:11px">Empty</div>'}</div>
     </div>`;
   }).join('')}</div></div>`;
 }
@@ -1540,36 +1540,65 @@ function outreachCard(m, colClass) {
 }
 
 let dragOutreachId = null;
-async function handleKanbanDrop(e, type, targetStage) {
-  const id = e.dataTransfer.getData('id');
-  const dragType = e.dataTransfer.getData('type');
-  if (!id || dragType !== type) return;
-  if (currentUser?.role === 'readonly') return;
+
+async function handleKanbanDrop(id, type, targetStage) {
+  if (!id || !type || !targetStage) return;
+  if (currentUser && currentUser.role === 'readonly') return;
   try {
     if (type === 'trial') {
       const data = await apiFetch('/api/trials/'+id, {method:'PATCH', body: JSON.stringify({stage: targetStage})});
       const idx = trials.findIndex(t => String(t.id)===String(id));
-      if (idx !== -1) trials[idx] = {...trials[idx], ...data};
+      if (idx !== -1) trials[idx] = Object.assign({}, trials[idx], data);
       renderMain(); toast('Moved to '+targetStage+' ✓', 'success');
     } else if (type === 'consultation') {
       const data = await apiFetch('/api/leads/'+id, {method:'PATCH', body: JSON.stringify({status: targetStage})});
       const idx = leads.findIndex(l => String(l.id)===String(id));
-      if (idx !== -1) leads[idx] = {...leads[idx], ...data};
+      if (idx !== -1) leads[idx] = Object.assign({}, leads[idx], data);
       consultations = leads.filter(l => l.status && l.status.startsWith('Consult'));
       renderMain(); toast('Moved to '+targetStage+' ✓', 'success');
     } else if (type === 'newmember') {
       const data = await apiFetch('/api/members/'+id, {method:'PATCH', body: JSON.stringify({new_member_stage: targetStage})});
       const idx = members.findIndex(m => String(m.id)===String(id));
-      if (idx !== -1) members[idx] = {...members[idx], ...data};
+      if (idx !== -1) members[idx] = Object.assign({}, members[idx], data);
       renderMain(); toast('Moved to '+targetStage+' ✓', 'success');
     } else if (type === 'lead' && targetStage === 'Lost') {
       const data = await apiFetch('/api/leads/'+id, {method:'PATCH', body: JSON.stringify({status: 'Lost'})});
       const idx = leads.findIndex(l => String(l.id)===String(id));
-      if (idx !== -1) leads[idx] = {...leads[idx], ...data};
+      if (idx !== -1) leads[idx] = Object.assign({}, leads[idx], data);
       renderMain(); toast('Marked as Lost', 'success');
     }
   } catch(err) { toast('Error: '+err.message, 'error'); }
 }
+
+// Drag and drop event delegation
+document.addEventListener('dragstart', function(e) {
+  const card = e.target.closest('[data-id][data-type]');
+  if (!card) return;
+  e.dataTransfer.setData('dragId', card.dataset.id);
+  e.dataTransfer.setData('dragType', card.dataset.type);
+  setTimeout(function() { card.style.opacity = '0.4'; }, 0);
+});
+document.addEventListener('dragend', function(e) {
+  const card = e.target.closest('[data-id][data-type]');
+  if (card) card.style.opacity = '1';
+});
+document.addEventListener('dragover', function(e) {
+  const col = e.target.closest('[data-colkey]');
+  if (col) { e.preventDefault(); col.style.outline = '2px solid var(--brand)'; }
+});
+document.addEventListener('dragleave', function(e) {
+  const col = e.target.closest('[data-colkey]');
+  if (col && !col.contains(e.relatedTarget)) col.style.outline = '';
+});
+document.addEventListener('drop', function(e) {
+  const col = e.target.closest('[data-colkey]');
+  if (!col) return;
+  col.style.outline = '';
+  const id = e.dataTransfer.getData('dragId');
+  const type = e.dataTransfer.getData('dragType');
+  const targetStage = col.dataset.colkey;
+  if (id && type && targetStage) handleKanbanDrop(id, type, targetStage);
+});
 
 function handleOutreachDragStart(e, memberId) {
   dragOutreachId = memberId;
