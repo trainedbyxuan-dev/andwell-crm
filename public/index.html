@@ -551,7 +551,7 @@ async function loadLeads() {
     const activeLeads = leads.filter(l => !l.status || (!l.status.startsWith('Consult') && l.status !== 'Lost' && l.cadence_status !== 'converted_exit'));
     document.getElementById('ct-leads').textContent = activeLeads.length;
     // Update consultations from leads data
-    consultations = leads.filter(l => l.status && l.status.startsWith('Consult'));
+    consultations = leads.filter(l => ((l.status && l.status.startsWith('Consult')) || (l.stage && l.stage.startsWith('Consult'))) || (l.stage && l.stage.startsWith('Consult')));
     document.getElementById('ct-consultations').textContent = consultations.filter(c => c.status !== 'Consult Follow Up 3').length;
     // New members = members joined within 30 days (populated after members load)
   } catch(e) { console.warn('Leads load failed:', e.message); }
@@ -1268,7 +1268,7 @@ function renderLeads(c) {
   const q = (document.getElementById('searchInput')?.value||'').toLowerCase();
   // Pull from leads table (manual + Facebook webhook)
   let arr = leads.filter(l => {
-    if (l.status && l.status.startsWith('Consult')) return false;
+    if (((l.status && l.status.startsWith('Consult')) || (l.stage && l.stage.startsWith('Consult'))) || (l.stage && l.stage.startsWith('Consult'))) return false;
     if (l.status === 'Lost') return true;
     if (l.cadence_status === 'converted_exit') return false;
     return true;
@@ -1344,7 +1344,7 @@ function renderTrials(c) {
 function renderConsultations(c) {
   const q = (document.getElementById('searchInput')?.value||'').toLowerCase();
   // Consultations = leads with Consult* status
-  let arr = leads.filter(l => l.status && l.status.startsWith('Consult'));
+  let arr = leads.filter(l => ((l.status && l.status.startsWith('Consult')) || (l.stage && l.stage.startsWith('Consult'))) || (l.stage && l.stage.startsWith('Consult')));
   if (q) arr = arr.filter(l => (l.name||'').toLowerCase().includes(q)||(l.email||'').toLowerCase().includes(q));
   const cols = getKanbanCols(arr, 'consultation');
   const kb = `<div class="kb-wrap"><div class="kb-board">${cols.map(col => {
@@ -1554,7 +1554,7 @@ async function handleKanbanDrop(id, type, targetStage) {
       const data = await apiFetch('/api/leads/'+id, {method:'PATCH', body: JSON.stringify({status: targetStage})});
       const idx = leads.findIndex(l => String(l.id)===String(id));
       if (idx !== -1) leads[idx] = Object.assign({}, leads[idx], data);
-      consultations = leads.filter(l => l.status && l.status.startsWith('Consult'));
+      consultations = leads.filter(l => ((l.status && l.status.startsWith('Consult')) || (l.stage && l.stage.startsWith('Consult'))) || (l.stage && l.stage.startsWith('Consult')));
       renderMain(); toast('Moved to '+targetStage+' ✓', 'success');
     } else if (type === 'newmember') {
       const data = await apiFetch('/api/members/'+id, {method:'PATCH', body: JSON.stringify({new_member_stage: targetStage})});
@@ -1750,7 +1750,7 @@ async function autoSave(type, id) {
     await apiFetch(endpoint, {method:'PATCH', body: JSON.stringify(body)});
     if (type === 'member') { const idx = members.findIndex(m => String(m.id)===String(id)); if (idx!==-1) members[idx] = {...members[idx],...body}; }
     else if (type === 'trial') { const idx = trials.findIndex(t => String(t.id)===String(id)); if (idx!==-1) trials[idx] = {...trials[idx],...body}; }
-    else { const idx = leads.findIndex(l => String(l.id)===String(id)); if (idx!==-1) leads[idx] = {...leads[idx],...body}; consultations = leads.filter(l => l.status && l.status.startsWith('Consult')); document.getElementById('ct-consultations').textContent = consultations.length; }
+    else { const idx = leads.findIndex(l => String(l.id)===String(id)); if (idx!==-1) leads[idx] = {...leads[idx],...body}; consultations = leads.filter(l => ((l.status && l.status.startsWith('Consult')) || (l.stage && l.stage.startsWith('Consult'))) || (l.stage && l.stage.startsWith('Consult'))); document.getElementById('ct-consultations').textContent = consultations.length; }
     setInd('saved','✓ Saved');
     updateCounts();
     renderMain();
@@ -1989,7 +1989,7 @@ async function bookConsultFromMember(memberId) {
       coach: m.coach, status: 'Consult Booked', source: 'momence'
     })});
     leads.unshift(data.lead||data);
-    consultations = leads.filter(l => l.status && l.status.startsWith('Consult'));
+    consultations = leads.filter(l => ((l.status && l.status.startsWith('Consult')) || (l.stage && l.stage.startsWith('Consult'))) || (l.stage && l.stage.startsWith('Consult')));
     document.getElementById('ct-consultations').textContent = consultations.length;
     closeDetail();
     const consultNav = document.querySelector('[data-view=consultations]');
@@ -2051,7 +2051,7 @@ async function moveToConsult(leadId) {
     const data = await apiFetch(`/api/leads/${leadId}`, {method:'PATCH', body: JSON.stringify({status: 'Consult Booked'})});
     const idx = leads.findIndex(l => String(l.id)===String(leadId));
     if (idx !== -1) leads[idx] = {...leads[idx], ...data};
-    consultations = leads.filter(l => l.status && l.status.startsWith('Consult'));
+    consultations = leads.filter(l => ((l.status && l.status.startsWith('Consult')) || (l.stage && l.stage.startsWith('Consult'))) || (l.stage && l.stage.startsWith('Consult')));
     document.getElementById('ct-consultations').textContent = consultations.length;
     closeDetail(); renderMain(); toast(`${lead.name} moved to Consultations ✓`, 'success');
   } catch(e) { toast('Error: '+e.message, 'error'); }
@@ -2074,7 +2074,7 @@ async function advanceConsultStage(leadId, newStage) {
     const data = await apiFetch(`/api/leads/${leadId}`, {method:'PATCH', body: JSON.stringify({status: newStage})});
     const idx = leads.findIndex(l => String(l.id)===String(leadId));
     if (idx !== -1) leads[idx] = {...leads[idx], ...data};
-    consultations = leads.filter(l => l.status && l.status.startsWith('Consult'));
+    consultations = leads.filter(l => ((l.status && l.status.startsWith('Consult')) || (l.stage && l.stage.startsWith('Consult'))) || (l.stage && l.stage.startsWith('Consult')));
     renderMain(); toast(`Stage: ${newStage} ✓`, 'success');
   } catch(e) { toast('Error: '+e.message, 'error'); }
 }
