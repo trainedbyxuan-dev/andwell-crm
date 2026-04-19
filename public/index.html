@@ -1853,7 +1853,12 @@ function buildMemberForm(m, ro) {
       <div class="di"><label>Days Since Visit</label><span>${daysSince(m.last_visit)===null?'—':daysSince(m.last_visit)+'d ago'}</span></div>
       <div class="di"><label>Total Visits</label><span>${m.total_visits||'—'}</span></div>
       <div class="di"><label>Joined</label><span>${fmtDate(m.created_at)}</span></div>
-    </div>`;
+    </div>
+    ${!ro && (m.membership||'').toLowerCase().match(/lead|referral/) ? `<div style="display:flex;gap:8px;margin-top:13px;padding-top:13px;border-top:1px solid var(--bdr)">
+      <button onclick="bookConsultFromMember('${m.id}')" style="padding:5px 12px;border-radius:6px;border:1px solid #7c3aed;background:#ede9fe;color:#7c3aed;cursor:pointer;font-family:inherit;font-size:11px;font-weight:600">📅 Book Consult</button>
+      <button onclick="moveToTrialFromMember('${m.id}')" style="padding:5px 12px;border-radius:6px;border:1px solid #0962ff;background:#e8f0ff;color:#0962ff;cursor:pointer;font-family:inherit;font-size:11px;font-weight:600">⚡ Move to Trial</button>
+    </div>` : ''}
+  `;
 }
 
 function buildLeadForm(l, ro) {
@@ -1970,6 +1975,45 @@ async function convertLeadUI(id) {
     const idx = leads.findIndex(l => String(l.id)===String(id));
     if (idx !== -1) leads[idx] = {...leads[idx], ...data};
     closeDetail(); renderMain(); toast('Lead converted: '+labels[choice], 'success');
+  } catch(e) { toast('Error: '+e.message, 'error'); }
+}
+
+
+async function bookConsultFromMember(memberId) {
+  const m = members.find(m => String(m.id)===String(memberId));
+  if (!m) return;
+  if (!confirm('Create a consultation record for '+m.name+'?')) return;
+  try {
+    const data = await apiFetch('/api/leads', {method:'POST', body: JSON.stringify({
+      name: m.name, email: m.email, phone: m.phone,
+      coach: m.coach, status: 'Consult Booked', source: 'momence'
+    })});
+    leads.unshift(data.lead||data);
+    consultations = leads.filter(l => l.status && l.status.startsWith('Consult'));
+    document.getElementById('ct-consultations').textContent = consultations.length;
+    closeDetail();
+    const consultNav = document.querySelector('[data-view=consultations]');
+    switchView('consultations', consultNav);
+    toast(m.name+' added to Consultations ✓', 'success');
+  } catch(e) { toast('Error: '+e.message, 'error'); }
+}
+
+async function moveToTrialFromMember(memberId) {
+  const m = members.find(m => String(m.id)===String(memberId));
+  if (!m) return;
+  if (!confirm('Move '+m.name+' to 7 Day Trials?')) return;
+  try {
+    const data = await apiFetch('/api/trials', {method:'POST', body: JSON.stringify({
+      name: m.name, email: m.email, phone: m.phone,
+      coach: m.coach, stage: 'First Class Booked',
+      membership: '7 Day Trial', trial_start: new Date().toISOString().split('T')[0]
+    })});
+    trials.unshift(data);
+    document.getElementById('ct-trials').textContent = trials.filter(t => t.stage !== 'Converted').length;
+    closeDetail();
+    const trialsNav = document.querySelector('[data-view=trials]');
+    switchView('trials', trialsNav);
+    toast(m.name+' moved to 7 Day Trials ✓', 'success');
   } catch(e) { toast('Error: '+e.message, 'error'); }
 }
 
