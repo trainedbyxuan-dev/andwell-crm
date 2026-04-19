@@ -1060,7 +1060,7 @@ function renderKanban(c, arr, type) {
     const items = sorted.filter(col.match);
     return `<div class="kb-col">
       <div class="col-hd"><div class="col-hd-left"><div class="col-dot" style="background:${col.color}"></div>${esc(col.key)}</div><div class="col-ct">${items.length}</div></div>
-      <div class="col-body" style="border-top-color:${col.color}" data-colkey="${col.key}">${items.length ? items.map(m => '<div data-id="'+m.id+'" data-type="'+type+'">'+(type==='member'?memberCard(m):type==='trial'?trialCard(m):type==='consultation'?consultCard(m):type==='newmember'?newMemberCard(m):leadCard(m))+'</div>').join('') : '<div style="text-align:center;color:var(--tx3);padding:12px;font-size:11px">Empty</div>'}</div>
+      <div class="col-body" style="border-top-color:${col.color}" data-colkey="${col.key}">${items.length ? items.map(m => '<div data-id="'+m.id+'" data-type="'+type+'" draggable="true">'+(type==='member'?memberCard(m):type==='trial'?trialCard(m):type==='consultation'?consultCard(m):type==='newmember'?newMemberCard(m):leadCard(m))+'</div>').join('') : '<div style="text-align:center;color:var(--tx3);padding:12px;font-size:11px">Empty</div>'}</div>
     </div>`;
   }).join('')}</div></div>`;
 }
@@ -1743,6 +1743,8 @@ async function autoSave(type, id) {
   // Coerce empty date fields to null
   if ('follow_up_date' in body && body.follow_up_date === '') body.follow_up_date = null;
   if ('consult_date' in body && body.consult_date === '') body.consult_date = null;
+  if ('trial_start' in body && body.trial_start === '') body.trial_start = null;
+  if ('trial_end' in body && body.trial_end === '') body.trial_end = null;
   try {
     const endpoint = type === 'member' ? `/api/members/${id}` : type === 'trial' ? `/api/trials/${id}` : `/api/leads/${id}`;
     await apiFetch(endpoint, {method:'PATCH', body: JSON.stringify(body)});
