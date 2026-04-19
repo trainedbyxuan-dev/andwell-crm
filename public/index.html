@@ -973,13 +973,13 @@ function getKanbanCols(arr, type) {
   }
   if (type === 'consultation') {
     return [
-      {key:'Consult Booked', color:'#0962ff', match: m => m.status === 'Consult Booked'},
-      {key:'Consult Confirmation', color:'#7c3aed', match: m => m.status === 'Consult Confirmation'},
-      {key:'Consult Show', color:'#16a34a', match: m => m.status === 'Consult Show'},
-      {key:'Consult No Show', color:'#dc2626', match: m => m.status === 'Consult No Show'},
-      {key:'Consult Follow Up', color:'#d97706', match: m => m.status === 'Consult Follow Up'},
-      {key:'Consult Follow Up 2', color:'#9ba3b2', match: m => m.status === 'Consult Follow Up 2'},
-      {key:'Consult Follow Up 3', color:'#6b7280', match: m => m.status === 'Consult Follow Up 3'},
+      {key:'Consult Booked', color:'#0962ff', match: m => m.status === 'Consult Booked' || m.stage === 'Consult Booked'},
+      {key:'Consult Confirmation', color:'#7c3aed', match: m => m.status === 'Consult Confirmation' || m.stage === 'Consult Confirmation'},
+      {key:'Consult Show', color:'#16a34a', match: m => m.status === 'Consult Show' || m.stage === 'Consult Show'},
+      {key:'Consult No Show', color:'#dc2626', match: m => m.status === 'Consult No Show' || m.stage === 'Consult No Show'},
+      {key:'Consult Follow Up', color:'#d97706', match: m => m.status === 'Consult Follow Up' || m.stage === 'Consult Follow Up'},
+      {key:'Consult Follow Up 2', color:'#9ba3b2', match: m => m.status === 'Consult Follow Up 2' || m.stage === 'Consult Follow Up 2'},
+      {key:'Consult Follow Up 3', color:'#6b7280', match: m => m.status === 'Consult Follow Up 3' || m.stage === 'Consult Follow Up 3'},
     ];
   }
   if (type === 'newmember') {
@@ -1887,7 +1887,7 @@ function buildLeadForm(l, ro) {
     </div>
     <div class="frow">
       <div class="fg"><label>Phone</label><input class="fi" type="tel" data-field="phone" value="${v(l.phone)}" ${ro?'readonly':''}></div>
-      <div class="fg"><label>Stage</label><select class="fs" data-field="stage" ${dis}>${stages.map(s=>`<option value="${s}" ${(l.status||l.stage||'New Inquiry')===s?'selected':''}>${s}</option>`).join('')}</select></div>
+      <div class="fg"><label>Stage</label><select class="fs" data-field="status" ${dis}>${stages.map(s=>`<option value="${s}" ${(l.status||l.stage||'New Inquiry')===s?'selected':''}>${s}</option>`).join('')}</select></div>
     </div>
     <div class="fg"><label>Source</label><select class="fs" data-field="source" ${dis}>
       <option value="" ${!l.source?'selected':''}>— select source —</option>
