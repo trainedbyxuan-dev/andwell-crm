@@ -1331,7 +1331,7 @@ function renderTrials(c) {
     const items = arr.filter(col.match);
     return `<div class="kb-col">
       <div class="col-hd"><div class="col-hd-left"><div class="col-dot" style="background:${col.color}"></div>${esc(col.key)}</div><div class="col-ct">${items.length}</div></div>
-      <div class="col-body" style="border-top-color:${col.color}">${items.length ? items.map(t => trialCard(t)).join('') : '<div style="text-align:center;color:var(--tx3);padding:12px;font-size:11px">Empty</div>'}</div>
+      <div class="col-body" style="border-top-color:${col.color}" data-colkey="${col.key}">${items.length ? items.map(t => '<div data-id="'+t.id+'" data-type="trial" draggable="true">'+trialCard(t)+'</div>').join('') : '<div style="text-align:center;color:var(--tx3);padding:12px;font-size:11px">Empty</div>'}</div>
     </div>`;
   }).join('')}</div></div>`;
   c.innerHTML = `<div style="padding:10px 16px 6px;display:flex;gap:20px;font-size:11px;color:var(--tx3);border-bottom:1px solid var(--bdr)">
@@ -1351,7 +1351,7 @@ function renderConsultations(c) {
     const items = arr.filter(col.match);
     return `<div class="kb-col">
       <div class="col-hd"><div class="col-hd-left"><div class="col-dot" style="background:${col.color}"></div>${esc(col.key)}</div><div class="col-ct">${items.length}</div></div>
-      <div class="col-body" style="border-top-color:${col.color}">${items.length ? items.map(l => consultCard(l)).join('') : '<div style="text-align:center;color:var(--tx3);padding:12px;font-size:11px">Empty</div>'}</div>
+      <div class="col-body" style="border-top-color:${col.color}" data-colkey="${col.key}">${items.length ? items.map(l => '<div data-id="'+l.id+'" data-type="consultation" draggable="true">'+consultCard(l)+'</div>').join('') : '<div style="text-align:center;color:var(--tx3);padding:12px;font-size:11px">Empty</div>'}</div>
     </div>`;
   }).join('')}</div></div>`;
   c.innerHTML = `<div style="padding:10px 16px 6px;font-size:11px;color:var(--tx3);border-bottom:1px solid var(--bdr)">
@@ -1379,7 +1379,7 @@ function renderNewMembers(c) {
     const items = arr.filter(col.match);
     return `<div class="kb-col">
       <div class="col-hd"><div class="col-hd-left"><div class="col-dot" style="background:${col.color}"></div>${esc(col.key)}</div><div class="col-ct">${items.length}</div></div>
-      <div class="col-body" style="border-top-color:${col.color}">${items.length ? items.map(m => newMemberCard(m)).join('') : '<div style="text-align:center;color:var(--tx3);padding:12px;font-size:11px">Empty</div>'}</div>
+      <div class="col-body" style="border-top-color:${col.color}" data-colkey="${col.key}">${items.length ? items.map(m => '<div data-id="'+m.id+'" data-type="newmember" draggable="true">'+newMemberCard(m)+'</div>').join('') : '<div style="text-align:center;color:var(--tx3);padding:12px;font-size:11px">Empty</div>'}</div>
     </div>`;
   }).join('')}</div></div>`;
   c.innerHTML = `<div style="padding:10px 16px 6px;font-size:11px;color:var(--tx3);border-bottom:1px solid var(--bdr)">
