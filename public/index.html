@@ -1750,7 +1750,7 @@ async function autoSave(type, id) {
     await apiFetch(endpoint, {method:'PATCH', body: JSON.stringify(body)});
     if (type === 'member') { const idx = members.findIndex(m => String(m.id)===String(id)); if (idx!==-1) members[idx] = {...members[idx],...body}; }
     else if (type === 'trial') { const idx = trials.findIndex(t => String(t.id)===String(id)); if (idx!==-1) trials[idx] = {...trials[idx],...body}; }
-    else { const idx = leads.findIndex(l => String(l.id)===String(id)); if (idx!==-1) leads[idx] = {...leads[idx],...body}; }
+    else { const idx = leads.findIndex(l => String(l.id)===String(id)); if (idx!==-1) leads[idx] = {...leads[idx],...body}; consultations = leads.filter(l => l.status && l.status.startsWith('Consult')); document.getElementById('ct-consultations').textContent = consultations.length; }
     setInd('saved','✓ Saved');
     updateCounts();
     renderMain();
